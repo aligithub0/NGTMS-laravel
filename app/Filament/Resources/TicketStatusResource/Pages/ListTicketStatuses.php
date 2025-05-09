@@ -16,4 +16,9 @@ class ListTicketStatuses extends ListRecords
             Actions\CreateAction::make(),
         ];
     }
+
+    public function getTitle(): string
+    {
+        return 'Ticket Status';
+    }
 }

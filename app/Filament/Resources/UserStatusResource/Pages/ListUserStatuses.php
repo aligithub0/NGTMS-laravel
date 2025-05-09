@@ -16,4 +16,9 @@ class ListUserStatuses extends ListRecords
             Actions\CreateAction::make(),
         ];
     }
+
+    public function getTitle(): string
+    {
+        return 'User Status';
+    }
 }

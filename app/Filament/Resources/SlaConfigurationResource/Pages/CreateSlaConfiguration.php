@@ -9,4 +9,10 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateSlaConfiguration extends CreateRecord
 {
     protected static string $resource = SlaConfigurationResource::class;
+
+    public function getTitle(): string
+    {
+        return 'Create SLA Configuration
+';
+    }
 }

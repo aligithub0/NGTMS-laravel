@@ -27,6 +27,12 @@ class TimesheetStatusResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
+    public static function getNavigationLabel(): string
+    {
+        return 'Timesheet Status'; 
+    
+    }
+
     public static function form(Form $form): Form
     {
         return $form

@@ -32,6 +32,7 @@ class TimesheetResource extends Resource
     protected static ?string $model = Timesheet::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+   
 
     public static function form(Form $form): Form
     {
@@ -103,17 +104,17 @@ class TimesheetResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('users.name')->sortable()->searchable()->label('User'),
-                TextColumn::make('TimesheetActivity.name')->sortable()->searchable()->label('Activity'),
-                TextColumn::make('activity_description')->sortable()->searchable()->label('Description'),
-                TextColumn::make('project.name')->sortable()->searchable()->label('Project'),
-                TextColumn::make('shift_type.name')->sortable()->searchable()->label('Shift Type'),
-                TextColumn::make('ts_status.name')->sortable()->searchable()->label('Status'),
+                TextColumn::make('users.name')->searchable()->label('User'),
+                TextColumn::make('TimesheetActivity.name')->searchable()->label('Activity'),
+                TextColumn::make('activity_description')->searchable()->label('Description'),
+                TextColumn::make('project.name')->searchable()->label('Project'),
+                TextColumn::make('shift_type.name')->searchable()->label('Shift Type'),
+                TextColumn::make('ts_status.name')->searchable()->label('Status'),
                 TextColumn::make('from_time')->label('From Time'),
                 TextColumn::make('to_time')->label('To Time'),
                 TextColumn::make('total_time_consumed')->label('Time Consumed'),
-                TextColumn::make('approved_by.name')->sortable()->searchable()->label('Approved By'),
-                TextColumn::make('approved_date')->sortable()->searchable()->label('Approved Date'),
+                TextColumn::make('approved_by.name')->searchable()->label('Approved By'),
+                TextColumn::make('approved_date')->searchable()->label('Approved Date'),
 
             ])
             ->filters([

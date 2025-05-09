@@ -6,7 +6,9 @@ use App\Filament\Resources\MeneusResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 
+
 class ListMeneuses extends ListRecords
+
 {
     protected static string $resource = MeneusResource::class;
 
@@ -16,4 +18,10 @@ class ListMeneuses extends ListRecords
             Actions\CreateAction::make(),
         ];
     }
+
+    public function getTitle(): string
+    {
+        return 'Menus';
+    }
+    
 }

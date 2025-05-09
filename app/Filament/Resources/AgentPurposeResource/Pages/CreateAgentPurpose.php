@@ -9,4 +9,6 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateAgentPurpose extends CreateRecord
 {
     protected static string $resource = AgentPurposeResource::class;
+
 }
+

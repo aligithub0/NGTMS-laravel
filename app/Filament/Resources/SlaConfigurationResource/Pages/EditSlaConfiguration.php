@@ -16,4 +16,9 @@ class EditSlaConfiguration extends EditRecord
             Actions\DeleteAction::make()->safeDelete(),
         ];
     }
+
+    public function getTitle(): string
+    {
+        return 'Edit SLA Configuration';
+    }
 }

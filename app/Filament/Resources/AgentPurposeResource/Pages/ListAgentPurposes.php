@@ -16,4 +16,9 @@ class ListAgentPurposes extends ListRecords
             Actions\CreateAction::make(),
         ];
     }
+
+    public function getTitle(): string
+    {
+        return 'Agent Purpose';
+    }
 }

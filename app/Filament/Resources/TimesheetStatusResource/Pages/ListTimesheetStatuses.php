@@ -16,4 +16,9 @@ class ListTimesheetStatuses extends ListRecords
             Actions\CreateAction::make(),
         ];
     }
+
+    public function getTitle(): string
+    {
+        return 'Timesheet Status';
+    }
 }

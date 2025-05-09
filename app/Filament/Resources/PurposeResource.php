@@ -46,8 +46,7 @@ class PurposeResource extends Resource
                 ->options(Purpose::all()->pluck('name', 'id'))
                 ->searchable()
                 ->preload()
-                ->nullable()
-                ->required(),
+                ->nullable(),
 
 
             Toggle::make('status')
