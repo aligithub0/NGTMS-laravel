@@ -34,11 +34,46 @@ class NavigationOrder
         'NotificationTypeResource.php'  => 23,
     ];
 
+    public const FILE_GROUP_MAP = [
+        'UserResource.php'              => 'User Management',
+        'MeneusResource.php'            => 'User Management',
+        'RoleResource.php'              => 'User Management',
+        'RolesMenuResource.php'         => 'User Management',
+        'UserStatusResource.php'        => 'User Management',
+        'DepartmentResource.php'        => 'User Management',
+        'DesignationsResource.php'      => 'User Management',
+
+        'ProjectResource.php'           => 'Projects',
+        'ProjectTypesResource.php'      => 'Projects',
+
+        'TimesheetResource.php'         => 'Timesheets',
+        'TimesheetActivitiesResource.php'=> 'Timesheets',
+        'TimesheetStatusResource.php'   => 'Timesheets',
+        'ShiftTypesResource.php'        => 'Timesheets',
+
+        'TicketsResource.php'           => 'Tickets',
+        'TicketStatusResource.php'      => 'Tickets',
+        'TicketSourceResource.php'      => 'Tickets',
+        'SlaConfigurationResource.php'  => 'Tickets',
+        'NotificationTypeResource.php'  => 'Tickets',
+
+        'CompanyTypesResource.php'      => 'Company',
+        'CompanyResource.php'           => 'Company',
+            'PurposeResource.php'           => 'Company',
+        'AgentPurposesResource.php'     => 'Company',
+        'TaskStatusResource.php'        => 'Company',
+    ];
+
     /**
      * Get the sort order for a given filename.
      */
     public static function getSortOrderByFilename(string $filename): ?int
     {
         return self::FILE_SORT_MAP[$filename] ?? null;
+    }
+
+    public static function getNavigationGroupByFilename(string $filename): ?string
+    {
+        return self::FILE_GROUP_MAP[$filename] ?? null;
     }
 }

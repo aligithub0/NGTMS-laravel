@@ -27,6 +27,11 @@ class TicketSourceResource extends Resource
         return NavigationOrder::getSortOrderByFilename($currentFile) ?? parent::getNavigationSort();
     }
 
+    public static function getNavigationGroup(): ?string
+    {
+        $currentFile = basename((new \ReflectionClass(static::class))->getFileName());
+        return NavigationOrder::getNavigationGroupByFilename($currentFile);
+    }
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 

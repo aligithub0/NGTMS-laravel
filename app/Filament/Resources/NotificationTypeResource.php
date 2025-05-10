@@ -30,6 +30,12 @@ class NotificationTypeResource extends Resource
         return NavigationOrder::getSortOrderByFilename($currentFile) ?? parent::getNavigationSort();
     }
 
+    public static function getNavigationGroup(): ?string
+    {
+        $currentFile = basename((new \ReflectionClass(static::class))->getFileName());
+        return NavigationOrder::getNavigationGroupByFilename($currentFile);
+    }
+
     public static function form(Form $form): Form
     {
         return $form

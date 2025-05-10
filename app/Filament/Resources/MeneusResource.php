@@ -28,10 +28,16 @@ class MeneusResource extends Resource
     }
 
     public static function getNavigationSort(): int
-{
-    $currentFile = basename((new \ReflectionClass(static::class))->getFileName());
-    return NavigationOrder::getSortOrderByFilename($currentFile) ?? parent::getNavigationSort();
-}
+    {
+        $currentFile = basename((new \ReflectionClass(static::class))->getFileName());
+        return NavigationOrder::getSortOrderByFilename($currentFile) ?? parent::getNavigationSort();
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        $currentFile = basename((new \ReflectionClass(static::class))->getFileName());
+        return NavigationOrder::getNavigationGroupByFilename($currentFile);
+    }
     
     protected static ?string $model = Meneus::class;
 
