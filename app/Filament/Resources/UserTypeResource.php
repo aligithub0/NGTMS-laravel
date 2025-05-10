@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\CompanyTypesResource\Pages;
-use App\Filament\Resources\CompanyTypesResource\RelationManagers;
-use App\Models\CompanyTypes;
+use App\Filament\Resources\UserTypeResource\Pages;
+use App\Filament\Resources\UserTypeResource\RelationManagers;
+use App\Models\UserType;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -18,17 +18,11 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Forms\Components\Select;
 
-class CompanyTypesResource extends Resource
+class UserTypeResource extends Resource
 {
-    
-    protected static ?string $model = CompanyTypes::class;
+    protected static ?string $model = UserType::class;
 
-    // protected static ?int $navigationSort = NavigationOrder::CompanyResource;
-
-    protected static ?string $navigationLabel;
-        
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-
 
     public static function getNavigationSort(): int
     {
@@ -41,7 +35,6 @@ class CompanyTypesResource extends Resource
         $currentFile = basename((new \ReflectionClass(static::class))->getFileName());
         return NavigationOrder::getNavigationGroupByFilename($currentFile);
     }
-
 
     public static function form(Form $form): Form
     {
@@ -93,9 +86,9 @@ class CompanyTypesResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListCompanyTypes::route('/'),
-            'create' => Pages\CreateCompanyTypes::route('/create'),
-            'edit' => Pages\EditCompanyTypes::route('/{record}/edit'),
+            'index' => Pages\ListUserTypes::route('/'),
+            'create' => Pages\CreateUserType::route('/create'),
+            'edit' => Pages\EditUserType::route('/{record}/edit'),
         ];
     }
 }

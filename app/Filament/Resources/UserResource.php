@@ -7,6 +7,7 @@ use App\Filament\Resources\UserResource\Pages\CreateUser;
 use App\Filament\Resources\UserResource\RelationManagers;
 use App\Models\User;
 use App\Models\Meneus;
+use App\Models\UserType;
 use App\Models\Designations;
 use App\Models\Company;
 use Filament\Forms;
@@ -93,38 +94,6 @@ class UserResource extends Resource
                 ->nullable()
                 ->required(),
 
-
-                Select::make('department_id')
-                ->label('Department')
-                ->options(Department::all()->pluck('name', 'id'))
-                ->searchable()
-                ->preload()
-                ->required(),
-
-                Select::make('manager_id')
-                ->label('Manager')
-                ->options(User::all()->pluck('name', 'id'))
-                ->searchable()
-                ->preload()
-                ->nullable()
-                ->required(),
-
-
-                Select::make('status_id')
-                    ->label('Status')
-                    ->options(UserStatus::all()->pluck('name', 'id'))
-                    ->searchable()
-                    ->preload()
-                    ->required(),
-
-                
-                Select::make('designation_id')
-                ->label('Designation')
-                ->options(Designations::all()->pluck('name', 'id'))
-                ->searchable()
-                ->preload()
-                ->required(),
-
                 Select::make('company_id')
                 ->label('Company')
                 ->options(Company::all()->pluck('name', 'id'))
@@ -141,8 +110,16 @@ class UserResource extends Resource
                         }
                     }
                 }),
-            
-            TextInput::make('emp_ref_no')
+
+                Select::make('user_type_id')
+                ->label('User Type')
+                ->options(UserType::all()->pluck('name', 'id'))
+                ->searchable()
+                ->preload()
+                ->nullable()
+                ->required(),
+
+                TextInput::make('emp_ref_no')
                 ->label('Employee Reference No')
                 ->required()
                 ->live()
@@ -152,17 +129,59 @@ class UserResource extends Resource
                         $set('emp_no', $company->company_code . '-' . $state);
                     }
                 }),
-            
-            TextInput::make('emp_no')
+
+
+                Select::make('department_id')
+                ->label('Department')
+                ->options(Department::all()->pluck('name', 'id'))
+                ->searchable()
+                ->preload()
+                ->required(),
+
+                TextInput::make('emp_no')
                 ->label('Employee Number')
                 ->disabled()
                 ->dehydrated(),
 
-            
+                Select::make('designation_id')
+                ->label('Designation')
+                ->options(Designations::all()->pluck('name', 'id'))
+                ->searchable()
+                ->preload()
+                ->required(),
+
+                Select::make('status_id')
+                ->label('Status')
+                ->options(UserStatus::all()->pluck('name', 'id'))
+                ->searchable()
+                ->preload()
+                ->required(),
+
+
+
+                Select::make('manager_id')
+                ->label('Manager')
+                ->options(User::all()->pluck('name', 'id'))
+                ->searchable()
+                ->preload()
+                ->nullable()
+                ->required(),
+
+                Toggle::make('assigned_to_others')
+                ->label('Assigned to Others')
+                ->default(false)
+                ->inline(false),
+
+             
     
                     TextInput::make('max_ticket_threshold')
                     ->numeric()
                     ->rules(['required', 'integer', 'min:1']),
+
+                    Toggle::make('is_first_time')
+                    ->label('Is First Time')
+                    ->default(true)
+                    ->inline(false),
             ]);
     }
 
@@ -173,12 +192,14 @@ class UserResource extends Resource
                 TextColumn::make('name')->searchable(),
                 TextColumn::make('email'),
                 TextColumn::make('role.name')->label('Role'),
-                TextColumn::make('department.name')->label('Department'),
-                TextColumn::make('manager.name')->label('Manager'),
-                TextColumn::make('designation.name')->label('Designation'),
+                TextColumn::make('userType.name')->label('User Type'),
                 TextColumn::make('company.name')->label('Company'),
                 TextColumn::make('emp_no')->label('Employee No'),
+                TextColumn::make('department.name')->label('Department'),
+                TextColumn::make('designation.name')->label('Designation'),
+                TextColumn::make('manager.name')->label('Manager'),
                 TextColumn::make('status.name')->label('Status'),
+
             ])
             ->filters([
                 //

@@ -62,13 +62,13 @@ class MeneusResource extends Resource
                 ->options(Meneus::all()->pluck('name', 'id'))
                 ->searchable()
                 ->preload()
-                ->nullable()
-                ->required(),
+                ->nullable(),
 
 
             Toggle::make('status')
                 ->label('Active')
-                ->default(true),
+                ->default(true)
+                ->inline(false),
             ]);
     }
 

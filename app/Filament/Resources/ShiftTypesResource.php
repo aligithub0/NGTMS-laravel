@@ -63,7 +63,8 @@ class ShiftTypesResource extends Resource
 
                 Toggle::make('status')
                 ->label('Active')
-                ->default(true),
+                ->default(true)
+                ->inline(false),
             ]);
     }
 

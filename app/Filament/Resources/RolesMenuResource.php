@@ -47,24 +47,35 @@ class RolesMenuResource extends Resource
                 Select::make('role_id')
                 ->label('Roles')
                 ->options(Role::all()->pluck('name', 'id'))
+                ->multiple()
                 ->searchable()
                 ->preload()
-                ->nullable()
-                ->required(),
-
-
-                Select::make('menu_id')
+                ->required()
+                ->afterStateHydrated(function ($component, $state) {
+                    if (is_string($state)) {
+                        $component->state(json_decode($state, true));
+                    }
+                })
+                ->dehydrateStateUsing(fn ($state) => json_encode($state)),
+            
+            Select::make('menu_id')
                 ->label('Menus')
                 ->options(Meneus::all()->pluck('name', 'id'))
+                ->multiple()
                 ->searchable()
                 ->preload()
-                ->nullable()
-                ->required(),
-
+                ->required()
+                ->afterStateHydrated(function ($component, $state) {
+                    if (is_string($state)) {
+                        $component->state(json_decode($state, true));
+                    }
+                })
+                ->dehydrateStateUsing(fn ($state) => json_encode($state)),
 
                 Toggle::make('status')
                 ->label('Active')
-                ->default(true),
+                ->default(true)
+                ->inline(false),
             ]);
     }
 
@@ -72,8 +83,23 @@ class RolesMenuResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('menues.name')->label('Menues'),
-                TextColumn::make('roles.name')->label('Roles'),
+                TextColumn::make('menu_id')
+                ->label('Menus')
+                ->formatStateUsing(function ($state) {
+                    if (empty($state)) return '-';
+                    $menuIds = json_decode($state, true) ?? [];
+                    return \App\Models\Meneus::whereIn('id', $menuIds)->pluck('name')->join(', ');
+                }),
+            
+            TextColumn::make('role_id')
+                ->label('Roles')
+                ->formatStateUsing(function ($state) {
+                    if (empty($state)) return '-';
+                    $roleIds = json_decode($state, true) ?? [];
+                    return \App\Models\Role::whereIn('id', $roleIds)->pluck('name')->join(', ');
+                }),
+            
+            
                 IconColumn::make('status')
                 ->boolean()
                 ->label('Active'),

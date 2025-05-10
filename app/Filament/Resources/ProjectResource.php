@@ -55,10 +55,6 @@ class ProjectResource extends Resource
                 ])
                 ->helperText('Only letters and spaces are allowed.'),
 
-                Toggle::make('status')
-                ->label('Active')
-                ->default(true),
-                
                 Select::make('project_type_id')
                 ->label('Project Type')
                 ->options(ProjectTypes::all()->pluck('name', 'id'))
@@ -66,6 +62,10 @@ class ProjectResource extends Resource
                 ->preload()
                 ->nullable()
                 ->required(),
+
+              
+                
+           
 
                 Select::make('company_id')
                 ->label('Company')
@@ -75,17 +75,27 @@ class ProjectResource extends Resource
                 ->nullable()
                 ->required(),
 
-
-                DatePicker::make('start_date')->required(),
-                DatePicker::make('end_date')->required(),
-
-                 Select::make('project_owner_id')
+                Select::make('project_owner_id')
                 ->label('Project Owner')
                 ->options(User::all()->pluck('name', 'id'))
                 ->searchable()
                 ->preload()
                 ->nullable()
                 ->required(),
+
+           
+            
+
+
+                DatePicker::make('start_date')->required(),
+                DatePicker::make('end_date')->required(),
+
+                Toggle::make('status')
+                ->label('Status') 
+                ->default(true)
+                ->inline(false),
+
+               
                         ]);
     }
 

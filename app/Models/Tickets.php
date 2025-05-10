@@ -26,6 +26,8 @@ class Tickets extends Model
         'company_id',
         'reminder_flag',
         'reminder_datetime',
+        'internal_note',
+        'external_note',
     ];
 
     public function ticketStatus()

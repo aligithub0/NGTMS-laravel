@@ -93,7 +93,8 @@ protected static ?int $navigationSort = null;
 
                 Toggle::make('status')
                 ->label('Active')
-                ->default(true),
+                ->default(true)
+                ->inline(false),
             ]);
     }
 

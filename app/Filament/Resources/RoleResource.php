@@ -52,7 +52,8 @@ class RoleResource extends Resource
 
                 Toggle::make('status')
                 ->label('Active')
-                ->default(true),            ]);
+                ->default(true)
+                ->inline(false),            ]);
     }
 
     public static function table(Table $table): Table

@@ -30,6 +30,9 @@ class User extends Authenticatable
         'emp_ref_no',
         'company_id',
         'designation_id',
+        'user_type_id',
+        'is_first_time',
+        'assigned_to_others',
     ];
 
     /**
@@ -80,6 +83,11 @@ public function designation()
 public function company()
 {
     return $this->belongsTo(Company::class, 'company_id');
+}
+
+public function userType()
+{
+    return $this->belongsTo(UserType::class, 'user_type_id');
 }
 
 protected static function booted()

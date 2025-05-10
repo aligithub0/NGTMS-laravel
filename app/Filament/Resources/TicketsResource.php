@@ -57,6 +57,10 @@ class TicketsResource extends Resource
 
                 Textarea::make('description')->required()->rows(2),
 
+                Textarea::make('internal_note')->required()->rows(2)->label('Internal Note'),
+                
+                Textarea::make('external_note')->required()->rows(2)->label('External Note'),
+
                 Select::make('ticket_status_id')
                 ->label('Ticket Status')
                 ->options(TicketStatus::all()->pluck('name', 'id'))
@@ -138,7 +142,8 @@ class TicketsResource extends Resource
 
                 Toggle::make('reminder_flag')
                 ->label('Reminder Flag')
-                ->default(false),
+                ->default(false)
+                ->inline(false),
 
                 DateTimePicker::make('reminder_datetime')
                 ->nullable()
@@ -156,7 +161,9 @@ class TicketsResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('title')->searchable()->label('Title'),
-                TextColumn::make('description')->searchable()->label('Description'),
+                TextColumn::make('description')->searchable()->label('Description')->limit(20),
+                TextColumn::make('internal_note')->searchable()->label('Internal Note')->limit(20),
+                TextColumn::make('external_note')->searchable()->label('External Note')->limit(20),
                 TextColumn::make('TicketStatus.name')->searchable()->label('Ticket Status'),
                 TextColumn::make('createdBy.name')->searchable()->label('Created By'),
                 TextColumn::make('assignedTo.name')->searchable()->label('Assigned To'),
