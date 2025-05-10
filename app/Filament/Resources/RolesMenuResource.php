@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Forms\Components\Actions\Action;
 use App\Filament\Resources\RolesMenuResource\Pages;
 use App\Filament\Resources\RolesMenuResource\RelationManagers;
 use App\Models\RolesMenu;
@@ -56,7 +57,17 @@ class RolesMenuResource extends Resource
                         $component->state(json_decode($state, true));
                     }
                 })
-                ->dehydrateStateUsing(fn ($state) => json_encode($state)),
+                ->dehydrateStateUsing(fn ($state) => json_encode($state))
+                ->suffixAction(
+                    Action::make('selectAllRoles')
+                        ->label('Select All')
+                        ->icon('heroicon-m-check')
+                        ->action(function ($component) {
+                            $component->state(
+                                Role::all()->pluck('id')->toArray()
+                            );
+                        })
+                ),
             
             Select::make('menu_id')
                 ->label('Menus')
@@ -70,7 +81,17 @@ class RolesMenuResource extends Resource
                         $component->state(json_decode($state, true));
                     }
                 })
-                ->dehydrateStateUsing(fn ($state) => json_encode($state)),
+                ->dehydrateStateUsing(fn ($state) => json_encode($state))
+                ->suffixAction(
+                    Action::make('selectAllMenus')
+                        ->label('Select All')
+                        ->icon('heroicon-m-check')
+                        ->action(function ($component) {
+                            $component->state(
+                                Meneus::all()->pluck('id')->toArray()
+                            );
+                        })
+                ),
 
                 Toggle::make('status')
                 ->label('Active')

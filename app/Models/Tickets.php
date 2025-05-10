@@ -30,6 +30,11 @@ class Tickets extends Model
         'external_note',
     ];
 
+    protected $casts = [
+        'purpose_type_id' => 'array',
+        'notification_type_id' => 'array',
+    ];
+
     public function ticketStatus()
     {
         return $this->belongsTo(TicketStatus::class, 'ticket_status_id');
@@ -50,9 +55,9 @@ class Tickets extends Model
         return $this->belongsTo(TicketSource::class, 'ticket_source_id');
     }
 
-    public function purposeType()
+    public function purposeTypes()
     {
-        return $this->belongsTo(Purpose::class, 'purpose_type_id');
+        return Purpose::whereIn('id', $this->purpose_type_id ?? [])->get();
     }
 
     public function slaConfiguration()
@@ -62,7 +67,7 @@ class Tickets extends Model
 
     public function notificationType()
     {
-        return $this->belongsTo(NotificationType::class, 'notification_type_id');
+        return NotificationType::whereIn('id', $this->notification_type_id ?? [])->get();
     }
 
     public function company()

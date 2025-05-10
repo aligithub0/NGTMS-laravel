@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Forms\Components\Actions\Action;
 use App\Filament\Resources\TicketsResource\Pages;
 use App\Filament\Resources\TicketsResource\RelationManagers;
 use App\Models\Tickets;
@@ -101,10 +102,27 @@ class TicketsResource extends Resource
                 Select::make('purpose_type_id')
                 ->label('Purpose Type')
                 ->options(Purpose::all()->pluck('name', 'id'))
+                ->multiple()
                 ->searchable()
                 ->preload()
-                ->nullable()
-                ->required(),
+                ->required()
+                ->afterStateHydrated(function ($component, $state) {
+                    if (is_string($state)) {
+                        $component->state(json_decode($state, true));
+                    }
+                })
+                ->dehydrateStateUsing(fn ($state) => json_encode($state))
+                ->suffixAction(
+                    Action::make('selectAllPurpose')
+                        ->label('Select All')
+                        ->icon('heroicon-m-check')
+                        ->action(function ($component) {
+                            $component->state(
+                                Purpose::all()->pluck('id')->toArray()
+                            );
+                        })
+                ),
+
 
                 Select::make('SLA')
                 ->label('SLA')
@@ -123,14 +141,30 @@ class TicketsResource extends Resource
                 ->nullable()
                 ->required(),
 
-                
+
                 Select::make('notification_type_id')
                 ->label('Notification Type')
                 ->options(NotificationType::all()->pluck('name', 'id'))
+                ->multiple()
                 ->searchable()
                 ->preload()
-                ->nullable()
-                ->required(),
+                ->required()
+                ->afterStateHydrated(function ($component, $state) {
+                    if (is_string($state)) {
+                        $component->state(json_decode($state, true));
+                    }
+                })
+                ->dehydrateStateUsing(fn ($state) => json_encode($state))
+                ->suffixAction(
+                    Action::make('selectAllNotificationType')
+                        ->label('Select All')
+                        ->icon('heroicon-m-check')
+                        ->action(function ($component) {
+                            $component->state(
+                                NotificationType::all()->pluck('id')->toArray()
+                            );
+                        })
+                ),
 
                 Select::make('company_id')
                 ->label('Company')
@@ -171,10 +205,23 @@ class TicketsResource extends Resource
                 TextColumn::make('contact_id')->searchable()->label('Contact ID'),
                 TextColumn::make('contact_ref_no')->searchable()->label('Contact Ref No'),
                 TextColumn::make('slaConfiguration.name')->searchable()->label('SLA'),
-                TextColumn::make('purposeType.name')->searchable()->label('Purpose Type'),
+                TextColumn::make('purpose_type_id')
+                ->label('Purpose Type')
+                ->formatStateUsing(function ($state) {
+                    if (empty($state)) return '-';
+                    $menuIds = json_decode($state, true) ?? [];
+                    return \App\Models\Purpose::whereIn('id', $menuIds)->pluck('name')->join(', ');
+                }),
+                   
                 TextColumn::make('resolution_time')->searchable()->label('Resolution Time'),
                 TextColumn::make('response_time')->searchable()->label('Response Time'),
-                TextColumn::make('notificationType.name')->searchable()->label('Notification Type'),
+                TextColumn::make('notification_type_id')
+                ->label('Notification Type')
+                ->formatStateUsing(function ($state) {
+                    if (empty($state)) return '-';
+                    $notificationTypeIds = json_decode($state, true) ?? [];
+                    return \App\Models\NotificationType::whereIn('id', $notificationTypeIds)->pluck('name')->join(', ');
+                }),
                 TextColumn::make('company.name')->searchable()->label('Comapany'),
                 IconColumn::make('reminder_flag')->boolean()->label('Reminder Flag'),
                 TextColumn::make('reminder_datetime')->searchable()->label('Reminder Date Time'),
