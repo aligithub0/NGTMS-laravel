@@ -21,8 +21,11 @@ class UserStatusResource extends Resource
 {
     protected static ?string $model = UserStatus::class;
 
-    protected static ?int $navigationSort = 6; 
-
+    public static function getNavigationSort(): int
+    {
+        $currentFile = basename((new \ReflectionClass(static::class))->getFileName());
+        return NavigationOrder::getSortOrderByFilename($currentFile) ?? parent::getNavigationSort();
+    }
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function getNavigationLabel(): string

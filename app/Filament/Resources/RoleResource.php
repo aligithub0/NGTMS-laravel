@@ -21,9 +21,14 @@ class RoleResource extends Resource
 {
     protected static ?string $model = Role::class;
 
-    protected static ?int $navigationSort = 2; 
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+
+    public static function getNavigationSort(): int
+    {
+        $currentFile = basename((new \ReflectionClass(static::class))->getFileName());
+        return NavigationOrder::getSortOrderByFilename($currentFile) ?? parent::getNavigationSort();
+    }
 
     public static function form(Form $form): Form
     {

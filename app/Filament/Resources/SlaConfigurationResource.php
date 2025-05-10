@@ -25,10 +25,14 @@ class SlaConfigurationResource extends Resource
 {
     protected static ?string $model = SlaConfiguration::class;
 
-    protected static ?int $navigationSort = 14; 
-
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+
+    public static function getNavigationSort(): int
+    {
+        $currentFile = basename((new \ReflectionClass(static::class))->getFileName());
+        return NavigationOrder::getSortOrderByFilename($currentFile) ?? parent::getNavigationSort();
+    }
 
     public static function getNavigationLabel(): string
     {

@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\UserResource\Pages;
+use App\Filament\Resources\UserResource\Pages\CreateUser;
 use App\Filament\Resources\UserResource\RelationManagers;
 use App\Models\User;
 use App\Models\Meneus;
@@ -30,8 +31,11 @@ class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
-    protected static ?int $navigationSort = 7; 
-
+    public static function getNavigationSort(): int
+    {
+        $currentFile = basename((new \ReflectionClass(static::class))->getFileName());
+        return NavigationOrder::getSortOrderByFilename($currentFile) ?? parent::getNavigationSort();
+    }
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
 
@@ -54,20 +58,24 @@ class UserResource extends Resource
                 ->unique(ignoreRecord: true) 
                 ->rules(['email', 'required', 'max:255']),    
 
-                TextInput::make('password')
-                ->label('Password')
-                ->password()
-                ->dehydrateStateUsing(fn ($state) => bcrypt($state))
-                ->required(fn ($livewire) => $livewire instanceof \App\Filament\Resources\UserResource\Pages\CreateUser)
-                ->rules(['required_with:password_confirmation', 'string', 'min:8', 'confirmed'])
-                ->required(),
 
-            TextInput::make('password_confirmation')
-                ->label('Confirm Password')
-                ->password()
-                ->required(fn ($livewire) => $livewire instanceof \App\Filament\Resources\UserResource\Pages\CreateUser)
-                ->dehydrated(false)
-                ->required(),
+           TextInput::make('password')
+            ->label('Password')
+            ->password()
+            ->dehydrateStateUsing(fn ($state) => filled($state) ? bcrypt($state) : null)
+            ->rules(['nullable', 'string', 'min:8', 'confirmed'])
+            ->afterStateHydrated(fn ($component, $state) => $component->state('')) 
+            ->required(fn ($livewire) => $livewire instanceof CreateUser)
+            ->helperText(fn ($livewire) => $livewire instanceof CreateUser ? null : 'Leave blank to keep the current password'),
+
+        TextInput::make('password_confirmation')
+            ->label('Confirm Password')
+            ->password()
+            ->dehydrated(false)
+            ->rules(['nullable'])
+            ->required(fn ($livewire) => $livewire instanceof CreateUser),
+            
+            
 
                 Select::make('role_id')
                 ->label('Role')

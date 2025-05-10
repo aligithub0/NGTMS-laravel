@@ -31,6 +31,12 @@ class TimesheetResource extends Resource
 {
     protected static ?string $model = Timesheet::class;
 
+    public static function getNavigationSort(): int
+    {
+        $currentFile = basename((new \ReflectionClass(static::class))->getFileName());
+        return NavigationOrder::getSortOrderByFilename($currentFile) ?? parent::getNavigationSort();
+    }
+
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
    
 

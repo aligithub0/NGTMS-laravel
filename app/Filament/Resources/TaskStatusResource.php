@@ -23,11 +23,15 @@ class TaskStatusResource extends Resource
 
 {
 
-    protected static ?int $navigationSort = 10; 
-
     protected static ?string $model = TaskStatus::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+
+    public static function getNavigationSort(): int
+    {
+        $currentFile = basename((new \ReflectionClass(static::class))->getFileName());
+        return NavigationOrder::getSortOrderByFilename($currentFile) ?? parent::getNavigationSort();
+    }
 
     public static function getNavigationLabel(): string
     {

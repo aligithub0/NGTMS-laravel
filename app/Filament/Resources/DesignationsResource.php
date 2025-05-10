@@ -22,9 +22,14 @@ class DesignationsResource extends Resource
 {
     protected static ?string $model = Designations::class;
 
-    protected static ?int $navigationSort = 5; 
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+
+    public static function getNavigationSort(): int
+    {
+        $currentFile = basename((new \ReflectionClass(static::class))->getFileName());
+        return NavigationOrder::getSortOrderByFilename($currentFile) ?? parent::getNavigationSort();
+    }
 
     public static function form(Form $form): Form
     {

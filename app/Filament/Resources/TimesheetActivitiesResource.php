@@ -22,8 +22,11 @@ class TimesheetActivitiesResource extends Resource
 {
     protected static ?string $model = TimesheetActivities::class;
 
-    protected static ?int $navigationSort = 5; 
-
+    public static function getNavigationSort(): int
+    {
+        $currentFile = basename((new \ReflectionClass(static::class))->getFileName());
+        return NavigationOrder::getSortOrderByFilename($currentFile) ?? parent::getNavigationSort();
+    }
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function form(Form $form): Form

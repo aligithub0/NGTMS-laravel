@@ -21,7 +21,11 @@ class TicketSourceResource extends Resource
 {
     protected static ?string $model = TicketSource::class;
 
-    protected static ?int $navigationSort = 12; 
+    public static function getNavigationSort(): int
+    {
+        $currentFile = basename((new \ReflectionClass(static::class))->getFileName());
+        return NavigationOrder::getSortOrderByFilename($currentFile) ?? parent::getNavigationSort();
+    }
 
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';

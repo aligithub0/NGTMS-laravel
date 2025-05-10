@@ -24,12 +24,16 @@ class AgentPurposesResource extends Resource
 {
     protected static ?string $model = AgentPurposes::class;
 
-    protected static ?int $navigationSort = 9; 
 
     public static function getNavigationLabel(): string
     {
         return 'Agent Purpose'; 
     
+    }
+    public static function getNavigationSort(): int
+    {
+        $currentFile = basename((new \ReflectionClass(static::class))->getFileName());
+        return NavigationOrder::getSortOrderByFilename($currentFile) ?? parent::getNavigationSort();
     }
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';

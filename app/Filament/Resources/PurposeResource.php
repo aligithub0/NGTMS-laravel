@@ -23,9 +23,14 @@ class PurposeResource extends Resource
 {
     protected static ?string $model = Purpose::class;
 
-    protected static ?int $navigationSort = 8; 
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+
+    public static function getNavigationSort(): int
+    {
+        $currentFile = basename((new \ReflectionClass(static::class))->getFileName());
+        return NavigationOrder::getSortOrderByFilename($currentFile) ?? parent::getNavigationSort();
+    }
 
     public static function form(Form $form): Form
     {
@@ -42,7 +47,7 @@ class PurposeResource extends Resource
 
     
             Select::make('parent_id')
-                ->label('Purpose')
+                ->label('Parent Purpose')
                 ->options(Purpose::all()->pluck('name', 'id'))
                 ->searchable()
                 ->preload()
@@ -62,7 +67,7 @@ class PurposeResource extends Resource
                 TextColumn::make('name')->searchable(),
 
                 TextColumn::make('parent.name')
-                    ->label('Purpose')
+                    ->label('Parent Purpose')
                     ->sortable(),
     
                 IconColumn::make('status')

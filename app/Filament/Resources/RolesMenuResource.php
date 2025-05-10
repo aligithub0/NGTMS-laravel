@@ -24,8 +24,12 @@ class RolesMenuResource extends Resource
 {
     protected static ?string $model = RolesMenu::class;
 
-    protected static ?int $navigationSort = 3; 
 
+    public static function getNavigationSort(): int
+    {
+        $currentFile = basename((new \ReflectionClass(static::class))->getFileName());
+        return NavigationOrder::getSortOrderByFilename($currentFile) ?? parent::getNavigationSort();
+    }
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 

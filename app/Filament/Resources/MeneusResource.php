@@ -52,7 +52,7 @@ class MeneusResource extends Resource
 
     
             Select::make('parent_id')
-                ->label('Menu')
+                ->label('Parent Menu')
                 ->options(Meneus::all()->pluck('name', 'id'))
                 ->searchable()
                 ->preload()
@@ -73,7 +73,7 @@ class MeneusResource extends Resource
                 TextColumn::make('name')->searchable(),
 
                 TextColumn::make('parent.name')
-                    ->label('Menu')
+                    ->label('Parent Menu')
                     ->sortable(),
     
                 IconColumn::make('status')

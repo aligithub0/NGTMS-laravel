@@ -35,6 +35,12 @@ class TicketsResource extends Resource
 {
     protected static ?string $model = Tickets::class;
 
+    public static function getNavigationSort(): int
+    {
+        $currentFile = basename((new \ReflectionClass(static::class))->getFileName());
+        return NavigationOrder::getSortOrderByFilename($currentFile) ?? parent::getNavigationSort();
+    }
+
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function form(Form $form): Form
@@ -126,7 +132,7 @@ class TicketsResource extends Resource
 
                 Toggle::make('reminder_flag')
                 ->label('Reminder Flag')
-                ->default(true),
+                ->default(false),
 
                 DateTimePicker::make('reminder_datetime')
                 ->nullable()
