@@ -32,7 +32,7 @@ class UserStatusResource extends Resource
         $currentFile = basename((new \ReflectionClass(static::class))->getFileName());
         return NavigationOrder::getNavigationGroupByFilename($currentFile);
     }
-    protected static ?string $navigationIcon = 'heroicon-o-user';
+    protected static ?string $navigationIcon = 'heroicon-s-user';
 
     public static function getNavigationLabel(): string
     {

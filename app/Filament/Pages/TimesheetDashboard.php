@@ -10,7 +10,7 @@ use Filament\Pages\Page;
 
 class TimesheetDashboard extends Page
 {
-    protected static ?string $navigationIcon = 'heroicon-o-clock';
+    protected static ?string $navigationIcon = 'heroicon-s-clock';
     
     protected static string $view = 'filament.pages.timesheet-dashboard';
     

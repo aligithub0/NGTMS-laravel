@@ -35,7 +35,7 @@ class TimesheetStatusResource extends Resource
         return NavigationOrder::getNavigationGroupByFilename($currentFile);
     }
     
-    protected static ?string $navigationIcon = 'heroicon-o-clock';
+    protected static ?string $navigationIcon = 'heroicon-s-clock';
 
     public static function getNavigationLabel(): string
     {

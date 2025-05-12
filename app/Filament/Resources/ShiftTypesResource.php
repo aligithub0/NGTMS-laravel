@@ -25,7 +25,7 @@ class ShiftTypesResource extends Resource
 {
     protected static ?string $model = ShiftTypes::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-clock';
+    protected static ?string $navigationIcon = 'heroicon-s-clock';
 
     public static function getNavigationSort(): int
     {

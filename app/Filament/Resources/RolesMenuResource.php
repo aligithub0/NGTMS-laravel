@@ -39,7 +39,7 @@ class RolesMenuResource extends Resource
     }
 
 
-    protected static ?string $navigationIcon = 'heroicon-o-bars-3';
+    protected static ?string $navigationIcon = 'heroicon-s-bars-3';
 
     public static function form(Form $form): Form
     {

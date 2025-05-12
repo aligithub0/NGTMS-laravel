@@ -33,7 +33,7 @@ class TimesheetActivitiesResource extends Resource
         $currentFile = basename((new \ReflectionClass(static::class))->getFileName());
         return NavigationOrder::getNavigationGroupByFilename($currentFile);
     }
-    protected static ?string $navigationIcon = 'heroicon-o-clock';
+    protected static ?string $navigationIcon = 'heroicon-s-clock';
 
     public static function form(Form $form): Form
     {

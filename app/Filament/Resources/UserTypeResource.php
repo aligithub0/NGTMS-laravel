@@ -22,7 +22,7 @@ class UserTypeResource extends Resource
 {
     protected static ?string $model = UserType::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-user';
+    protected static ?string $navigationIcon = 'heroicon-s-user';
 
     public static function getNavigationSort(): int
     {

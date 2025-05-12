@@ -48,7 +48,7 @@ class TicketsResource extends Resource
         return NavigationOrder::getNavigationGroupByFilename($currentFile);
     }
 
-    protected static ?string $navigationIcon = 'heroicon-o-ticket';
+    protected static ?string $navigationIcon = 'heroicon-s-ticket';
 
     public static function form(Form $form): Form
     {
