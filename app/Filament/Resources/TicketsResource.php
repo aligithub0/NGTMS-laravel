@@ -132,14 +132,31 @@ class TicketsResource extends Resource
                 ->nullable()
                 ->required(),
 
-                TextInput::make('resolution_time')
-                ->nullable()
-                ->required(),
+                Select::make('response_time')
+                ->label('Response Time')
+                ->options([
+                    '5' => '5 minutes',
+                    '10' => '10 minutes',
+                    '15' => '15 minutes',
+                    '20' => '20 minutes',
+                    '25' => '25 minutes',
+                    '30' => '30 minutes',
+                ])
+                ->required()
+                ->searchable(),
 
-
-                TextInput::make('response_time')
-                ->nullable()
-                ->required(),
+                Select::make('resolution_time')
+                ->label('Resolution Time')
+                ->options([
+                    '5' => '5 minutes',
+                    '10' => '10 minutes',
+                    '15' => '15 minutes',
+                    '20' => '20 minutes',
+                    '25' => '25 minutes',
+                    '30' => '30 minutes',
+                ])
+                ->required()
+                ->searchable(),
 
 
                 Select::make('notification_type_id')
@@ -200,8 +217,8 @@ class TicketsResource extends Resource
                 TextColumn::make('contact_id')->searchable()->label('Contact ID'),
                 TextColumn::make('contact_ref_no')->searchable()->label('Contact Ref No'),
                 TextColumn::make('slaConfiguration.name')->searchable()->label('SLA'),
-                TextColumn::make('resolution_time')->searchable()->label('Resolution Time'),
                 TextColumn::make('response_time')->searchable()->label('Response Time'),
+                TextColumn::make('resolution_time')->searchable()->label('Resolution Time'),
                 
             ])
             ->filters([

@@ -74,6 +74,14 @@ class TasksResource extends Resource
                 ->preload()
                 ->nullable()
                 ->required(),
+
+                DatePicker::make('due_date')->nullable(),
+
+
+                Toggle::make('status')
+                ->label('Active')
+                ->default(true)
+                ->inline(false),
             ]);
     }
 
@@ -81,7 +89,12 @@ class TasksResource extends Resource
     {
         return $table
             ->columns([
-                //
+                TextColumn::make('title')->searchable()->label('Title'),
+                TextColumn::make('projects.name')->searchable()->label('Projects'),
+                TextColumn::make('tickets.title')->searchable()->label('Tickets'),
+                TextColumn::make('AssignedTo.name')->searchable()->label('Assigned To'),
+                TextColumn::make('due_date')->searchable()->label('Due Date'),
+                IconColumn::make('status')->boolean(),
             ])
             ->filters([
                 //

@@ -23,8 +23,8 @@ return new class extends Migration
                 $table->string('contact_ref_no')->nullable();
                 $table->foreignId('purpose_type_id')->constrained('purposes');
                 $table->foreignId('SLA')->constrained('sla_configurations')->onDelete('cascade');
-                $table->string('resolution_time')->nullable();
-                $table->string('response_time')->nullable();
+                $table->time('resolution_time')->nullable();
+                $table->time('response_time')->nullable();
                 $table->foreignId('notification_type_id')->constrained('notification_types');
                 $table->foreignId('company_id')->constrained('companies')->onDelete('cascade');
                 $table->boolean('reminder_flag')->default(false);

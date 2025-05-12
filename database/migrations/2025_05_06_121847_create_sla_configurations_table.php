@@ -16,8 +16,8 @@ return new class extends Migration
             $table->string('name');
             $table->foreignId('department_id')->constrained('departments');
             $table->foreignId('purpose_id')->constrained('purposes');
-            $table->integer('response_time'); 
-            $table->integer('resolution_time'); 
+            $table->time('response_time'); 
+            $table->time('resolution_time'); 
             $table->foreignId('escalated_to_user_id')->constrained('users');
             $table->timestamps();
         });
