@@ -41,7 +41,7 @@ class MeneusResource extends Resource
     
     protected static ?string $model = Meneus::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-bars-3';
 
     public static function form(Form $form): Form
     {

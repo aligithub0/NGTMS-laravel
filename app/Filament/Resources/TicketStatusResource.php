@@ -33,7 +33,7 @@ class TicketStatusResource extends Resource
         return NavigationOrder::getNavigationGroupByFilename($currentFile);
     }
     
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-ticket';
 
     public static function getNavigationLabel(): string
     {
