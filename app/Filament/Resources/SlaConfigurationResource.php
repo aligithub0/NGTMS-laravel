@@ -26,7 +26,7 @@ class SlaConfigurationResource extends Resource
     protected static ?string $model = SlaConfiguration::class;
 
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-cog-8-tooth';
 
     public static function getNavigationSort(): int
     {

@@ -28,7 +28,7 @@ class TasksResource extends Resource
 {
     protected static ?string $model = Tasks::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-ticket';
 
     public static function getNavigationSort(): int
     {
@@ -74,6 +74,16 @@ class TasksResource extends Resource
                 ->preload()
                 ->nullable()
                 ->required(),
+
+                DatePicker::make('due_date')->nullable() 
+                ->required(),
+                
+
+
+                Toggle::make('status')
+                ->label('Active')
+                ->default(true)
+                ->inline(false),
             ]);
     }
 
@@ -81,7 +91,12 @@ class TasksResource extends Resource
     {
         return $table
             ->columns([
-                //
+                TextColumn::make('title')->searchable()->label('Title'),
+                TextColumn::make('projects.name')->searchable()->label('Projects'),
+                TextColumn::make('tickets.title')->searchable()->label('Tickets'),
+                TextColumn::make('AssignedTo.name')->searchable()->label('Assigned To'),
+                TextColumn::make('due_date')->searchable()->label('Due Date'),
+                IconColumn::make('status')->boolean(),
             ])
             ->filters([
                 //

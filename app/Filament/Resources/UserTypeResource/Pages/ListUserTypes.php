@@ -13,7 +13,7 @@ class ListUserTypes extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()->label('New User Type'),
         ];
     }
 }
