@@ -80,6 +80,7 @@ class NavigationOrder
     public static function getSortOrderByFilename(string $filename): ?int
     {
         return self::FILE_SORT_MAP[$filename] ?? null;
+        return self::FILE_GROUP_MAP[$filename] ?? null;
     }
 
     public static function getNavigationGroupByFilename(string $filename): ?string

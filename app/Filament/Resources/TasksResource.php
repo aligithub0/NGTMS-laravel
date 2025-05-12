@@ -75,7 +75,9 @@ class TasksResource extends Resource
                 ->nullable()
                 ->required(),
 
-                DatePicker::make('due_date')->nullable(),
+                DatePicker::make('due_date')->nullable() 
+                ->required(),
+                
 
 
                 Toggle::make('status')
