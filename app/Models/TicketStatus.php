@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use App\Models\Tickets;
+
 class TicketStatus extends Model
 {
     use HasFactory;
@@ -13,4 +15,9 @@ class TicketStatus extends Model
         'name',
         'status',
     ];
+    
+     public function tickets(): HasMany
+    {
+        return $this->hasMany(Tickets::class, 'ticket_status_id');
+    }
 }

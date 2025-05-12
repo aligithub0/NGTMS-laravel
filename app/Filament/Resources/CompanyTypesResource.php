@@ -27,7 +27,7 @@ class CompanyTypesResource extends Resource
 
     protected static ?string $navigationLabel;
         
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-s-rectangle-stack';
 
 
     public static function getNavigationSort(): int
