@@ -184,9 +184,6 @@ class TicketsResource extends Resource
                 ->required(),
 
 
-
-
-
             ]);
     }
 
@@ -195,9 +192,7 @@ class TicketsResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('title')->searchable()->label('Title'),
-                TextColumn::make('description')->searchable()->label('Description')->limit(20),
-                TextColumn::make('internal_note')->searchable()->label('Internal Note')->limit(20),
-                TextColumn::make('external_note')->searchable()->label('External Note')->limit(20),
+                TextColumn::make('description')->searchable()->label('Description')->limit(30),
                 TextColumn::make('TicketStatus.name')->searchable()->label('Ticket Status'),
                 TextColumn::make('createdBy.name')->searchable()->label('Created By'),
                 TextColumn::make('assignedTo.name')->searchable()->label('Assigned To'),
@@ -205,26 +200,8 @@ class TicketsResource extends Resource
                 TextColumn::make('contact_id')->searchable()->label('Contact ID'),
                 TextColumn::make('contact_ref_no')->searchable()->label('Contact Ref No'),
                 TextColumn::make('slaConfiguration.name')->searchable()->label('SLA'),
-                TextColumn::make('purpose_type_id')
-                ->label('Purpose Type')
-                ->formatStateUsing(function ($state) {
-                    if (empty($state)) return '-';
-                    $menuIds = json_decode($state, true) ?? [];
-                    return \App\Models\Purpose::whereIn('id', $menuIds)->pluck('name')->join(', ');
-                }),
-                   
                 TextColumn::make('resolution_time')->searchable()->label('Resolution Time'),
                 TextColumn::make('response_time')->searchable()->label('Response Time'),
-                TextColumn::make('notification_type_id')
-                ->label('Notification Type')
-                ->formatStateUsing(function ($state) {
-                    if (empty($state)) return '-';
-                    $notificationTypeIds = json_decode($state, true) ?? [];
-                    return \App\Models\NotificationType::whereIn('id', $notificationTypeIds)->pluck('name')->join(', ');
-                }),
-                TextColumn::make('company.name')->searchable()->label('Comapany'),
-                IconColumn::make('reminder_flag')->boolean()->label('Reminder Flag'),
-                TextColumn::make('reminder_datetime')->searchable()->label('Reminder Date Time'),
                 
             ])
             ->filters([

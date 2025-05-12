@@ -12,14 +12,12 @@ class RolesMenu extends Model
     protected $fillable = ['role_id', 'menu_id', 'status'];
 
     protected $casts = [
-        'role_id' => 'array',
         'menu_id' => 'array',
     ];
 
-public function roles()
+    public function roles()
 {
-    return $this->belongsToMany(Role::class, 'roles_menus', 'id', 'role_id')
-        ->withPivot('menu_id', 'status');
+    return $this->belongsTo(User::class, 'role_id');
 }
 
 public function menus()

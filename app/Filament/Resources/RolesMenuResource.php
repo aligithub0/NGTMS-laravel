@@ -48,26 +48,10 @@ class RolesMenuResource extends Resource
                 Select::make('role_id')
                 ->label('Roles')
                 ->options(Role::all()->pluck('name', 'id'))
-                ->multiple()
                 ->searchable()
                 ->preload()
-                ->required()
-                ->afterStateHydrated(function ($component, $state) {
-                    if (is_string($state)) {
-                        $component->state(json_decode($state, true));
-                    }
-                })
-                ->dehydrateStateUsing(fn ($state) => json_encode($state))
-                ->suffixAction(
-                    Action::make('selectAllRoles')
-                        ->label('Select All')
-                        ->icon('heroicon-m-check')
-                        ->action(function ($component) {
-                            $component->state(
-                                Role::all()->pluck('id')->toArray()
-                            );
-                        })
-                ),
+                ->nullable()
+                ->required(),
             
             Select::make('menu_id')
                 ->label('Menus')
@@ -112,14 +96,7 @@ class RolesMenuResource extends Resource
                     return \App\Models\Meneus::whereIn('id', $menuIds)->pluck('name')->join(', ');
                 }),
             
-            TextColumn::make('role_id')
-                ->label('Roles')
-                ->formatStateUsing(function ($state) {
-                    if (empty($state)) return '-';
-                    $roleIds = json_decode($state, true) ?? [];
-                    return \App\Models\Role::whereIn('id', $roleIds)->pluck('name')->join(', ');
-                }),
-            
+                TextColumn::make('roles.name')->label('Roles'),
             
                 IconColumn::make('status')
                 ->boolean()
