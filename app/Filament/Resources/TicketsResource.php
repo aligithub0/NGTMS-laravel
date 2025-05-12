@@ -78,14 +78,7 @@ class TicketsResource extends Resource
                 ->nullable()
                 ->required(),
 
-                Select::make('assigned_to_id')
-                ->label('Assigned To')
-                ->options(User::all()->pluck('name', 'id'))
-                ->searchable()
-                ->preload()
-                ->nullable()
-                ->required(),
-
+                
                 Select::make('ticket_source_id')
                 ->label('Ticket Source')
                 ->options(TicketSource::all()->pluck('name', 'id'))
@@ -94,11 +87,13 @@ class TicketsResource extends Resource
                 ->nullable()
                 ->required(),
 
-                TextInput::make('contact_id')->numeric()->nullable(),
-
-                TextInput::make('contact_ref_no')->nullable(),
-
-                
+                Select::make('assigned_to_id')
+                ->label('Assigned To')
+                ->options(User::all()->pluck('name', 'id'))
+                ->searchable()
+                ->preload()
+                ->nullable()
+                ->required(),
                 Select::make('purpose_type_id')
                 ->label('Purpose Type')
                 ->options(Purpose::all()->pluck('name', 'id'))
@@ -123,7 +118,7 @@ class TicketsResource extends Resource
                         })
                 ),
 
-
+                TextInput::make('contact_id')->numeric()->nullable(),
                 Select::make('SLA')
                 ->label('SLA')
                 ->options(SlaConfiguration::all()->pluck('name', 'id'))
@@ -131,6 +126,20 @@ class TicketsResource extends Resource
                 ->preload()
                 ->nullable()
                 ->required(),
+
+                TextInput::make('contact_ref_no')->nullable(),
+
+                
+                Select::make('company_id')
+                ->label('Company')
+                ->options(Company::all()->pluck('name', 'id'))
+                ->searchable()
+                ->preload()
+                ->nullable()
+                ->required(),
+
+
+          
 
                 Select::make('response_time')
                 ->label('Response Time')
@@ -144,21 +153,6 @@ class TicketsResource extends Resource
                 ])
                 ->required()
                 ->searchable(),
-
-                Select::make('resolution_time')
-                ->label('Resolution Time')
-                ->options([
-                    '5' => '5 minutes',
-                    '10' => '10 minutes',
-                    '15' => '15 minutes',
-                    '20' => '20 minutes',
-                    '25' => '25 minutes',
-                    '30' => '30 minutes',
-                ])
-                ->required()
-                ->searchable(),
-
-
                 Select::make('notification_type_id')
                 ->label('Notification Type')
                 ->options(NotificationType::all()->pluck('name', 'id'))
@@ -183,13 +177,22 @@ class TicketsResource extends Resource
                         })
                 ),
 
-                Select::make('company_id')
-                ->label('Company')
-                ->options(Company::all()->pluck('name', 'id'))
-                ->searchable()
-                ->preload()
-                ->nullable()
-                ->required(),
+                Select::make('resolution_time')
+                ->label('Resolution Time')
+                ->options([
+                    '5' => '5 minutes',
+                    '10' => '10 minutes',
+                    '15' => '15 minutes',
+                    '20' => '20 minutes',
+                    '25' => '25 minutes',
+                    '30' => '30 minutes',
+                ])
+                ->required()
+                ->searchable(),
+
+
+               
+               
 
                 Toggle::make('reminder_flag')
                 ->label('Reminder Flag')
