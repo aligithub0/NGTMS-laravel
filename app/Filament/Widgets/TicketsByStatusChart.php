@@ -9,10 +9,10 @@ use Filament\Widgets\PieChartWidget;
 class TicketsByStatusChart extends PieChartWidget
 {
     protected static ?string $heading = 'Tickets by Status';
+    protected static ?string $maxHeight = '300px';
 
     protected function getData(): array
     {
-        // Alternative query if you can't modify TicketStatus model
         $statusCounts = TicketStatus::query()
             ->leftJoin('tickets', 'ticket_statuses.id', '=', 'tickets.ticket_status_id')
             ->selectRaw('ticket_statuses.name, count(tickets.id) as tickets_count')
@@ -33,8 +33,28 @@ class TicketsByStatusChart extends PieChartWidget
                         '#8b5cf6', // violet
                     ],
                     'borderColor' => '#ffffff',
+                    'borderWidth' => 2,
+                    'hoverOffset' => 10,
                 ],
             ],
+        ];
+    }
+
+    protected function getOptions(): array
+    {
+        return [
+            'plugins' => [
+                'legend' => [
+                    'position' => 'right',
+                    'labels' => [
+                        'boxWidth' => 12,
+                        'padding' => 20,
+                        'usePointStyle' => true,
+                    ],
+                ],
+            ],
+            'cutout' => '65%',
+            'maintainAspectRatio' => false,
         ];
     }
 }

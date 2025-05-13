@@ -1,15 +1,5 @@
-<x-filament-widgets::widget>
-    <x-filament::section>
-        <form wire:submit.prevent="updateFilters">
-            <div class="mb-4">
-                {{ $this->form }}
-            </div>
-
-            <div class="flex justify-end">
-                <x-filament::button type="submit" size="sm">
-                    Apply Filters
-                </x-filament::button>
-            </div>
-        </form>
-    </x-filament::section>
-</x-filament-widgets::widget>
+<div class="w-full p-4 bg-gray-100 dark:bg-gray-900 rounded-md mb-4">
+    <div class="flex flex-wrap gap-4 items-end">
+        {{ $this->form }}
+    </div>
+</div>
