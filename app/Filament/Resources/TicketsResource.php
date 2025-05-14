@@ -28,7 +28,10 @@ use App\Models\Purpose;
 use App\Models\SlaConfiguration;
 use App\Models\NotificationType;
 use App\Models\Company;
+use App\Models\Priority;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Hidden;
+
 
 
 
@@ -87,6 +90,14 @@ class TicketsResource extends Resource
                 ->nullable()
                 ->required(),
 
+                Select::make('priority_id')
+                ->label('Priority')
+                ->options(Priority::all()->pluck('name', 'id'))
+                ->searchable()
+                ->preload()
+                ->nullable()
+                ->required(),
+
                 Select::make('assigned_to_id')
                 ->label('Assigned To')
                 ->options(User::all()->pluck('name', 'id'))
@@ -140,19 +151,25 @@ class TicketsResource extends Resource
 
 
           
-
-                Select::make('response_time')
+                Select::make('response_time_id')
                 ->label('Response Time')
-                ->options([
-                    '5' => '5 minutes',
-                    '10' => '10 minutes',
-                    '15' => '15 minutes',
-                    '20' => '20 minutes',
-                    '25' => '25 minutes',
-                    '30' => '30 minutes',
-                ])
+                ->options(SlaConfiguration::all()->pluck('response_time', 'id'))
+                ->searchable()
+                ->preload()
                 ->required()
-                ->searchable(),
+                ->reactive()
+                ->afterStateUpdated(function (callable $set, $state) {
+                    $sla = SlaConfiguration::find($state);
+                    if ($sla) {
+                        $set('response_time', $sla->response_time); 
+                    }
+                }),
+            
+            Hidden::make('response_time')
+                ->dehydrated()
+                ->required(),
+
+
                 Select::make('notification_type_id')
                 ->label('Notification Type')
                 ->options(NotificationType::all()->pluck('name', 'id'))
@@ -177,18 +194,23 @@ class TicketsResource extends Resource
                         })
                 ),
 
-                Select::make('resolution_time')
+             Select::make('resolution_time_id')
                 ->label('Resolution Time')
-                ->options([
-                    '5' => '5 minutes',
-                    '10' => '10 minutes',
-                    '15' => '15 minutes',
-                    '20' => '20 minutes',
-                    '25' => '25 minutes',
-                    '30' => '30 minutes',
-                ])
+                ->options(SlaConfiguration::all()->pluck('resolution_time', 'id'))
+                ->searchable()
+                ->preload()
                 ->required()
-                ->searchable(),
+                ->reactive()
+                ->afterStateUpdated(function (callable $set, $state) {
+                    $sla = SlaConfiguration::find($state);
+                    if ($sla) {
+                        $set('resolution_time', $sla->resolution_time); 
+                    }
+                }),
+            
+            Hidden::make('resolution_time')
+                ->dehydrated()
+                ->required(),
 
 
                
@@ -217,6 +239,7 @@ class TicketsResource extends Resource
                 TextColumn::make('createdBy.name')->searchable()->label('Created By'),
                 TextColumn::make('assignedTo.name')->searchable()->label('Assigned To'),
                 TextColumn::make('TicketSource.name')->searchable()->label('Ticket Source'),
+                TextColumn::make('priority.name')->searchable()->label('Priority'),
                 TextColumn::make('contact_id')->searchable()->label('Contact ID'),
                 TextColumn::make('contact_ref_no')->searchable()->label('Contact Ref No'),
                 TextColumn::make('slaConfiguration.name')->searchable()->label('SLA'),

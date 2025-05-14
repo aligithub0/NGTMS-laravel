@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\MeneusResource\Pages;
-use App\Filament\Resources\MeneusResource\RelationManagers;
-use App\Models\Meneus;
+use App\Filament\Resources\PriorityResource\Pages;
+use App\Filament\Resources\PriorityResource\RelationManagers;
+use App\Models\Priority;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -17,17 +17,11 @@ use Filament\Forms\Components\Toggle;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\DatePicker;
 
-
-class MeneusResource extends Resource
+class PriorityResource extends Resource
 {
-
-    public static function getNavigationLabel(): string
-    {
-        return 'Menus'; 
-    
-    }
+    protected static ?string $model = Priority::class;
 
     public static function getNavigationSort(): int
     {
@@ -40,10 +34,8 @@ class MeneusResource extends Resource
         $currentFile = basename((new \ReflectionClass(static::class))->getFileName());
         return NavigationOrder::getNavigationGroupByFilename($currentFile);
     }
-    
-    protected static ?string $model = Meneus::class;
 
-    protected static ?string $navigationIcon = 'heroicon-s-bars-3';
+    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function form(Form $form): Form
     {
@@ -58,32 +50,7 @@ class MeneusResource extends Resource
                 ])
                 ->helperText('Only letters and spaces are allowed.'),
 
-    
-            Select::make('parent_id')
-                ->label('Parent Menu')
-                ->options(Meneus::all()->pluck('name', 'id'))
-                ->searchable()
-                ->preload()
-                ->nullable(),
-
-                TextInput::make('page_path')
-                ->label('Page Path')
-                ->required()
-                ->dehydrateStateUsing(function ($state, ?Meneus $record) {
-                    // For new records or when path is changed
-                    if (!$record || $state !== $record->page_path) {
-                        return $state; // The mutator will handle encryption
-                    }
-                    
-                    // For existing records when path isn't changed
-                    return $record->getRawPagePath();
-                })
-                ->formatStateUsing(function (?Meneus $record) {
-                    return $record?->page_path ?? '';
-                }),
-
-
-            Toggle::make('status')
+                Toggle::make('status')
                 ->label('Active')
                 ->default(true)
                 ->inline(false),
@@ -94,15 +61,8 @@ class MeneusResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('name')->searchable(),
-
-                TextColumn::make('parent.name')
-                    ->label('Parent Menu')
-             ,
-
-                IconColumn::make('status')
-                    ->boolean()
-                    ->label('Active'),
+                TextColumn::make('name')->sortable()->searchable(),
+                IconColumn::make('status')->boolean(),
             ])
             ->filters([
                 //
@@ -127,9 +87,9 @@ class MeneusResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListMeneuses::route('/'),
-            'create' => Pages\CreateMeneus::route('/create'),
-            'edit' => Pages\EditMeneus::route('/{record}/edit'),
+            'index' => Pages\ListPriorities::route('/'),
+            'create' => Pages\CreatePriority::route('/create'),
+            'edit' => Pages\EditPriority::route('/{record}/edit'),
         ];
     }
 }

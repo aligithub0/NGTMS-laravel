@@ -20,14 +20,17 @@ class Tickets extends Model
         'contact_ref_no',
         'purpose_type_id',
         'SLA',
-        'resolution_time',
+        'resolution_time_id',
+        'response_time_id',
         'response_time',
+        'resolution_time',
         'notification_type_id',
         'company_id',
         'reminder_flag',
         'reminder_datetime',
         'internal_note',
         'external_note',
+        'priority_id',
     ];
 
     protected $casts = [
@@ -73,5 +76,20 @@ class Tickets extends Model
     public function company()
     {
         return $this->belongsTo(Company::class, 'company_id');
+    }
+
+    public function responseTime()
+    {
+        return $this->belongsTo(SlaConfiguration::class, 'response_time_id');
+    }
+
+    public function resolutionTime()
+    {
+        return $this->belongsTo(SlaConfiguration::class, 'resolution_time_id');
+    }
+
+    public function priority()
+    {
+        return $this->belongsTo(Priority::class, 'priority_id');
     }
 }

@@ -20,6 +20,8 @@ use Filament\Forms\Components\Toggle;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Forms\Components\Select;
+use Carbon\CarbonInterval;
+
 
 class SlaConfigurationResource extends Resource
 {
@@ -54,6 +56,7 @@ class SlaConfigurationResource extends Resource
                 ->required()
                 ->rules([
                     'required',
+
                     'regex:/^[A-Za-z\s]+$/',
                     'max:255',
                 ])
@@ -75,31 +78,73 @@ class SlaConfigurationResource extends Resource
                 ->nullable(),
 
 
-                Select::make('response_time')
+                TextInput::make('response_time')
                 ->label('Response Time')
-                ->options([
-                    '5' => '5 minutes',
-                    '10' => '10 minutes',
-                    '15' => '15 minutes',
-                    '20' => '20 minutes',
-                    '25' => '25 minutes',
-                    '30' => '30 minutes',
-                ])
-                ->required()
-                ->searchable(),
-
-                Select::make('resolution_time')
+                ->required()            
+                ->formatStateUsing(function ($state) {
+                    if (!$state) return null;
+            
+                    [$hours, $minutes, $seconds] = explode(':', $state);
+            
+                    $parts = [];
+            
+                    if ((int) $hours > 0) {
+                        $parts[] = (int) $hours . ' hour' . ((int) $hours > 1 ? 's' : '');
+                    }
+            
+                    if ((int) $minutes > 0) {
+                        $parts[] = (int) $minutes . ' minute' . ((int) $minutes > 1 ? 's' : '');
+                    }
+            
+                    if ((int) $hours === 0 && (int) $minutes === 0 && (int) $seconds > 0) {
+                        $parts[] = (int) $seconds . ' second' . ((int) $seconds > 1 ? 's' : '');
+                    }
+            
+                    return implode(' ', $parts);
+                })
+                ->dehydrateStateUsing(function ($state) {
+                    try {
+                        $interval = CarbonInterval::make($state);
+                        return $interval ? gmdate('H:i:s', $interval->totalSeconds) : null;
+                    } catch (\Exception $e) {
+                        return null;
+                    }
+                }),
+            
+                TextInput::make('resolution_time')
                 ->label('Resolution Time')
-                ->options([
-                    '5' => '5 minutes',
-                    '10' => '10 minutes',
-                    '15' => '15 minutes',
-                    '20' => '20 minutes',
-                    '25' => '25 minutes',
-                    '30' => '30 minutes',
-                ])
-                ->required()
-                ->searchable(),
+                ->required()            
+                ->formatStateUsing(function ($state) {
+                    if (!$state) return null;
+            
+                    [$hours, $minutes, $seconds] = explode(':', $state);
+            
+                    $parts = [];
+            
+                    if ((int) $hours > 0) {
+                        $parts[] = (int) $hours . ' hour' . ((int) $hours > 1 ? 's' : '');
+                    }
+            
+                    if ((int) $minutes > 0) {
+                        $parts[] = (int) $minutes . ' minute' . ((int) $minutes > 1 ? 's' : '');
+                    }
+            
+                    if ((int) $hours === 0 && (int) $minutes === 0 && (int) $seconds > 0) {
+                        $parts[] = (int) $seconds . ' second' . ((int) $seconds > 1 ? 's' : '');
+                    }
+            
+                    return implode(' ', $parts);
+                })
+                ->dehydrateStateUsing(function ($state) {
+                    try {
+                        $interval = CarbonInterval::make($state);
+                        return $interval ? gmdate('H:i:s', $interval->totalSeconds) : null;
+                    } catch (\Exception $e) {
+                        return null;
+                    }
+                }),
+            
+         
 
                 Select::make('escalated_to_user_id')
                 ->label('Escalated to')
@@ -119,8 +164,59 @@ class SlaConfigurationResource extends Resource
                 TextColumn::make('name')->searchable(),
                 TextColumn::make('department.name')->label('Department'),
                 TextColumn::make('purpose.name')->label('Purpose'),
-                TextColumn::make('response_time')->label('Response Time'),
-                TextColumn::make('resolution_time')->label('Resolution Time'),
+
+                TextColumn::make('response_time')
+                    ->label('Response Time')
+                    ->formatStateUsing(function ($state) {
+                        if (!$state) {
+                            return '-';
+                        }
+                
+                        [$hours, $minutes, $seconds] = explode(':', $state);
+                
+                        $parts = [];
+                
+                        if ((int) $hours > 0) {
+                            $parts[] = (int) $hours . ' hour' . ((int) $hours > 1 ? 's' : '');
+                        }
+                
+                        if ((int) $minutes > 0) {
+                            $parts[] = (int) $minutes . ' minute' . ((int) $minutes > 1 ? 's' : '');
+                        }
+                
+                        if ((int) $hours === 0 && (int) $minutes === 0 && (int) $seconds > 0) {
+                            $parts[] = (int) $seconds . ' second' . ((int) $seconds > 1 ? 's' : '');
+                        }
+                
+                        return implode(' ', $parts);
+                    }),
+                    
+                    TextColumn::make('resolution_time')
+                    ->label('Resolution Time')
+                    ->formatStateUsing(function ($state) {
+                        if (!$state) {
+                            return '-';
+                        }
+                
+                        [$hours, $minutes, $seconds] = explode(':', $state);
+                
+                        $parts = [];
+                
+                        if ((int) $hours > 0) {
+                            $parts[] = (int) $hours . ' hour' . ((int) $hours > 1 ? 's' : '');
+                        }
+                
+                        if ((int) $minutes > 0) {
+                            $parts[] = (int) $minutes . ' minute' . ((int) $minutes > 1 ? 's' : '');
+                        }
+                
+                        if ((int) $hours === 0 && (int) $minutes === 0 && (int) $seconds > 0) {
+                            $parts[] = (int) $seconds . ' second' . ((int) $seconds > 1 ? 's' : '');
+                        }
+                
+                        return implode(' ', $parts);
+                    }),
+
                 TextColumn::make('escalated.name')->label('Escalated To'),
 
             ])
