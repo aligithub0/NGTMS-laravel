@@ -12,5 +12,9 @@
         "laravel-vite-plugin": "^1.0.0",
         "postcss-nesting": "^13.0.1",
         "vite": "^5.0.0"
+    },
+    "dependencies": {
+        "alpinejs": "^3.14.9",
+        "chart.js": "^4.4.9"
     }
 }

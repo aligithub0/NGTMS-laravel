@@ -8,8 +8,20 @@ use App\Filament\Widgets\TicketsByStatusChart;
 use App\Filament\Widgets\TicketsByPriorityChart;
 use App\Filament\Widgets\RecentTicketsTable;
 use App\Filament\Widgets\TicketsDateFilter;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Select;
 use Filament\Pages\Page;
 use Filament\Actions\Action;
+use App\Models\User;
+use App\Models\Tickets;
+use App\Models\TicketSource;
+use App\Models\SlaConfiguration;
+use Filament\Forms\Components\Hidden;
+use Filament\Notifications\Notification;
+use App\Filament\Pages\CreateTicket;
+
+
 
 class TicketsDashboard extends Page
 {
@@ -20,31 +32,32 @@ class TicketsDashboard extends Page
     protected static ?string $title = 'Tickets Overview';
     protected static ?string $navigationGroup = 'Reports';
 
-    protected function getHeaderActions(): array
-    {
-        return [
-            Action::make('create')
-                ->label('Create Ticket')
-                ->url(TicketsResource::getUrl('create'))
-                ->icon('heroicon-o-plus')
-                ->button(),
-        ];
-    }
+
+    // public $title;
+    public $description;
+    public $priority; // Add other fields you need
+
+ protected function getHeaderActions(): array
+{
+    return [
+        Action::make('create')
+            ->label('Create Ticket')
+            ->url(CreateTicket::getUrl()) // Changed from form() to url()
+            ->icon('heroicon-o-plus')
+    ];
+}
 
     protected function getHeaderWidgets(): array
     {
         return [
-            TicketsDateFilter::class,
-            TicketsOverview::class,
-            TicketsByStatusChart::class,
-            TicketsByPriorityChart::class,
+            
         ];
     }
 
     protected function getFooterWidgets(): array
     {
         return [
-            RecentTicketsTable::class,
+          
         ];
     }
     
