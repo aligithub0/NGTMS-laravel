@@ -34,8 +34,10 @@ class NavigationOrder
         'SlaConfigurationResource.php'  => 23,
         'NotificationTypeResource.php'  => 24,
         'TicketAttachmentResource.php'  => 25,
-        'TicketsResource.php'           => 26,
-        'TasksResource.php'             => 27,
+        'PriorityResource.php'          => 26,
+        'TicketsResource.php'           => 27,
+        'TicketRepliesResource.php'     => 28,
+        'TasksResource.php'             => 29,
 
     ];
 
@@ -67,7 +69,9 @@ class NavigationOrder
         'ShiftTypesResource.php'        => 'Timesheets',
 
         'TicketsResource.php'           => 'Tickets',
-        'TasksResource.php'           =>   'Tickets',
+        'TicketRepliesResource.php'     => 'Tickets',
+        'PriorityResource.php'          => 'Tickets',
+        'TasksResource.php'             => 'Tickets',
         'TicketAttachmentResource.php'  => 'Tickets',
         'TicketStatusResource.php'      => 'Tickets',
         'TicketSourceResource.php'      => 'Tickets',

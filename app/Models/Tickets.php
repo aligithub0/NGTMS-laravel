@@ -30,6 +30,7 @@ class Tickets extends Model
         'reminder_datetime',
         'internal_note',
         'external_note',
+        'priority_id',
     ];
 
     protected $casts = [
@@ -85,5 +86,10 @@ class Tickets extends Model
     public function resolutionTime()
     {
         return $this->belongsTo(SlaConfiguration::class, 'resolution_time_id');
+    }
+
+    public function priority()
+    {
+        return $this->belongsTo(Priority::class, 'priority_id');
     }
 }

@@ -28,6 +28,7 @@ use App\Models\Purpose;
 use App\Models\SlaConfiguration;
 use App\Models\NotificationType;
 use App\Models\Company;
+use App\Models\Priority;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Hidden;
 
@@ -84,6 +85,14 @@ class TicketsResource extends Resource
                 Select::make('ticket_source_id')
                 ->label('Ticket Source')
                 ->options(TicketSource::all()->pluck('name', 'id'))
+                ->searchable()
+                ->preload()
+                ->nullable()
+                ->required(),
+
+                Select::make('priority_id')
+                ->label('Priority')
+                ->options(Priority::all()->pluck('name', 'id'))
                 ->searchable()
                 ->preload()
                 ->nullable()
@@ -230,6 +239,7 @@ class TicketsResource extends Resource
                 TextColumn::make('createdBy.name')->searchable()->label('Created By'),
                 TextColumn::make('assignedTo.name')->searchable()->label('Assigned To'),
                 TextColumn::make('TicketSource.name')->searchable()->label('Ticket Source'),
+                TextColumn::make('priority.name')->searchable()->label('Priority'),
                 TextColumn::make('contact_id')->searchable()->label('Contact ID'),
                 TextColumn::make('contact_ref_no')->searchable()->label('Contact Ref No'),
                 TextColumn::make('slaConfiguration.name')->searchable()->label('SLA'),
