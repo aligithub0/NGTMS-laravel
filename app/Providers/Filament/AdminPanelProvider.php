@@ -53,14 +53,7 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])->sidebarCollapsibleOnDesktop()
-            ->userMenuItems([
-                'notifications' => MenuItem::make()
-                    ->label('Notifications')
-                    ->icon('heroicon-o-bell'),
-                    // ->badge(function() {
-                    //     return auth()->user()->unreadNotifications()->count();
-                    // }),
-                // ... other menu items
-            ]);
+            ->databaseNotifications()
+            ->databaseNotificationsPolling('2s');;
     }
 }

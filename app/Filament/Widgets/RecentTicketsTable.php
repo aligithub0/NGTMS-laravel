@@ -5,6 +5,7 @@ namespace App\Filament\Widgets;
 use App\Models\Tickets;
 use App\Models\TicketStatus;
 use App\Models\TicketSource;
+use Filament\Tables\Enums\FiltersLayout;
 use App\Models\Company;
 use App\Models\Purpose;
 use App\Models\SlaConfiguration;
@@ -155,7 +156,7 @@ class RecentTicketsTable extends BaseWidget
         ->label('Open Tickets Only')
         ->query(fn (Builder $query): Builder => $query->whereHas('ticketStatus', fn ($q) => $q->where('name', 'Open')))
         ->toggle(),
-])
+],)
             ->actions([
                 Tables\Actions\ViewAction::make()
                     ->url(fn (Tickets $record): string => TicketsResource::getUrl('edit', ['record' => $record])),
