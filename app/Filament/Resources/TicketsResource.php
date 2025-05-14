@@ -29,6 +29,8 @@ use App\Models\SlaConfiguration;
 use App\Models\NotificationType;
 use App\Models\Company;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Hidden;
+
 
 
 
@@ -140,19 +142,25 @@ class TicketsResource extends Resource
 
 
           
-
-                Select::make('response_time')
+                Select::make('response_time_id')
                 ->label('Response Time')
-                ->options([
-                    '5' => '5 minutes',
-                    '10' => '10 minutes',
-                    '15' => '15 minutes',
-                    '20' => '20 minutes',
-                    '25' => '25 minutes',
-                    '30' => '30 minutes',
-                ])
+                ->options(SlaConfiguration::all()->pluck('response_time', 'id'))
+                ->searchable()
+                ->preload()
                 ->required()
-                ->searchable(),
+                ->reactive()
+                ->afterStateUpdated(function (callable $set, $state) {
+                    $sla = SlaConfiguration::find($state);
+                    if ($sla) {
+                        $set('response_time', $sla->response_time); 
+                    }
+                }),
+            
+            Hidden::make('response_time')
+                ->dehydrated()
+                ->required(),
+
+
                 Select::make('notification_type_id')
                 ->label('Notification Type')
                 ->options(NotificationType::all()->pluck('name', 'id'))
@@ -177,18 +185,23 @@ class TicketsResource extends Resource
                         })
                 ),
 
-                Select::make('resolution_time')
+             Select::make('resolution_time_id')
                 ->label('Resolution Time')
-                ->options([
-                    '5' => '5 minutes',
-                    '10' => '10 minutes',
-                    '15' => '15 minutes',
-                    '20' => '20 minutes',
-                    '25' => '25 minutes',
-                    '30' => '30 minutes',
-                ])
+                ->options(SlaConfiguration::all()->pluck('resolution_time', 'id'))
+                ->searchable()
+                ->preload()
                 ->required()
-                ->searchable(),
+                ->reactive()
+                ->afterStateUpdated(function (callable $set, $state) {
+                    $sla = SlaConfiguration::find($state);
+                    if ($sla) {
+                        $set('resolution_time', $sla->resolution_time); 
+                    }
+                }),
+            
+            Hidden::make('resolution_time')
+                ->dehydrated()
+                ->required(),
 
 
                

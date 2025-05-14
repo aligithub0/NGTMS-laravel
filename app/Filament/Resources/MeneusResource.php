@@ -17,6 +17,8 @@ use Filament\Forms\Components\Toggle;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Hidden;
+
 
 class MeneusResource extends Resource
 {
@@ -64,6 +66,22 @@ class MeneusResource extends Resource
                 ->preload()
                 ->nullable(),
 
+                TextInput::make('page_path')
+                ->label('Page Path')
+                ->required()
+                ->dehydrateStateUsing(function ($state, Meneus $record) {
+                    // For new records or when path is changed
+                    if (!$record->exists || $state !== $record->page_path) {
+                        return $state; // The mutator will handle encryption
+                    }
+                    
+                    // For existing records when path isn't changed
+                    return $record->getRawPagePath();
+                })
+                ->formatStateUsing(function (Meneus $record) {
+                    return $record->page_path ?? '';
+                }),
+
 
             Toggle::make('status')
                 ->label('Active')
@@ -80,8 +98,8 @@ class MeneusResource extends Resource
 
                 TextColumn::make('parent.name')
                     ->label('Parent Menu')
-                    ->sortable(),
-    
+             ,
+
                 IconColumn::make('status')
                     ->boolean()
                     ->label('Active'),
