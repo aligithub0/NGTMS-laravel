@@ -234,7 +234,6 @@ class TicketsResource extends Resource
                     ->required(),
 
                
-               
 
                 Toggle::make('reminder_flag')
                 ->label('Reminder Flag')
