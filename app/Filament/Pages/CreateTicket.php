@@ -242,27 +242,15 @@ class CreateTicket extends Page
                     ->openable()
                     ->acceptedFileTypes([
                         'image/*',
-                        'application/pdf',
-                        'application/msword',
-                        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                        'application/vnd.ms-excel',
-                        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                     ])
                     ->maxSize(10240) // 10MB
                     ->columnSpanFull(),
                     
                 // Notes
-                RichEditor::make('internal_note')
+                Textarea::make('internal_note')
                     ->label('Internal Note')
+                    ->rows(3)
                     ->required()
-                    ->toolbarButtons([
-                        'blockquote',
-                        'bold',
-                        'bulletList',
-                        'italic',
-                        'link',
-                        'orderedList',
-                    ])
                     ->columnSpanFull(),
                     
                 Textarea::make('external_note')

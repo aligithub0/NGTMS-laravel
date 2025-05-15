@@ -13,6 +13,9 @@ class TicketsOverview extends BaseWidget
         $totalTickets = Tickets::count();
         $openTickets = Tickets::whereHas('ticketStatus', fn($q) => $q->where('name', 'initiated'))->count();
         $assignedTickets = Tickets::where('assigned_to_id', auth()->id())->count();
+        $overdueTickets = Tickets::where('assigned_to_id', auth()->id())
+                            ->where('resolution_time', '<', now())
+                            ->count();
 
         return [
             Stat::make('Total Tickets', $totalTickets)
@@ -45,14 +48,14 @@ class TicketsOverview extends BaseWidget
                     'class' => 'cursor-pointer hover:shadow-lg transition-shadow rounded-xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-white',
                 ]),
 
-                Stat::make('Assigned to Me', $assignedTickets)
-                ->description('Your current workload')
-                ->descriptionIcon('heroicon-o-user-circle')
-                ->color('success')
-                ->chart($this->getChartData('assigned'))
-                ->chartColor('success')
+            Stat::make('Overdue Tickets', $overdueTickets)
+                ->description('Past resolution time')
+                ->descriptionIcon('heroicon-o-clock')
+                ->color('danger')
+                ->chart($this->getChartData('overdue'))
+                ->chartColor('danger')
                 ->extraAttributes([
-                    'class' => 'cursor-pointer hover:shadow-lg transition-shadow rounded-xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-white',
+                    'class' => 'cursor-pointer hover:shadow-lg transition-shadow rounded-xl border border-red-100 bg-gradient-to-br from-red-50 to-white',
                 ]),
         ];
     }
@@ -65,6 +68,8 @@ class TicketsOverview extends BaseWidget
                 return [2, 3, 5, 7, 6, 8, 10, 12, 9, 11, 8, 10];
             case 'assigned':
                 return [1, 2, 1, 3, 2, 4, 3, 5, 4, 3, 2, 4];
+            case 'overdue':
+                return [0, 1, 0, 2, 1, 3, 2, 4, 3, 2, 1, 3];
             default: // total
                 return [10, 12, 15, 18, 20, 22, 25, 28, 26, 30, 28, 32];
         }

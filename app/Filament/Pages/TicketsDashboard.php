@@ -32,7 +32,7 @@ class TicketsDashboard extends Page
     protected static ?string $title = 'Tickets Overview';
     protected static ?string $navigationGroup = 'Reports';
 
-
+    public $showFilterModal = false;
     // public $title;
     public $description;
     public $priority; // Add other fields you need

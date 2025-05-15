@@ -9,8 +9,9 @@ use Filament\Widgets\PieChartWidget;
 class TicketsByStatusChart extends PieChartWidget
 {
     protected static ?string $heading = 'Tickets by Status';
-    protected static ?string $maxHeight = '300px';
+    // protected static ?string $maxHeight = '400px';
 
+    
     protected function getData(): array
     {
         $statusCounts = TicketStatus::query()

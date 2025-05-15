@@ -5,30 +5,32 @@ namespace App\Filament\Widgets;
 use App\Models\Tickets;
 use Filament\Widgets\BarChartWidget;
 
-class TicketsByPriorityChart extends BarChartWidget
+class TicketsBySLAChart extends BarChartWidget
 {
-    protected static ?string $heading = 'Tickets by Priority';
+    protected static ?string $heading = 'Tickets by SLA';
     // protected static ?string $maxHeight = '400px';
 
     
     protected function getData(): array
     {
-        $data = Tickets::with('priority')
-            ->selectRaw('priority_id, count(*) as count')
-            ->groupBy('priority_id')
-            ->orderBy('priority_id')
+        $data = Tickets::with('slaConfiguration')
+            ->selectRaw('SLA, count(*) as count')
+            ->groupBy('SLA')
+            ->orderBy('SLA')
             ->get();
             
         return [
-            'labels' => $data->pluck('priority.name'), // Assuming Priority model has 'name' field
+            'labels' => $data->pluck('slaConfiguration.name'), // Assuming SlaConfiguration has 'name' field
             'datasets' => [
                 [
-                    'label' => 'Tickets by Priority',
+                    'label' => 'Tickets by SLA',
                     'data' => $data->pluck('count'),
                     'backgroundColor' => [
-                        '#10b981', // emerald (low priority)
-                        '#f59e0b', // amber (medium priority)
-                        '#ef4444', // red (high priority)
+                        '#3b82f6', // blue
+                        '#6366f1', // indigo
+                        '#8b5cf6', // violet
+                        '#a855f7', // purple
+                        '#d946ef', // fuchsia
                     ],
                     'borderColor' => '#ffffff',
                     'borderWidth' => 1,
@@ -39,7 +41,6 @@ class TicketsByPriorityChart extends BarChartWidget
         ];
     }
 
-    // Keep the same getOptions() method
     protected function getOptions(): array
     {
         return [
@@ -49,6 +50,11 @@ class TicketsByPriorityChart extends BarChartWidget
                 ],
                 'tooltip' => [
                     'enabled' => true,
+                    'callbacks' => [
+                        'label' => 'function(context) {
+                            return context.parsed.y + " tickets";
+                        }',
+                    ],
                 ],
             ],
             'scales' => [
@@ -56,6 +62,9 @@ class TicketsByPriorityChart extends BarChartWidget
                     'beginAtZero' => true,
                     'grid' => [
                         'drawBorder' => false,
+                    ],
+                    'ticks' => [
+                        'precision' => 0, // Ensure whole numbers on Y axis
                     ],
                 ],
                 'x' => [
