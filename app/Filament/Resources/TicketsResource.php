@@ -31,7 +31,9 @@ use App\Models\Company;
 use App\Models\Priority;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Hidden;
-
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\TagsInput;
 
 
 
@@ -58,13 +60,31 @@ class TicketsResource extends Resource
     {
         return $form
             ->schema([
+
+                Select::make('priority_id')
+                ->label('Priority')
+                ->options(Priority::all()->pluck('name', 'id'))
+                ->searchable()
+                ->preload()
+                ->nullable()
+                ->required(),
+
                 TextInput::make('title')->required()->maxLength(255),
 
                 Textarea::make('description')->required()->rows(2),
 
-                Textarea::make('internal_note')->required()->rows(2)->label('Internal Note'),
                 
-                Textarea::make('external_note')->required()->rows(2)->label('External Note'),
+                TextInput::make('requested_email')
+                ->required()
+                ->email()
+                ->rules(['email', 'required', 'max:255'])->label('Requested Email'),    
+
+
+                RichEditor::make('message')
+                ->required()
+                ->columnSpanFull(),
+
+           
 
                 Select::make('ticket_status_id')
                 ->label('Ticket Status')
@@ -91,13 +111,7 @@ class TicketsResource extends Resource
                 ->nullable()
                 ->required(),
 
-                Select::make('priority_id')
-                ->label('Priority')
-                ->options(Priority::all()->pluck('name', 'id'))
-                ->searchable()
-                ->preload()
-                ->nullable()
-                ->required(),
+             
 
                 Select::make('assigned_to_id')
                 ->label('Assigned To')
@@ -195,6 +209,9 @@ class TicketsResource extends Resource
                         })
                 ),
 
+                TagsInput::make('cc_recipients')->label('CC Recipents')
+                ->required(),
+
              Select::make('resolution_time_id')
                 ->label('Resolution Time')
                 ->options(SlaConfiguration::all()->pluck('resolution_time', 'id'))
@@ -214,6 +231,9 @@ class TicketsResource extends Resource
                 ->required(),
 
 
+                TagsInput::make('to_recipients')->label('To Recipents')
+                    ->required(),
+
                
                
 
@@ -226,7 +246,9 @@ class TicketsResource extends Resource
                 ->nullable()
                 ->required(),
 
-
+                Textarea::make('internal_note')->required()->rows(2)->label('Internal Note'),
+                
+                Textarea::make('external_note')->required()->rows(2)->label('External Note'),   
             ]);
     }
 
@@ -234,16 +256,19 @@ class TicketsResource extends Resource
     {
         return $table
             ->columns([
+                TextColumn::make('priority.name')->searchable()->label('Priority'),
                 TextColumn::make('title')->searchable()->label('Title'),
                 TextColumn::make('description')->searchable()->label('Description')->limit(30),
+                TextColumn::make('requested_email')->searchable()->label('Requested Email'),
                 TextColumn::make('TicketStatus.name')->searchable()->label('Ticket Status'),
                 TextColumn::make('createdBy.name')->searchable()->label('Created By'),
                 TextColumn::make('assignedTo.name')->searchable()->label('Assigned To'),
                 TextColumn::make('TicketSource.name')->searchable()->label('Ticket Source'),
-                TextColumn::make('priority.name')->searchable()->label('Priority'),
                 TextColumn::make('contact_id')->searchable()->label('Contact ID'),
                 TextColumn::make('contact_ref_no')->searchable()->label('Contact Ref No'),
                 TextColumn::make('slaConfiguration.name')->searchable()->label('SLA'),
+                TextColumn::make('to_recipients')->searchable()->label('To Recipents'),
+                TextColumn::make('cc_recipients')->searchable()->label('CC Recipents'),
                 TextColumn::make('response_time')->searchable()->label('Response Time'),
                 TextColumn::make('resolution_time')->searchable()->label('Resolution Time'),
                 

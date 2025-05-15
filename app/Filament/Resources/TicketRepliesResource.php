@@ -34,7 +34,7 @@ class TicketRepliesResource extends Resource
 {
     protected static ?string $model = TicketReplies::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-ticket';
 
     public static function getNavigationSort(): int
     {
@@ -56,7 +56,7 @@ class TicketRepliesResource extends Resource
                 ->label('Ticket')
                 ->options(Tickets::all()->pluck('title', 'id'))
                 ->searchable()
-                ->preload()
+                ->preload() 
                 ->nullable()
                 ->required(),
 
@@ -71,6 +71,21 @@ class TicketRepliesResource extends Resource
                 TextInput::make('subject')
                     ->required()
                     ->maxLength(255),
+
+                    Toggle::make('is_desc_send_to_contact')
+                    ->label('Is Desc Send to Contact')
+                    ->default(false)
+                    ->inline(false),    
+
+                    Toggle::make('is_reply_from_contact')
+                    ->label('Is Reply From Contact')
+                    ->default(false)
+                    ->inline(false), 
+
+                    Toggle::make('is_contact_notify')
+                    ->label('Is Contact Notify')
+                    ->default(true)
+                    ->inline(false), 
 
                     RichEditor::make('message')
                     ->required()
@@ -100,10 +115,7 @@ class TicketRepliesResource extends Resource
 
                     Textarea::make('external_notes'),
 
-                    Toggle::make('is_desc_send_to_contact')
-                    ->label('Is Desc Send to Contact')
-                    ->default(false)
-                    ->inline(false),    
+            
 
                     Select::make('status_after_reply')
                     ->label('Status After Reply')
@@ -114,6 +126,8 @@ class TicketRepliesResource extends Resource
                     ->required(),
 
                     TextInput::make('contact_ref_no')->label('Contact Ref No'),
+                    TagsInput::make('cc_recipients')->label('CC Recipents')
+                    ->required(),
 
                     TextInput::make('contact_email')
                     ->required()
@@ -123,18 +137,9 @@ class TicketRepliesResource extends Resource
                     TagsInput::make('to_recipients')->label('To Recipents')
                     ->required(),
 
-                    TagsInput::make('cc_recipients')->label('CC Recipents')
-                    ->required(),
+                 
 
-                    Toggle::make('is_reply_from_contact')
-                    ->label('Is Reply From Contact')
-                    ->default(false)
-                    ->inline(false), 
-
-                    Toggle::make('is_contact_notify')
-                    ->label('Is Contact Notify')
-                    ->default(true)
-                    ->inline(false), 
+                 
             ]);
     }
 

@@ -25,7 +25,7 @@ class TaskStatusResource extends Resource
 
     protected static ?string $model = TaskStatus::class;
 
-    protected static ?string $navigationIcon = 'heroicon-s-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-ticket';
 
     public static function getNavigationSort(): int
     {
