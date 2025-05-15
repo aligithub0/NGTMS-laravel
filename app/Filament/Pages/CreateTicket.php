@@ -31,7 +31,7 @@ use Illuminate\Support\Facades\Storage;
 
 class CreateTicket extends Page
 {
-    protected static ?string $navigationIcon = 'heroicon-o-ticket';
+    protected static ?string $navigationIcon = 'heroicon-s-ticket';
     protected static ?string $navigationLabel = 'Create Ticket';
     protected static ?string $title = 'Create New Ticket';
     protected static ?string $navigationGroup = 'Reports';

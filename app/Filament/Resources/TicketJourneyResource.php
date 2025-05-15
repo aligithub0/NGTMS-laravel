@@ -26,7 +26,7 @@ class TicketJourneyResource extends Resource
 {
     protected static ?string $model = TicketJourney::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-ticket';  public static function getNavigationSort(): int
+    protected static ?string $navigationIcon = 'heroicon-s-ticket';  public static function getNavigationSort(): int
     {
         $currentFile = basename((new \ReflectionClass(static::class))->getFileName());
         return NavigationOrder::getSortOrderByFilename($currentFile) ?? parent::getNavigationSort();

@@ -26,7 +26,7 @@ class CommentsResource extends Resource
 {
     protected static ?string $model = Comments::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-ticket';
+    protected static ?string $navigationIcon = 'heroicon-s-ticket';
 
     public static function getNavigationSort(): int
     {

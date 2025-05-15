@@ -22,6 +22,8 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TimePicker;
+use Illuminate\Validation\Rule;
+
 
 class TicketAttachmentResource extends Resource
 {
