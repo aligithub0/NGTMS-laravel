@@ -28,12 +28,14 @@ class TicketReplies extends Model
         'cc_recipients',
         'is_reply_from_contact',
         'is_contact_notify',
-        'activity_log'
+        'activity_log',
+        'attachment_path'
     ];
 
     protected $casts = [
         'to_recipients' => 'array',
         'cc_recipients' => 'array',
+        'attachment_path'
     ];
 
     public function ticket()

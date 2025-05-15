@@ -34,7 +34,7 @@ class TicketRepliesResource extends Resource
 {
     protected static ?string $model = TicketReplies::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-ticket';
+    protected static ?string $navigationIcon = 'heroicon-s-ticket';
 
     public static function getNavigationSort(): int
     {
@@ -107,15 +107,19 @@ class TicketRepliesResource extends Resource
                     ->nullable()
                     ->required(),
 
-                    FileUpload::make('attachment_path')
-                    ->directory('ticket-replies/attachments')
-                    ->downloadable(),
+                        FileUpload::make('attachment_path')
+                        ->label('Attachments')
+                        ->directory('ticket-replies/attachments')
+                        ->multiple()
+                        ->downloadable()
+                        ->image()
+                        ->acceptedFileTypes(['image/png', 'image/jpeg'])
+                        ->enableOpen() 
+                        ->enableDownload() 
+                        ->enableReordering(), 
+                
+                
 
-                    Textarea::make('internal_notes'),
-
-                    Textarea::make('external_notes'),
-
-            
 
                     Select::make('status_after_reply')
                     ->label('Status After Reply')
@@ -137,6 +141,9 @@ class TicketRepliesResource extends Resource
                     TagsInput::make('to_recipients')->label('To Recipents')
                     ->required(),
 
+                    
+                    Textarea::make('internal_notes'),
+                    Textarea::make('external_notes'),
                  
 
                  
