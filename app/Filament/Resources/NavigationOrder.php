@@ -24,20 +24,23 @@ class NavigationOrder
         'ProjectResource.php'           => 13,
         'PurposeResource.php'           => 14,
         'AgentPurposesResource.php'     => 15,
-        'TaskStatusResource.php'        => 16,
-        'ShiftTypesResource.php'        => 17,
-        'TimesheetStatusResource.php'   => 18,
-        'TimesheetActivitiesResource.php'=>19,
-        'TimesheetResource.php'         => 20,
-        'TicketSourceResource.php'      => 21,
-        'TicketStatusResource.php'      => 22,
-        'SlaConfigurationResource.php'  => 23,
-        'NotificationTypeResource.php'  => 24,
-        'TicketAttachmentResource.php'  => 25,
-        'PriorityResource.php'          => 26,
-        'TicketsResource.php'           => 27,
-        'TicketRepliesResource.php'     => 28,
-        'TasksResource.php'             => 29,
+        'ShiftTypesResource.php'        => 16,
+        'TimesheetStatusResource.php'   => 17,
+        'TimesheetActivitiesResource.php'=>18,
+        'TimesheetResource.php'         => 29,
+        'TicketSourceResource.php'      => 20,
+        'TicketStatusResource.php'      => 21,
+        'SlaConfigurationResource.php'  => 22,
+        'NotificationTypeResource.php'  => 23,
+        'TicketAttachmentResource.php'  => 24,
+        'PriorityResource.php'          => 25,
+        'TicketsResource.php'           => 26,
+        'TicketRepliesResource.php'     => 27,
+        'TicketJourneyResource.php'     => 28,
+        'CommentsResource.php'          => 29,
+        'TasksResource.php'             => 30,
+        'TaskStatusResource.php'        => 31,
+        'TaskAttachmentsResource.php'   => 32,
 
     ];
 
@@ -48,7 +51,6 @@ class NavigationOrder
         'CompanyResource.php'           => 'Company Management',
         'PurposeResource.php'           => 'Company Management',
         'AgentPurposesResource.php'     => 'Company Management',
-        'TaskStatusResource.php'        => 'Company Management',
 
         'UserResource.php'              => 'User Management',
         'UserTypeResource.php'          => 'User Management',
@@ -71,12 +73,19 @@ class NavigationOrder
         'TicketsResource.php'           => 'Tickets',
         'TicketRepliesResource.php'     => 'Tickets',
         'PriorityResource.php'          => 'Tickets',
-        'TasksResource.php'             => 'Tickets',
         'TicketAttachmentResource.php'  => 'Tickets',
         'TicketStatusResource.php'      => 'Tickets',
         'TicketSourceResource.php'      => 'Tickets',
         'SlaConfigurationResource.php'  => 'Tickets',
         'NotificationTypeResource.php'  => 'Tickets',
+        'CommentsResource.php'          => 'Tickets',
+        'TicketJourneyResource.php'     => 'Tickets',
+
+
+        'TasksResource.php'             => 'Tasks',
+        'TaskStatusResource.php'        => 'Tasks',
+        'TaskAttachmentsResource.php'   => 'Tasks',
+
 
     ];
 

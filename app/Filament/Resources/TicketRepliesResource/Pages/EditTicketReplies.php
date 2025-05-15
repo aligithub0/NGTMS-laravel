@@ -16,4 +16,8 @@ class EditTicketReplies extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
+    public function getTitle(): string
+    {
+        return 'Edit Ticket Reply';
+    }
 }

@@ -34,11 +34,17 @@ class Tickets extends Model
         'internal_note',
         'external_note',
         'priority_id',
+        'message',
+        'requested_email',
+        'to_recipients',
+        'cc_recipients',
     ];
  
     protected $casts = [
         'purpose_type_id' => 'array',
         'notification_type_id' => 'array',
+        'to_recipients' => 'array',
+        'cc_recipients' => 'array',
     ];
  
     public function ticketStatus()

@@ -2,9 +2,11 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\PriorityResource\Pages;
-use App\Filament\Resources\PriorityResource\RelationManagers;
-use App\Models\Priority;
+use App\Filament\Resources\TaskAttachmentsResource\Pages;
+use App\Filament\Resources\TaskAttachmentsResource\RelationManagers;
+use App\Models\TaskAttachments;
+use App\Models\Tasks;
+use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -13,15 +15,19 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Toggle;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\TimePicker;
 
-class PriorityResource extends Resource
+class TaskAttachmentsResource extends Resource
 {
-    protected static ?string $model = Priority::class;
+    protected static ?string $model = TaskAttachments::class;
+
+    protected static ?string $navigationIcon = 'heroicon-o-ticket';
 
     public static function getNavigationSort(): int
     {
@@ -35,25 +41,27 @@ class PriorityResource extends Resource
         return NavigationOrder::getNavigationGroupByFilename($currentFile);
     }
 
-    protected static ?string $navigationIcon = 'heroicon-o-ticket';
-
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                TextInput::make('name')
-                ->required()
-                ->rules([
-                    'required',
-                    'regex:/^[A-Za-z\s]+$/',
-                    'max:255',
-                ])
-                ->helperText('Only letters and spaces are allowed.'),
+                Select::make('task_id')
+                ->label('Tasks')
+                ->options(Tasks::all()->pluck('title', 'id'))
+                ->searchable()
+                ->preload()
+                ->required(),
+                
+            TextInput::make('file_url')
+            ->label('File URL')
+            ->required(),
 
-                Toggle::make('status')
-                ->label('Active')
-                ->default(true)
-                ->inline(false),
+              Select::make('uploaded_by')
+                ->label('Uploaded By')
+                ->options(User::all()->pluck('name', 'id'))
+                ->searchable()
+                ->preload()
+                ->required(),
             ]);
     }
 
@@ -61,8 +69,9 @@ class PriorityResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('name')->sortable()->searchable(),
-                IconColumn::make('status')->boolean(),
+                TextColumn::make('tasks.title')->searchable()->label('Tickets'),
+                TextColumn::make('uploadedBy.name')->searchable()->label('Uploaded By'),
+                TextColumn::make('created_at')->searchable()->label('Uploaded at'),
             ])
             ->filters([
                 //
@@ -87,9 +96,9 @@ class PriorityResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListPriorities::route('/'),
-            'create' => Pages\CreatePriority::route('/create'),
-            'edit' => Pages\EditPriority::route('/{record}/edit'),
+            'index' => Pages\ListTaskAttachments::route('/'),
+            'create' => Pages\CreateTaskAttachments::route('/create'),
+            'edit' => Pages\EditTaskAttachments::route('/{record}/edit'),
         ];
     }
 }
