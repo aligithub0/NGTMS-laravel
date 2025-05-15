@@ -32,6 +32,7 @@ class TicketsByStatusChart extends PieChartWidget
                         '#f59e0b', // amber
                         '#10b981', // emerald
                         '#8b5cf6', // violet
+                        '#0c7460'
                     ],
                     'borderColor' => '#ffffff',
                     'borderWidth' => 2,
