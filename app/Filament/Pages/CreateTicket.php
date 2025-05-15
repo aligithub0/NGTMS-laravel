@@ -323,7 +323,6 @@ class CreateTicket extends Page
                     Action::make('create')
                         ->label('Create Ticket')
                         ->submit('create')
-                        ->color(Color::Green)
                         ->icon('heroicon-o-check')
                         ->size('lg')
                 ])
