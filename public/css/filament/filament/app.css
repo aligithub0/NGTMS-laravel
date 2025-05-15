@@ -26,13 +26,13 @@
 .fi-sidebar-nav::-webkit-scrollbar {
     display: none !important; /* Chrome, Safari, Opera */
 }
-/* .fi-sidebar{
+.fi-sidebar{
     background-color: white !important;
-} */
+}
 
-/* .fi-main{
+.fi-main{
    background-color: white !important; 
-} */
+}
 
 .fi-header-heading {
     font-size: 1.5rem !important; 
@@ -40,6 +40,18 @@
 }
 
 .fi-fo-field-wrp-label{
-   font-size: 1.5rem !important; 
+   font-size: 0.5rem !important; 
     font-weight: 50 !important;  
+}
+
+/* .filament-forms-section-component {
+    margin-bottom: 0.5rem !important;
+} */
+
+.fi-section-header-heading{
+
+    padding: 0.5rem !important;
+    /* color :#2563eb !important; */
+    font-size: 16px !important;
+    /* font-family: 'Archivo' !important; */
 }
