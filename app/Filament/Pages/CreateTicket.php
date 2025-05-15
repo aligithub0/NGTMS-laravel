@@ -12,6 +12,10 @@ use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\TagsInput;
 use App\Models\User;
 use App\Models\Tickets;
 use App\Models\TicketAttachment;
@@ -24,9 +28,6 @@ use App\Models\Company;
 use App\Models\Priority;
 use Filament\Notifications\Notification;
 use Filament\Support\Colors\Color;
-use Filament\Forms\Components\RichEditor;
-use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Grid;
 use Illuminate\Support\Facades\Storage;
 
 class CreateTicket extends Page
@@ -53,42 +54,31 @@ class CreateTicket extends Page
     {
         return $form
             ->schema([
-                // Basic Information
+                // Priority and Title
                 Grid::make(2)
                     ->schema([
+                        Select::make('priority_id')
+                            ->label('Priority')
+                            ->options(Priority::all()->pluck('name', 'id'))
+                            ->searchable()
+                            ->preload()
+                            ->required(),
+                            
                         TextInput::make('title')
                             ->label('Ticket Title')
                             ->required()
-                            ->maxLength(255)
-                            ->columnSpan(1),
-                            
-                        Select::make('purpose_type_id')
-                            ->label('Purpose Type')
-                            ->options(Purpose::all()->pluck('name', 'id'))
-                            ->multiple()
-                            ->searchable()
-                            ->preload()
-                            ->required()
-                            ->afterStateHydrated(function ($component, $state) {
-                                if (is_string($state)) {
-                                    $component->state(json_decode($state, true));
-                                }
-                            })
-                            ->dehydrateStateUsing(fn ($state) => json_encode($state))
-                            ->suffixAction(
-                                Action::make('selectAllPurpose')
-                                    ->label('Select All')
-                                    ->icon('heroicon-m-check')
-                                    ->action(function ($component) {
-                                        $component->state(
-                                            Purpose::all()->pluck('id')->toArray()
-                                        );
-                                    })
-                            ),
+                            ->maxLength(255),
                     ]),
                     
-                RichEditor::make('description')
+                // Description and Message
+                Textarea::make('description')
                     ->label('Description')
+                    ->required()
+                    ->rows(2)
+                    ->columnSpanFull(),
+                    
+                RichEditor::make('message')
+                    ->label('Message')
                     ->required()
                     ->toolbarButtons([
                         'blockquote',
@@ -107,26 +97,34 @@ class CreateTicket extends Page
                     ])
                     ->columnSpanFull(),
                     
-                // Status and Assignment
+                // Requested Email
+                TextInput::make('requested_email')
+                    ->label('Requested Email')
+                    ->required()
+                    ->email()
+                    ->rules(['email', 'required', 'max:255'])
+                    ->columnSpanFull(),
+                    
+                // Status, Source, Created By, Assigned To
                 Grid::make(4)
                     ->schema([
                         Select::make('ticket_status_id')
-                            ->label('Status')
+                            ->label('Ticket Status')
                             ->options(TicketStatus::all()->pluck('name', 'id'))
                             ->searchable()
                             ->preload()
                             ->required(),
                             
-                        Select::make('priority_id')
-                            ->label('Priority')
-                            ->options(Priority::all()->pluck('name', 'id'))
+                        Select::make('ticket_source_id')
+                            ->label('Ticket Source')
+                            ->options(TicketSource::all()->pluck('name', 'id'))
                             ->searchable()
                             ->preload()
                             ->required(),
                             
-                        Select::make('ticket_source_id')
-                            ->label('Source')
-                            ->options(TicketSource::all()->pluck('name', 'id'))
+                        Select::make('created_by_id')
+                            ->label('Created By')
+                            ->options(User::all()->pluck('name', 'id'))
                             ->searchable()
                             ->preload()
                             ->required(),
@@ -139,7 +137,33 @@ class CreateTicket extends Page
                             ->required(),
                     ]),
                     
-                // Company and Contact
+                // Purpose Type
+                Select::make('purpose_type_id')
+                    ->label('Purpose Type')
+                    ->options(Purpose::all()->pluck('name', 'id'))
+                    ->multiple()
+                    ->searchable()
+                    ->preload()
+                    ->required()
+                    ->afterStateHydrated(function ($component, $state) {
+                        if (is_string($state)) {
+                            $component->state(json_decode($state, true));
+                        }
+                    })
+                    ->dehydrateStateUsing(fn ($state) => json_encode($state))
+                    ->suffixAction(
+                        Action::make('selectAllPurpose')
+                            ->label('Select All')
+                            ->icon('heroicon-m-check')
+                            ->action(function ($component) {
+                                $component->state(
+                                    Purpose::all()->pluck('id')->toArray()
+                                );
+                            })
+                    )
+                    ->columnSpanFull(),
+                    
+                // Company, SLA, Contact Info
                 Grid::make(4)
                     ->schema([
                         Select::make('company_id')
@@ -166,7 +190,7 @@ class CreateTicket extends Page
                             ->nullable(),
                     ]),
                     
-                // SLA Times
+                // Response and Resolution Times
                 Grid::make(2)
                     ->schema([
                         Select::make('response_time_id')
@@ -206,7 +230,7 @@ class CreateTicket extends Page
                             ->required(),
                     ]),
                     
-                // Notifications
+                // Notification Type
                 Select::make('notification_type_id')
                     ->label('Notification Type')
                     ->options(NotificationType::all()->pluck('name', 'id'))
@@ -232,6 +256,18 @@ class CreateTicket extends Page
                     )
                     ->columnSpanFull(),
                     
+                // Recipients
+                Grid::make(2)
+                    ->schema([
+                        TagsInput::make('to_recipients')
+                            ->label('To Recipients')
+                            ->required(),
+                            
+                        TagsInput::make('cc_recipients')
+                            ->label('CC Recipients')
+                            ->required(),
+                    ]),
+                    
                 // Attachments
                 FileUpload::make('attachments')
                     ->label('Attachments')
@@ -242,6 +278,11 @@ class CreateTicket extends Page
                     ->openable()
                     ->acceptedFileTypes([
                         'image/*',
+                        'application/pdf',
+                        'application/msword',
+                        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                        'application/vnd.ms-excel',
+                        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                     ])
                     ->maxSize(10240) // 10MB
                     ->columnSpanFull(),
@@ -282,10 +323,8 @@ class CreateTicket extends Page
                     Action::make('create')
                         ->label('Create Ticket')
                         ->submit('create')
-                        ->color(Color::Green)
                         ->icon('heroicon-o-check')
                         ->size('lg')
-                        // ->extraAttributes(['class' => 'w-full'])
                 ])
             ])
             ->columns(2)
