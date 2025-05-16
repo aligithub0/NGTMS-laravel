@@ -8,9 +8,7 @@ use Filament\Widgets\BarChartWidget;
 class TicketsByPriorityChart extends BarChartWidget
 {
     protected static ?string $heading = 'Tickets by Priority';
-    // protected static ?string $maxHeight = '400px';
 
-    
     protected function getData(): array
     {
         $data = Tickets::with('priority')
@@ -20,15 +18,15 @@ class TicketsByPriorityChart extends BarChartWidget
             ->get();
             
         return [
-            'labels' => $data->pluck('priority.name'), // Assuming Priority model has 'name' field
+            'labels' => $data->pluck('priority.name'),
             'datasets' => [
                 [
                     'label' => 'Tickets by Priority',
                     'data' => $data->pluck('count'),
                     'backgroundColor' => [
-                        '#10b981', // emerald (low priority)
-                        '#f59e0b', // amber (medium priority)
-                        '#ef4444', // red (high priority)
+                        '#10b981', // emerald (low)
+                        '#f59e0b', // amber (medium)
+                        '#ef4444', // red (high)
                     ],
                     'borderColor' => '#ffffff',
                     'borderWidth' => 1,
@@ -39,7 +37,6 @@ class TicketsByPriorityChart extends BarChartWidget
         ];
     }
 
-    // Keep the same getOptions() method
     protected function getOptions(): array
     {
         return [
@@ -50,12 +47,25 @@ class TicketsByPriorityChart extends BarChartWidget
                 'tooltip' => [
                     'enabled' => true,
                 ],
+                'datalabels' => [ // 👈 Makes numbers appear on bars
+                    'display' => true,
+                    'color' => '#000',
+                    'anchor' => 'center', // Positions label in middle of bar
+                    'align' => 'center',
+                    'font' => [
+                        'weight' => 'bold',
+                        'size' => 14,
+                    ],
+                    'formatter' => (function($value) {
+                        return $value; // Shows exact value
+                    }),
+                ],
             ],
             'scales' => [
                 'y' => [
                     'beginAtZero' => true,
-                    'grid' => [
-                        'drawBorder' => false,
+                    'ticks' => [
+                        'precision' => 0, // Whole numbers only
                     ],
                 ],
                 'x' => [
@@ -64,7 +74,14 @@ class TicketsByPriorityChart extends BarChartWidget
                     ],
                 ],
             ],
-            'maintainAspectRatio' => false,
+        ];
+    }
+
+    // Required to load the datalabels plugin
+    protected function getPlugins(): array
+    {
+        return [
+            'datalabels' => true, // 👈 Enables the plugin
         ];
     }
 }

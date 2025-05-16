@@ -65,6 +65,11 @@ public function department()
     return $this->belongsTo(Department::class);
 }
 
+public function hasRole($roleName): bool
+{
+    return $this->role->name === $roleName;
+}
+
 public function manager()
 {
     return $this->belongsTo(User::class, 'manager_id');

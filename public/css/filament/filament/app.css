@@ -26,13 +26,13 @@
 .fi-sidebar-nav::-webkit-scrollbar {
     display: none !important; /* Chrome, Safari, Opera */
 }
-.fi-sidebar{
+/* .fi-sidebar{
     background-color: white !important;
 }
 
 .fi-main{
    background-color: white !important; 
-}
+} */
 
 .fi-header-heading {
     font-size: 1.5rem !important; 
