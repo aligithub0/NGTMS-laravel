@@ -9,5 +9,5 @@ class Priority extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'status'];
+    protected $fillable = ['name', 'status', 'is_default'];
 }

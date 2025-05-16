@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\TicketSourceResource\Pages;
-use App\Filament\Resources\TicketSourceResource\RelationManagers;
-use App\Models\TicketSource;
+use App\Filament\Resources\ContactTypeResource\Pages;
+use App\Filament\Resources\ContactTypeResource\RelationManagers;
+use App\Models\ContactType;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -16,24 +16,13 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\IconColumn;
+use Filament\Forms\Components\Select;
 
-class TicketSourceResource extends Resource
+class ContactTypeResource extends Resource
 {
-    protected static ?string $model = TicketSource::class;
+    protected static ?string $model = ContactType::class;
 
-    public static function getNavigationSort(): int
-    {
-        $currentFile = basename((new \ReflectionClass(static::class))->getFileName());
-        return NavigationOrder::getSortOrderByFilename($currentFile) ?? parent::getNavigationSort();
-    }
-
-    public static function getNavigationGroup(): ?string
-    {
-        $currentFile = basename((new \ReflectionClass(static::class))->getFileName());
-        return NavigationOrder::getNavigationGroupByFilename($currentFile);
-    }
-
-    protected static ?string $navigationIcon = 'heroicon-s-ticket';
+    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function form(Form $form): Form
     {
@@ -50,11 +39,6 @@ class TicketSourceResource extends Resource
 
                 Toggle::make('status')
                 ->label('Active')
-                ->default(true)
-                ->inline(false),      
-                    
-                Toggle::make('is_default')
-                ->label('Is Default ?')
                 ->default(true)
                 ->inline(false),
             ]);
@@ -90,9 +74,9 @@ class TicketSourceResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListTicketSources::route('/'),
-            'create' => Pages\CreateTicketSource::route('/create'),
-            'edit' => Pages\EditTicketSource::route('/{record}/edit'),
+            'index' => Pages\ListContactTypes::route('/'),
+            'create' => Pages\CreateContactType::route('/create'),
+            'edit' => Pages\EditContactType::route('/{record}/edit'),
         ];
     }
 }

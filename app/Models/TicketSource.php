@@ -12,5 +12,6 @@ class TicketSource extends Model
     protected $fillable = [
         'name',
         'status',
+        'is_default'
     ];
 }

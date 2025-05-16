@@ -14,6 +14,7 @@ class TicketStatus extends Model
     protected $fillable = [
         'name',
         'status',
+        'is_default'
     ];
     
      public function tickets(): HasMany

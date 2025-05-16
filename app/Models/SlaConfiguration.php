@@ -9,7 +9,7 @@ class SlaConfiguration extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'department_id', 'purpose_id', 'response_time', 'resolution_time', 'escalated_to_user_id'];
+    protected $fillable = ['name', 'department_id', 'purpose_id', 'response_time', 'resolution_time', 'escalated_to_user_id', 'is_default'];
 
 
     public function department()

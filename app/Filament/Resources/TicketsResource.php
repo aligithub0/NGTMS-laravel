@@ -110,7 +110,6 @@ class TicketsResource extends Resource
                 ->nullable()
                 ->required(),
 
-             
 
                 Select::make('assigned_to_id')
                 ->label('Assigned To')
@@ -240,6 +239,11 @@ class TicketsResource extends Resource
                 ->default(false)
                 ->inline(false),
 
+                Toggle::make('is_default')
+                ->label('Is Default ?')
+                ->default(true)
+                ->inline(false),
+
                 DateTimePicker::make('reminder_datetime')
                 ->nullable()
                 ->required(),
@@ -254,6 +258,7 @@ class TicketsResource extends Resource
     {
         return $table
             ->columns([
+                TextColumn::make('ticket_id')->label('Ticket ID')->searchable(),
                 TextColumn::make('priority.name')->searchable()->label('Priority'),
                 TextColumn::make('title')->searchable()->label('Title'),
                 TextColumn::make('requested_email')->searchable()->label('Requested Email'),
