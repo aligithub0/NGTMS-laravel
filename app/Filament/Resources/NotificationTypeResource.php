@@ -56,7 +56,7 @@ class NotificationTypeResource extends Resource
             
                 Toggle::make('is_default')
                 ->label('Is Default ?')
-                ->default(true)
+                ->default(false)
                 ->inline(false),
             ]);
     }

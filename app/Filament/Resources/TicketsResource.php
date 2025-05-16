@@ -239,11 +239,6 @@ class TicketsResource extends Resource
                 ->default(false)
                 ->inline(false),
 
-                Toggle::make('is_default')
-                ->label('Is Default ?')
-                ->default(true)
-                ->inline(false),
-
                 DateTimePicker::make('reminder_datetime')
                 ->nullable()
                 ->required(),
