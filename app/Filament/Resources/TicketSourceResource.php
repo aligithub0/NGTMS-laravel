@@ -51,7 +51,13 @@ class TicketSourceResource extends Resource
                 Toggle::make('status')
                 ->label('Active')
                 ->default(true)
-                ->inline(false),            ]);
+                ->inline(false),      
+                    
+                Toggle::make('is_default')
+                ->label('Is Default ?')
+                ->default(false)
+                ->inline(false),
+            ]);
     }
 
     public static function table(Table $table): Table

@@ -11,7 +11,6 @@ class Tickets extends Model
  
     protected $fillable = [
         'title',
-        'description',
         'ticket_status_id',
         'created_by_id',
         'assigned_to_id',
@@ -38,6 +37,8 @@ class Tickets extends Model
         'requested_email',
         'to_recipients',
         'cc_recipients',
+        'ticket_id',
+        'is_default'
     ];
  
     protected $casts = [
@@ -46,6 +47,25 @@ class Tickets extends Model
         'to_recipients' => 'array',
         'cc_recipients' => 'array',
     ];
+
+        protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($ticket) {
+            $ticket->ticket_id = self::generateTicketId();
+        });
+    }
+
+    public static function generateTicketId()
+    {
+        do {
+            $id = 'TCKT-' . strtoupper(uniqid());
+        } while (self::where('ticket_id', $id)->exists());
+
+        return $id;
+    }
+
  
     public function ticketStatus()
     {

@@ -9,7 +9,7 @@ class Purpose extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'parent_id', 'status'];
+    protected $fillable = ['name', 'parent_id', 'status', 'is_default'];
 
     public function parent()
     {
@@ -19,5 +19,11 @@ class Purpose extends Model
     public function children()
     {
         return $this->hasMany(Purpose::class, 'parent_id');
+    }
+
+    // In each model
+    public static function getDefault()
+    {
+        return self::where('is_default', true)->first();
     }
 }

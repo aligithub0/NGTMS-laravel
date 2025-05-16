@@ -54,6 +54,11 @@ class PriorityResource extends Resource
                 ->label('Active')
                 ->default(true)
                 ->inline(false),
+
+                Toggle::make('is_default')
+                ->label('Is Default ?')
+                ->default(false)
+                ->inline(false),
             ]);
     }
 

@@ -71,7 +71,6 @@ class TicketsResource extends Resource
 
                 TextInput::make('title')->required()->maxLength(255),
 
-                Textarea::make('description')->required()->rows(2),
 
                 
                 TextInput::make('requested_email')
@@ -111,7 +110,6 @@ class TicketsResource extends Resource
                 ->nullable()
                 ->required(),
 
-             
 
                 Select::make('assigned_to_id')
                 ->label('Assigned To')
@@ -235,7 +233,6 @@ class TicketsResource extends Resource
                     ->required(),
 
                
-               
 
                 Toggle::make('reminder_flag')
                 ->label('Reminder Flag')
@@ -256,9 +253,9 @@ class TicketsResource extends Resource
     {
         return $table
             ->columns([
+                TextColumn::make('ticket_id')->label('Ticket ID')->searchable(),
                 TextColumn::make('priority.name')->searchable()->label('Priority'),
                 TextColumn::make('title')->searchable()->label('Title'),
-                TextColumn::make('description')->searchable()->label('Description')->limit(30),
                 TextColumn::make('requested_email')->searchable()->label('Requested Email'),
                 TextColumn::make('TicketStatus.name')->searchable()->label('Ticket Status'),
                 TextColumn::make('createdBy.name')->searchable()->label('Created By'),

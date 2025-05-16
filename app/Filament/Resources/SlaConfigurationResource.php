@@ -143,8 +143,6 @@ class SlaConfigurationResource extends Resource
                         return null;
                     }
                 }),
-            
-         
 
                 Select::make('escalated_to_user_id')
                 ->label('Escalated to')
@@ -153,6 +151,11 @@ class SlaConfigurationResource extends Resource
                 ->preload()
                 ->nullable()
                 ->required(),
+
+                Toggle::make('is_default')
+                ->label('Is Default ?')
+                ->default(false)
+                ->inline(false),
 
             ]);
     }

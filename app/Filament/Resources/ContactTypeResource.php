@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\NotificationTypeResource\Pages;
-use App\Filament\Resources\NotificationTypeResource\RelationManagers;
-use App\Models\NotificationType;
+use App\Filament\Resources\ContactTypeResource\Pages;
+use App\Filament\Resources\ContactTypeResource\RelationManagers;
+use App\Models\ContactType;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -16,25 +16,13 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\IconColumn;
+use Filament\Forms\Components\Select;
 
-class NotificationTypeResource extends Resource
+class ContactTypeResource extends Resource
 {
-    protected static ?string $model = NotificationType::class;
+    protected static ?string $model = ContactType::class;
 
-
-    protected static ?string $navigationIcon = 'heroicon-s-bell-alert';
-
-    public static function getNavigationSort(): int
-    {
-        $currentFile = basename((new \ReflectionClass(static::class))->getFileName());
-        return NavigationOrder::getSortOrderByFilename($currentFile) ?? parent::getNavigationSort();
-    }
-
-    public static function getNavigationGroup(): ?string
-    {
-        $currentFile = basename((new \ReflectionClass(static::class))->getFileName());
-        return NavigationOrder::getNavigationGroupByFilename($currentFile);
-    }
+    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function form(Form $form): Form
     {
@@ -52,11 +40,6 @@ class NotificationTypeResource extends Resource
                 Toggle::make('status')
                 ->label('Active')
                 ->default(true)
-                ->inline(false),         
-            
-                Toggle::make('is_default')
-                ->label('Is Default ?')
-                ->default(false)
                 ->inline(false),
             ]);
     }
@@ -91,9 +74,9 @@ class NotificationTypeResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListNotificationTypes::route('/'),
-            'create' => Pages\CreateNotificationType::route('/create'),
-            'edit' => Pages\EditNotificationType::route('/{record}/edit'),
+            'index' => Pages\ListContactTypes::route('/'),
+            'create' => Pages\CreateContactType::route('/create'),
+            'edit' => Pages\EditContactType::route('/{record}/edit'),
         ];
     }
 }
