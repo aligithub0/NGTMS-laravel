@@ -22,7 +22,19 @@ class ContactTypeResource extends Resource
 {
     protected static ?string $model = ContactType::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-s-phone';
+
+    public static function getNavigationSort(): int
+    {
+        $currentFile = basename((new \ReflectionClass(static::class))->getFileName());
+        return NavigationOrder::getSortOrderByFilename($currentFile) ?? parent::getNavigationSort();
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        $currentFile = basename((new \ReflectionClass(static::class))->getFileName());
+        return NavigationOrder::getNavigationGroupByFilename($currentFile);
+    }
 
     public static function form(Form $form): Form
     {

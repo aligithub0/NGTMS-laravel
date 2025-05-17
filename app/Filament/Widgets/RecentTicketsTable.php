@@ -11,6 +11,7 @@ use App\Models\Purpose;
 use App\Models\SlaConfiguration;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\TernaryFilter;
@@ -30,11 +31,11 @@ class RecentTicketsTable extends BaseWidget
         return $table
             ->query(Tickets::query()->latest()->limit(10))
             ->columns([
-                Tables\Columns\TextColumn::make('title')
+                TextColumn::make('title')
                     ->searchable()
                     ->limit(30),
                     
-                Tables\Columns\TextColumn::make('ticketStatus.name')
+                TextColumn::make('ticketStatus.name')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'Open' => 'danger',
@@ -43,14 +44,28 @@ class RecentTicketsTable extends BaseWidget
                         default => 'gray',
                     }),
                     
-                Tables\Columns\TextColumn::make('assignedTo.name')
+                TextColumn::make('ticketStatus.name')
+                        ->label('Ticket Status')
+                        ->badge()
+                        ->color(function (string $state): string {
+                            return match ($state) {
+                                'Draft' => 'gray',
+                                'Created' => 'success',
+                                'Assigned' => 'info',
+                                'Inprogress' => 'warning',
+                                'Waiting' => 'warning', // You might want a different color for 'Waiting'
+                                'Approval' => 'primary',
+                                default => 'gray', // Default color if the status doesn't match
+                            };
+                        })->sortable(),
+                TextColumn::make('assignedTo.name')
                     ->label('Assigned To'),
                     
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable(),
                     
-                Tables\Columns\TextColumn::make('resolution_time')
+                TextColumn::make('resolution_time')
                     ->label('Due Date')
                     ->dateTime(),
             ])
@@ -154,14 +169,20 @@ class RecentTicketsTable extends BaseWidget
     // Quick status filters
     Filter::make('open_tickets')
         ->label('Open Tickets Only')
-        ->query(fn (Builder $query): Builder => $query->whereHas('ticketStatus', fn ($q) => $q->where('name', 'Open')))
+        ->query(fn (Builder $query): Builder => $query->whereHas('ticketStatus', fn ($q) => $q->where('name', 'created')))
         ->toggle(),
 ],)
             ->actions([
-                Tables\Actions\ViewAction::make()
+                Tables\Actions\EditAction::make()
                     ->label('Edit')
                     ->icon('heroicon-s-pencil')
                     ->url(fn (Tickets $record): string => TicketsResource::getUrl('edit', ['record' => $record])),
+                    Tables\Actions\ViewAction::make()
+                    ->label('View')
+                    ->icon('heroicon-s-eye')
+                    ->url(fn (Tickets $record): string => TicketsResource::getUrl('view', ['record' => $record]))
+                    ->openUrlInNewTab(), // Optional: open in new tab
+
             ]);
     }
 }

@@ -12,18 +12,44 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\RichEditor;
 
 class ResponseTemplatesResource extends Resource
 {
     protected static ?string $model = ResponseTemplates::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-s-ticket';
+
+    public static function getNavigationSort(): int
+    {
+        $currentFile = basename((new \ReflectionClass(static::class))->getFileName());
+        return NavigationOrder::getSortOrderByFilename($currentFile) ?? parent::getNavigationSort();
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        $currentFile = basename((new \ReflectionClass(static::class))->getFileName());
+        return NavigationOrder::getNavigationGroupByFilename($currentFile);
+    }
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                //
+                TextInput::make('title')
+                ->label('Title')
+                ->required()
+                ->maxLength(255),
+
+                RichEditor::make('message')
+                ->required()
+                ->columnSpanFull()
+                ->label('Message'),
             ]);
     }
 
@@ -31,7 +57,11 @@ class ResponseTemplatesResource extends Resource
     {
         return $table
             ->columns([
-                //
+                TextColumn::make('title')->searchable()->label('Title'),
+                TextColumn::make('message')
+                ->markdown()
+                ->limit(100)
+                ->label('Message'),
             ])
             ->filters([
                 //

@@ -7,6 +7,7 @@ use App\Filament\Resources\ContactsResource\RelationManagers;
 use App\Models\Contacts;
 use App\Models\ContactType;
 use App\Models\Designations;
+use App\Models\ContactSegmentation;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -25,7 +26,19 @@ class ContactsResource extends Resource
 {
     protected static ?string $model = Contacts::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-s-phone';
+
+    public static function getNavigationSort(): int
+    {
+        $currentFile = basename((new \ReflectionClass(static::class))->getFileName());
+        return NavigationOrder::getSortOrderByFilename($currentFile) ?? parent::getNavigationSort();
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        $currentFile = basename((new \ReflectionClass(static::class))->getFileName());
+        return NavigationOrder::getNavigationGroupByFilename($currentFile);
+    }
 
     public static function form(Form $form): Form
     {
@@ -66,6 +79,13 @@ class ContactsResource extends Resource
                 ->preload()
                 ->required(),
 
+                Select::make('contact_segmentation_id')
+                ->label('Contact Segmentation')
+                ->options(ContactSegmentation::all()->pluck('name', 'id'))
+                ->searchable()
+                ->preload()
+                ->required(),
+
                 TextInput::make('preferred_contact_method')
                 ->label('Preferred Contact Method')
                 ->maxLength(50),
@@ -91,7 +111,7 @@ class ContactsResource extends Resource
                 TextInput::make('country')
                 ->label('Country')
                 ->maxLength(100)
-                ->nullable(),
+                ->nullable(), 
 
             ]);
     }
@@ -100,7 +120,17 @@ class ContactsResource extends Resource
     {
         return $table
             ->columns([
-                //
+                TextColumn::make('name')->searchable()->label('Name'),
+                TextColumn::make('email')->searchable()->label('Email'),
+                TextColumn::make('status')->searchable()->label('Status'),
+                TextColumn::make('contactType.name')->searchable()->label('Contact Type'),
+                TextColumn::make('designation.name')->searchable()->label('Designation'),
+                TextColumn::make('contactSegmentation.name')->searchable()->label('Contact Segmentation'),
+                TextColumn::make('preferred_contact_method')->searchable()->label('Preferred Contact Method'),
+                TextColumn::make('contact_priority')->searchable()->label('Contact Priority'),
+                TextColumn::make('time_zone')->searchable()->label('Time Zone'),
+                IconColumn::make('is_active')->boolean()->label('Is Active'),
+                TextColumn::make('country')->searchable()->label('Country'),                
             ])
             ->filters([
                 //

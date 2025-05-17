@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('contacts_preferences', function (Blueprint $table) {
+            $table->id();
             $table->foreignId('contact_id')->constrained('contacts');
             $table->char('whatsapp_pref', 1)->nullable(); 
             $table->char('mailing_address_pref', 1)->nullable(); 

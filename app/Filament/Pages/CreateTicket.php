@@ -381,15 +381,15 @@ class CreateTicket extends Page
                                     $ticket = Tickets::create($data);
                                     
                                     // Create the initial TicketJourney record
-                                    TicketJourney::create([
-                                        'ticket_id' => $ticket->id,
-                                        'from_agent' => auth()->id(), // No previous agent (new ticket)
-                                        'to_agent' => $data['assigned_to_id'],
-                                        'from_status' => $data['ticket_status_id'], // No previous status (new ticket)
-                                        'to_status' => $data['ticket_status_id'],
-                                        'actioned_by' => auth()->id(),
-                                        'logged_time' => now(),
-                                    ]);
+                                    // TicketJourney::create([
+                                    //     'ticket_id' => $ticket->id,
+                                    //     'from_agent' => auth()->id(), // No previous agent (new ticket)
+                                    //     'to_agent' => $data['assigned_to_id'],
+                                    //     'from_status' => $data['ticket_status_id'], // No previous status (new ticket)
+                                    //     'to_status' => $data['ticket_status_id'],
+                                    //     'actioned_by' => auth()->id(),
+                                    //     'logged_time' => now(),
+                                    // ]);
                                     
                                     // Handle attachments
                                     if (isset($data['attachments'])) {

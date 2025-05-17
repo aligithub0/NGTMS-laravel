@@ -2,10 +2,9 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\ActivityLogsResource\Pages;
-use App\Filament\Resources\ActivityLogsResource\RelationManagers;
-use App\Models\ActivityLog;
-use App\Models\Tickets;
+use App\Filament\Resources\ContactSegmentationResource\Pages;
+use App\Filament\Resources\ContactSegmentationResource\RelationManagers;
+use App\Models\ContactSegmentation;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -19,15 +18,12 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\RichEditor;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\KeyValue;
 
-
-class ActivityLogsResource extends Resource
+class ContactSegmentationResource extends Resource
 {
-    protected static ?string $model = ActivityLog::class;
+    protected static ?string $model = ContactSegmentation::class;
 
-    protected static ?string $navigationIcon = 'heroicon-s-ticket';
+    protected static ?string $navigationIcon = 'heroicon-s-phone';
 
     public static function getNavigationSort(): int
     {
@@ -45,30 +41,28 @@ class ActivityLogsResource extends Resource
     {
         return $form
             ->schema([
-                Select::make('ticket_id')
-                ->label('Ticket')
-                ->options(Tickets::all()->pluck('title', 'id'))
-                ->searchable()
-                ->preload()
-                ->required(),
-
-                TextInput::make('ip_address')
-                ->label('IP Address')
+                TextInput::make('name')
                 ->required()
-                ->maxLength(45), 
+                ->rules([
+                    'required',
+                    'regex:/^[A-Za-z\s]+$/',
+                    'max:255',
+                ])
+                ->helperText('Only letters and spaces are allowed.'),
 
-                KeyValue::make('logs')
-                ->label('Activity Logs')
-                ->addButtonLabel('Add Log Entry')
-                ->keyLabel('Field')
-                ->valueLabel('Value')
-                ->reorderable()
-                ->columns(1)
-                ->helperText('Enter key-value pairs like action, user, timestamp'),
+                RichEditor::make('description')
+                ->required()
+                ->columnSpanFull(),
 
-                
+                Toggle::make('is_default')
+                ->label('Is Default?')
+                ->default(false)
+                ->inline(false),
 
-
+                Toggle::make('status')
+                ->label('Status')
+                ->default(true)
+                ->inline(false),
             ]);
     }
 
@@ -76,12 +70,14 @@ class ActivityLogsResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('ticket.title')->searchable()->label('Ticket'),
-                TextColumn::make('ip_address')->searchable()->label('IP Address'),
-                TextColumn::make('logs')
-                    ->limit(50)
-                    ->wrap()
-                    ->label('Logs'),
+                TextColumn::make('name')->searchable()->label('Name'),
+                TextColumn::make('description')
+                ->markdown()
+                ->limit(100)
+                ->label('Description'),                
+                IconColumn::make('is_default')->boolean()->label('Is Default?'),
+                IconColumn::make('status')->boolean()->label('Status'),
+                
             ])
             ->filters([
                 //
@@ -106,9 +102,9 @@ class ActivityLogsResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListActivityLogs::route('/'),
-            'create' => Pages\CreateActivityLogs::route('/create'),
-            'edit' => Pages\EditActivityLogs::route('/{record}/edit'),
+            'index' => Pages\ListContactSegmentations::route('/'),
+            'create' => Pages\CreateContactSegmentation::route('/create'),
+            'edit' => Pages\EditContactSegmentation::route('/{record}/edit'),
         ];
     }
 }

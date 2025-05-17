@@ -11,42 +11,57 @@ class NavigationOrder
     public const FILE_SORT_MAP = [
         'CompanyTypesResource.php'      => 1,
         'CompanyResource.php'           => 2,
-        'MeneusResource.php'            => 3,
-        'RoleResource.php'              => 4,
-        'RolesMenuResource.php'         => 5,
-        'RoleMenuPermissionResource.php'=> 6,
-        'DepartmentResource.php'        => 7,
-        'DesignationsResource.php'      => 8,
-        'UserTypeResource.php'          => 9,
-        'UserStatusResource.php'        => 10,
-        'UserResource.php'              => 11,
-        'ProjectTypesResource.php'      => 12,
-        'ProjectResource.php'           => 13,
-        'PurposeResource.php'           => 14,
-        'AgentPurposesResource.php'     => 15,
+        'PurposeResource.php'           => 3,
+        'AgentPurposesResource.php'     => 4,
+
+        'ContactTypeResource.php'         => 5,
+        'ContactCompanyResource.php'      => 6,
+        'ContactsResource.php'            => 7,
+        'ContactsPhoneNumbersResource.php'=> 8,
+        'ContactsPreferencesResource.php' => 9,
+        'ContactsSocialLinksResource.php' => 10,
+        'ContactSegmentationResource.php' => 11,
+
+        'MeneusResource.php'            => 12,
+        'RoleResource.php'              => 13,
+        'RolesMenuResource.php'         => 14,
+        'RoleMenuPermissionResource.php'=> 15,
+        'DepartmentResource.php'        => 16,
+        'DesignationsResource.php'      => 17,
+        'UserTypeResource.php'          => 18,
+        'UserStatusResource.php'        => 19,
+        'UserResource.php'              => 20,
 
 
-        'TicketSourceResource.php'      => 16,
-        'TicketStatusResource.php'      => 17,
-        'SlaConfigurationResource.php'  => 18,
-        'NotificationTypeResource.php'  => 19,
-        'TicketAttachmentResource.php'  => 20,
-        'PriorityResource.php'          => 21,
-        'TicketsResource.php'           => 22,
-        'TicketRepliesResource.php'     => 23,
-        'TicketJourneyResource.php'     => 24,
-        'CommentsResource.php'          => 25,
+        'ProjectTypesResource.php'      => 21,
+        'ProjectResource.php'           => 22,
 
-        'ShiftTypesResource.php'        => 26,
-        'TimesheetStatusResource.php'   => 27,
-        'TimesheetActivitiesResource.php'=>28,
-        'TimesheetResource.php'         => 29,
+
+        'TicketSourceResource.php'      => 23,
+        'TicketStatusResource.php'      => 24,
+        'SlaConfigurationResource.php'  => 25,
+        'NotificationTypeResource.php'  => 26,
+        'TicketAttachmentResource.php'  => 27,
+        'PriorityResource.php'          => 28,
+        'TicketsResource.php'           => 29,
+        'TicketRepliesResource.php'     => 30,
+        'TicketJourneyResource.php'     => 31,
+        'CommentsResource.php'          => 32,
+        'ResponseTemplatesResource.php' => 33,
+        'ActivityLogsResource.php'      => 34,
+
+        'ShiftTypesResource.php'         => 35,
+        'TimesheetStatusResource.php'    => 36,
+        'TimesheetActivitiesResource.php'=> 37,
+        'TimesheetResource.php'          => 38,
 
     
+        'TasksResource.php'             => 39,
+        'TaskStatusResource.php'        => 40,
+        'TaskAttachmentsResource.php'   => 41,
 
-        'TasksResource.php'             => 30,
-        'TaskStatusResource.php'        => 31,
-        'TaskAttachmentsResource.php'   => 32,
+     
+
 
     ];
 
@@ -57,6 +72,14 @@ class NavigationOrder
         'CompanyResource.php'           => 'Company Management',
         'PurposeResource.php'           => 'Company Management',
         'AgentPurposesResource.php'     => 'Company Management',
+
+        'ContactTypeResource.php'         => 'Contact Management',
+        'ContactCompanyResource.php'      => 'Contact Management',
+        'ContactsResource.php'            => 'Contact Management',
+        'ContactsPhoneNumbersResource.php'=> 'Contact Management',
+        'ContactsPreferencesResource.php' => 'Contact Management',
+        'ContactsSocialLinksResource.php' => 'Contact Management',
+        'ContactSegmentationResource.php' => 'Contact Management',
 
         'UserResource.php'              => 'User Management',
         'UserTypeResource.php'          => 'User Management',
@@ -86,6 +109,8 @@ class NavigationOrder
         'NotificationTypeResource.php'  => 'Tickets',
         'CommentsResource.php'          => 'Tickets',
         'TicketJourneyResource.php'     => 'Tickets',
+        'ResponseTemplatesResource.php' => 'Tickets',
+        'ActivityLogsResource.php'      => 'Tickets',
 
 
         'TasksResource.php'             => 'Tasks',

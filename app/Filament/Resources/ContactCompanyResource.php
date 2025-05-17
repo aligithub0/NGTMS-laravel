@@ -23,7 +23,19 @@ class ContactCompanyResource extends Resource
 {
     protected static ?string $model = ContactCompany::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-s-phone';
+
+    public static function getNavigationSort(): int
+    {
+        $currentFile = basename((new \ReflectionClass(static::class))->getFileName());
+        return NavigationOrder::getSortOrderByFilename($currentFile) ?? parent::getNavigationSort();
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        $currentFile = basename((new \ReflectionClass(static::class))->getFileName());
+        return NavigationOrder::getNavigationGroupByFilename($currentFile);
+    }
 
     public static function form(Form $form): Form
     {
@@ -47,7 +59,7 @@ class ContactCompanyResource extends Resource
                 ->nullable(),
 
                 Select::make('company_type_id')
-                ->label('Company Type')
+                ->label('Contact Type')
                 ->options(ContactType::all()->pluck('name', 'id'))
                 ->searchable()
                 ->preload()
@@ -63,7 +75,7 @@ class ContactCompanyResource extends Resource
                 ]),
 
                 TextInput::make('company_code')
-                ->label('Company Code')
+                ->label('Contact Company Code')
                 ->unique(ignoreRecord: true)
                 ->rules([
                     'required',
@@ -86,9 +98,9 @@ class ContactCompanyResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('company_code')->label('Company Code'),
+                TextColumn::make('company_code')->label('Contact Company Code'),
                 TextColumn::make('name')->searchable(),
-                TextColumn::make('contactType.name')->label('Company Type'),
+                TextColumn::make('contactType.name')->label('Contact Type'),
                 TextColumn::make('parentCompany.name')->label('Parent Company'),
                 TextColumn::make('is_group')->searchable(),
                 IconColumn::make('status')->boolean(),            ])

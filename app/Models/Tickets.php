@@ -47,6 +47,41 @@ class Tickets extends Model
         'cc_recipients' => 'array',
     ];
 
+
+    protected static function booted()
+    {
+
+        static::created(function ($ticket) {
+            TicketJourney::create([
+                'ticket_id' => $ticket->id,
+                'from_agent' => null,
+                'to_agent' => $ticket->assigned_to_id,
+                'from_status' => null,
+                'to_status' => $ticket->ticket_status_id,
+                'actioned_by' => auth()->id(),
+                'logged_time' => now(),
+            ]);
+        });
+        
+        static::updating(function ($ticket) {
+            $original = $ticket->getOriginal();
+            
+            if ($original['ticket_status_id'] != $ticket->ticket_status_id || 
+                $original['assigned_to_id'] != $ticket->assigned_to_id) {
+                
+                TicketJourney::create([
+                    'ticket_id' => $ticket->id,
+                    'from_agent' => $original['assigned_to_id'],
+                    'to_agent' => $ticket->assigned_to_id,
+                    'from_status' => $original['ticket_status_id'],
+                    'to_status' => $ticket->ticket_status_id,
+                    'actioned_by' => auth()->id(),
+                    'logged_time' => now(),
+                ]);
+            }
+        });
+    }
+
         protected static function boot()
     {
         parent::boot();
@@ -119,5 +154,11 @@ class Tickets extends Model
     public function priority()
     {
         return $this->belongsTo(Priority::class, 'priority_id');
+    }
+
+   
+    public function replies()
+    {
+        return $this->hasMany(TicketReplies::class)->orderBy('created_at', 'desc');
     }
 }
