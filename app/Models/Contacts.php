@@ -21,6 +21,7 @@ class Contacts extends Model
         'is_active',
         'picture_url',
         'country',
+        'contact_segmentation_id',
     ];
 
 
@@ -32,6 +33,11 @@ class Contacts extends Model
     public function designation()
     {
         return $this->belongsTo(Designations::class, 'designation_id');
+    }
+
+    public function contactSegmentation()
+    {
+        return $this->belongsTo(ContactSegmentation::class, 'contact_segmentation_id');
     }
 
 }

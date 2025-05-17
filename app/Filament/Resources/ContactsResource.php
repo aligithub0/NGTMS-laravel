@@ -7,6 +7,7 @@ use App\Filament\Resources\ContactsResource\RelationManagers;
 use App\Models\Contacts;
 use App\Models\ContactType;
 use App\Models\Designations;
+use App\Models\ContactSegmentation;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -78,6 +79,13 @@ class ContactsResource extends Resource
                 ->preload()
                 ->required(),
 
+                Select::make('contact_segmentation_id')
+                ->label('Contact Segmentation')
+                ->options(ContactSegmentation::all()->pluck('name', 'id'))
+                ->searchable()
+                ->preload()
+                ->required(),
+
                 TextInput::make('preferred_contact_method')
                 ->label('Preferred Contact Method')
                 ->maxLength(50),
@@ -117,6 +125,7 @@ class ContactsResource extends Resource
                 TextColumn::make('status')->searchable()->label('Status'),
                 TextColumn::make('contactType.name')->searchable()->label('Contact Type'),
                 TextColumn::make('designation.name')->searchable()->label('Designation'),
+                TextColumn::make('contactSegmentation.name')->searchable()->label('Contact Segmentation'),
                 TextColumn::make('preferred_contact_method')->searchable()->label('Preferred Contact Method'),
                 TextColumn::make('contact_priority')->searchable()->label('Contact Priority'),
                 TextColumn::make('time_zone')->searchable()->label('Time Zone'),
