@@ -31,7 +31,7 @@ class Contacts extends Model
 
     public function designation()
     {
-        return $this->belongsTo(Designation::class, 'designation_id');
+        return $this->belongsTo(Designations::class, 'designation_id');
     }
 
 }
