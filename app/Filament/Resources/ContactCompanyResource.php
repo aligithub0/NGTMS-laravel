@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\ContactCompanyResource\Pages;
 use App\Filament\Resources\ContactCompanyResource\RelationManagers;
 use App\Models\ContactCompany;
+use App\Models\ContactType;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -12,6 +13,11 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Forms\Components\Select;
 
 class ContactCompanyResource extends Resource
 {
@@ -23,7 +29,56 @@ class ContactCompanyResource extends Resource
     {
         return $form
             ->schema([
-                //
+                TextInput::make('name')
+                ->required()
+                ->rules([
+                    'required',
+                    'regex:/^[A-Za-z\s]+$/',
+                    'max:255',
+                ])
+                ->helperText('Only letters and spaces are allowed.'),
+
+                
+                Select::make('parent_comp_id')
+                ->label('Parent Company')
+                ->options(ContactCompany::all()->pluck('name', 'id'))
+                ->searchable()
+                ->preload()
+                ->nullable(),
+
+                Select::make('company_type_id')
+                ->label('Company Type')
+                ->options(ContactType::all()->pluck('name', 'id'))
+                ->searchable()
+                ->preload()
+                ->nullable()
+                ->required(),
+
+                Select::make('is_group')
+                ->label('Is Group')
+                ->required()
+                ->options([
+                    'yes' => 'Yes',
+                    'no' => 'No',
+                ]),
+
+                TextInput::make('company_code')
+                ->label('Company Code')
+                ->unique(ignoreRecord: true)
+                ->rules([
+                    'required',
+                    'string',
+                    'max:255',
+                    'regex:/^[a-zA-Z0-9]+$/', 
+                ])
+                ->extraAttributes(['inputmode' => 'text'])
+                ->required(),
+                
+
+                Toggle::make('status')
+                ->label('Active')
+                ->default(true)
+                ->inline(false),
             ]);
     }
 
@@ -31,8 +86,12 @@ class ContactCompanyResource extends Resource
     {
         return $table
             ->columns([
-                //
-            ])
+                TextColumn::make('company_code')->label('Company Code'),
+                TextColumn::make('name')->searchable(),
+                TextColumn::make('contactType.name')->label('Company Type'),
+                TextColumn::make('parentCompany.name')->label('Parent Company'),
+                TextColumn::make('is_group')->searchable(),
+                IconColumn::make('status')->boolean(),            ])
             ->filters([
                 //
             ])
