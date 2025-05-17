@@ -298,6 +298,7 @@ class TicketsResource extends Resource
             'create' => Pages\CreateTickets::route('/create'),
             'edit' => Pages\EditTickets::route('/{record}/edit'),
             'view' => Pages\ViewTicket::route('/{record}'),
+            // 'edit-ticket' => Filament\Pages\EditTicket::route('/{record}/edit-ticket')
         ];
     }
 }

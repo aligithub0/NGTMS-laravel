@@ -26,7 +26,6 @@ class TicketReply extends Page
     protected static ?string $navigationIcon = 'heroicon-s-chat-bubble-left-ellipsis';
     protected static ?string $navigationLabel = 'Ticket Replies';
     protected static ?string $title = 'Ticket Conversation';
-     protected static ?string $navigationGroup = 'Reports';
     protected static string $view = 'filament.pages.ticket-reply';
 
     public ?array $data = [];
@@ -80,7 +79,10 @@ class TicketReply extends Page
                             ->schema([
                                 Select::make('contact_id')
                                     ->label('Contact Person')
-                                    ->options(User::where('is_client', true)->pluck('name', 'id'))
+                                    ->options(User::query()
+                                        ->whereHas('roles', fn($q) => $q->where('name', 'client'))
+                                        ->orWhere('type', 'client')
+                                        ->pluck('name', 'id'))
                                     ->searchable()
                                     ->preload(),
                                     
@@ -161,14 +163,12 @@ class TicketReply extends Page
             $reply->replied_by_user_id = auth()->id();
             $reply->fill($data);
             
-            // Handle attachments
             if (isset($data['attachment_path'])) {
                 $reply->attachment_path = json_encode($data['attachment_path']);
             }
             
             $reply->save();
             
-            // Update ticket status and priority
             $this->ticket->update([
                 'ticket_status_id' => $data['status_after_reply'],
                 'priority_id' => $data['priority_type_id'],
