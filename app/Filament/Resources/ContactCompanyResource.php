@@ -66,13 +66,10 @@ class ContactCompanyResource extends Resource
                 ->nullable()
                 ->required(),
 
-                Select::make('is_group')
-                ->label('Is Group')
-                ->required()
-                ->options([
-                    'yes' => 'Yes',
-                    'no' => 'No',
-                ]),
+                Toggle::make('is_group')
+                ->label('Is Group?')
+                ->default(false)
+                ->inline(false),
 
                 TextInput::make('company_code')
                 ->label('Contact Company Code')
@@ -103,7 +100,8 @@ class ContactCompanyResource extends Resource
                 TextColumn::make('contactType.name')->label('Contact Type'),
                 TextColumn::make('parentCompany.name')->label('Parent Company'),
                 TextColumn::make('is_group')->searchable(),
-                IconColumn::make('status')->boolean(),            ])
+                IconColumn::make('status')->boolean(),      
+                      ])
             ->filters([
                 //
             ])
