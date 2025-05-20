@@ -147,26 +147,26 @@ public function scopeActive($query)
 }
 
 // In App\Models\User
-// public static function getAssignableUsers(): \Illuminate\Support\Collection
-// {
-//     $authUser = auth()->user();
+public static function getAssignableUsers(): \Illuminate\Support\Collection
+{
+    $authUser = auth()->user();
     
-//     $query = self::where('company_id', $authUser->company_id)
-//         ->where('department_id', $authUser->department_id)
-//         ->where('assigned_to_others', true)
-//         ->whereHas('status', fn($q) => $q->where('name', 'Active'))
-//         ->orderBy('name');
+    $query = self::where('company_id', $authUser->company_id)
+        ->where('department_id', $authUser->department_id)
+        ->where('assigned_to_others', true)
+        ->whereHas('status', fn($q) => $q->where('name', 'Active'))
+        ->orderBy('name');
     
-//     // Include current user if they can be assigned
-//     if ($authUser->assigned_to_others) {
-//         $query->orWhere('id', $authUser->id);
-//     }
+    // Include current user if they can be assigned
+    if ($authUser->assigned_to_others) {
+        $query->orWhere('id', $authUser->id);
+    }
     
-//     return $query->get()->mapWithKeys(fn($user) => [
-//         $user->id => $user->id === $authUser->id 
-//             ? $user->name . ' (Me)' 
-//             : $user->name
-//     ]);
-// }
+    return $query->get()->mapWithKeys(fn($user) => [
+        $user->id => $user->id === $authUser->id 
+            ? $user->name . ' (Me)' 
+            : $user->name
+    ]);
+}
 
 }
