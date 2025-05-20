@@ -18,6 +18,8 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Textarea;
+
 
 class PriorityResource extends Resource
 {
@@ -55,6 +57,9 @@ class PriorityResource extends Resource
                 ->default(true)
                 ->inline(false),
 
+                Textarea::make('description')->required()->rows(2),
+
+
                 Toggle::make('is_default')
                 ->label('Is Default ?')
                 ->default(false)
@@ -67,6 +72,7 @@ class PriorityResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('name')->sortable()->searchable(),
+                TextColumn::make('description')->searchable(),
                 IconColumn::make('status')->boolean(),
             ])
             ->filters([
