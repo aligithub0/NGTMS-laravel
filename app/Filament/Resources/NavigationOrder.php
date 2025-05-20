@@ -48,17 +48,19 @@ class NavigationOrder
         'TicketJourneyResource.php'     => 31,
         'CommentsResource.php'          => 32,
         'ResponseTemplatesResource.php' => 33,
-        'ActivityLogsResource.php'      => 34,
+        'FieldVariablesResource.php'    => 34,
+        'ActivityLogsResource.php'      => 35,
 
-        'ShiftTypesResource.php'         => 35,
-        'TimesheetStatusResource.php'    => 36,
-        'TimesheetActivitiesResource.php'=> 37,
-        'TimesheetResource.php'          => 38,
+
+        'ShiftTypesResource.php'         => 36,
+        'TimesheetStatusResource.php'    => 37,
+        'TimesheetActivitiesResource.php'=> 38,
+        'TimesheetResource.php'          => 39,
 
     
-        'TasksResource.php'             => 39,
-        'TaskStatusResource.php'        => 40,
-        'TaskAttachmentsResource.php'   => 41,
+        'TasksResource.php'             => 40,
+        'TaskStatusResource.php'        => 41,
+        'TaskAttachmentsResource.php'   => 42,
 
      
 
@@ -110,6 +112,7 @@ class NavigationOrder
         'CommentsResource.php'          => 'Tickets',
         'TicketJourneyResource.php'     => 'Tickets',
         'ResponseTemplatesResource.php' => 'Tickets',
+        'FieldVariablesResource.php'    => 'Tickets',
         'ActivityLogsResource.php'      => 'Tickets',
 
 

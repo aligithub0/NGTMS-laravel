@@ -17,6 +17,8 @@ use Filament\Forms\Components\Toggle;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+
 
 
 class PurposeResource extends Resource
@@ -81,6 +83,9 @@ class PurposeResource extends Resource
                 ->nullable(),
 
 
+                Textarea::make('description')->required()->rows(2),
+
+
             Toggle::make('status')
                 ->label('Active')
                 ->default(true)
@@ -102,6 +107,9 @@ class PurposeResource extends Resource
                 TextColumn::make('parent.name')
                     ->label('Parent Purpose')
                     ->sortable(),
+
+                TextColumn::make('description')->searchable(),
+
     
                 IconColumn::make('status')
                     ->boolean()

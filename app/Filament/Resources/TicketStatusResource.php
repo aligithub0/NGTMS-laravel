@@ -16,6 +16,8 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\IconColumn;
+use Filament\Forms\Components\Textarea;
+
 
 class TicketStatusResource extends Resource
 {
@@ -75,10 +77,15 @@ class TicketStatusResource extends Resource
                 ])
                 ->helperText('Only letters and spaces are allowed.'),
 
+
+
                 Toggle::make('status')
                 ->label('Active')
                 ->default(true)
                 ->inline(false),    
+
+                Textarea::make('description')->required()->rows(2),
+
             
                 Toggle::make('is_default')
                 ->label('Is Default ?')
@@ -92,6 +99,7 @@ class TicketStatusResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('name')->sortable()->searchable(),
+                TextColumn::make('description')->searchable(),
                 IconColumn::make('status')->boolean(),
             ])
             ->filters([

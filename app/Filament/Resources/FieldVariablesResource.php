@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\PriorityResource\Pages;
-use App\Filament\Resources\PriorityResource\RelationManagers;
-use App\Models\Priority;
+use App\Filament\Resources\FieldVariablesResource\Pages;
+use App\Filament\Resources\FieldVariablesResource\RelationManagers;
+use App\Models\FieldVariables;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -17,13 +17,12 @@ use Filament\Forms\Components\Toggle;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Textarea;
 
-
-class PriorityResource extends Resource
+class FieldVariablesResource extends Resource
 {
-    protected static ?string $model = Priority::class;
+    protected static ?string $model = FieldVariables::class;
+
+    protected static ?string $navigationIcon = 'heroicon-s-ticket';
 
     public static function getNavigationSort(): int
     {
@@ -37,55 +36,38 @@ class PriorityResource extends Resource
         return NavigationOrder::getNavigationGroupByFilename($currentFile);
     }
 
-    protected static ?string $navigationIcon = 'heroicon-s-ticket';
+            public static function canViewAny(): bool
+        {
+            return auth()->user()?->role?->name === 'Admin';
+        }
 
+        public static function canCreate(): bool
+        {
+            return auth()->user()?->role?->name === 'Admin';
+        }
 
-    public static function canViewAny(): bool
-{
-    return auth()->user()?->role?->name === 'Admin';
-}
+        public static function canEdit($record): bool
+        {
+            return auth()->user()?->role?->name === 'Admin';
+        }
 
-public static function canCreate(): bool
-{
-    return auth()->user()?->role?->name === 'Admin';
-}
-
-public static function canEdit($record): bool
-{
-    return auth()->user()?->role?->name === 'Admin';
-}
-
-public static function canDelete($record): bool
-{
-    return auth()->user()?->role?->name === 'Admin';
-}
-
+        public static function canDelete($record): bool
+        {
+            return auth()->user()?->role?->name === 'Admin';
+        }
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 TextInput::make('name')
+                ->label('Variable Name')
                 ->required()
-                ->rules([
-                    'required',
-                    'regex:/^[A-Za-z\s]+$/',
-                    'max:255',
-                ])
-                ->helperText('Only letters and spaces are allowed.'),
+                ->unique(ignoreRecord: true),
 
-                Toggle::make('status')
-                ->label('Active')
-                ->default(true)
-                ->inline(false),
-
-                Textarea::make('description')->required()->rows(2),
-
-
-                Toggle::make('is_default')
-                ->label('Is Default ?')
-                ->default(false)
-                ->inline(false),
+                TextInput::make('value')
+                ->label('Value / Label')
+                ->required(),
             ]);
     }
 
@@ -93,9 +75,14 @@ public static function canDelete($record): bool
     {
         return $table
             ->columns([
-                TextColumn::make('name')->sortable()->searchable(),
-                TextColumn::make('description')->searchable(),
-                IconColumn::make('status')->boolean(),
+                TextColumn::make('name')
+                    ->label('Variable Name')
+                    ->searchable()
+                    ->sortable(),
+
+                    TextColumn::make('value')
+                    ->label('Value / Label')
+                    ->searchable(),
             ])
             ->filters([
                 //
@@ -120,9 +107,9 @@ public static function canDelete($record): bool
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListPriorities::route('/'),
-            'create' => Pages\CreatePriority::route('/create'),
-            'edit' => Pages\EditPriority::route('/{record}/edit'),
+            'index' => Pages\ListFieldVariables::route('/'),
+            'create' => Pages\CreateFieldVariables::route('/create'),
+            'edit' => Pages\EditFieldVariables::route('/{record}/edit'),
         ];
     }
 }

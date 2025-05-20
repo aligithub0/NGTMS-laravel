@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\ResponseTemplatesResource\Pages;
 use App\Filament\Resources\ResponseTemplatesResource\RelationManagers;
 use App\Models\ResponseTemplates;
+use App\Models\FieldVariables;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -18,6 +19,10 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\View;
+
+    
 
 class ResponseTemplatesResource extends Resource
 {
@@ -31,13 +36,8 @@ class ResponseTemplatesResource extends Resource
         return NavigationOrder::getSortOrderByFilename($currentFile) ?? parent::getNavigationSort();
     }
 
-    public static function getNavigationGroup(): ?string
-    {
-        $currentFile = basename((new \ReflectionClass(static::class))->getFileName());
-        return NavigationOrder::getNavigationGroupByFilename($currentFile);
-    }
 
-            public static function canViewAny(): bool
+        public static function canViewAny(): bool
         {
             return auth()->user()?->role?->name === 'Admin';
         }
@@ -57,22 +57,44 @@ class ResponseTemplatesResource extends Resource
             return auth()->user()?->role?->name === 'Admin';
         }
 
-
-    public static function form(Form $form): Form
+    public static function getNavigationGroup(): ?string
     {
-        return $form
-            ->schema([
-                TextInput::make('title')
+        $currentFile = basename((new \ReflectionClass(static::class))->getFileName());
+        return NavigationOrder::getNavigationGroupByFilename($currentFile);
+    }
+
+    public static function parseTemplate(string $template, array $variables): string
+{
+    foreach ($variables as $key => $value) {
+        $template = str_replace('{' . $key . '}', $value, $template);
+    }
+
+    return $template;
+}
+
+
+   public static function form(Form $form): Form
+{
+    return $form
+        ->schema([
+            TextInput::make('title')
                 ->label('Title')
                 ->required()
                 ->maxLength(255),
 
-                RichEditor::make('message')
-                ->required()
-                ->columnSpanFull()
-                ->label('Message'),
-            ]);
-    }
+                Grid::make(2)->schema([
+                    RichEditor::make('message')
+                        ->required()
+                        ->label('Message')
+                        ->columnSpan(1)
+                        ->reactive(),
+                    View::make('filament.forms.components.variable-list')->columnSpan(1),
+                ]),
+                
+
+
+        ]);
+}
 
     public static function table(Table $table): Table
     {

@@ -8,6 +8,7 @@ use App\Filament\Resources\TicketsResource\RelationManagers;
 use App\Models\Tickets;
 use App\Models\TicketStatus;
 use App\Models\User;
+use App\Models\Contacts;
 use App\Models\TicketSource;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -173,6 +174,8 @@ public static function canDelete($record): bool
                 ->preload()
                 ->nullable()
                 ->required(),
+
+
                 Select::make('purpose_type_id')
                 ->label('Purpose Type')
                 ->options(Purpose::all()->pluck('name', 'id'))
@@ -197,7 +200,14 @@ public static function canDelete($record): bool
                         })
                 ),
 
-                TextInput::make('contact_id')->numeric()->nullable(),
+                Select::make('contact_id')
+                ->label('Contacts')
+                ->options(Contacts::all()->pluck('name', 'id'))
+                ->searchable()
+                ->preload()
+                ->nullable()
+                ->required(),
+
                 Select::make('SLA')
                 ->label('SLA')
                 ->options(SlaConfiguration::all()->pluck('name', 'id'))

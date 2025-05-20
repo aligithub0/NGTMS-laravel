@@ -19,9 +19,11 @@ use App\Models\Purpose;
 use App\Models\TicketStatus;
 use App\Models\TicketSource;
 use App\Models\Priority;
+use App\Models\Contacts;
 use App\Models\User;
 use App\Models\NotificationType;
 use App\Models\SlaConfiguration;
+use App\Models\Tickets; // Add this import
 
 class EditTickets extends EditRecord
 {
@@ -31,11 +33,26 @@ class EditTickets extends EditRecord
     {
         return [
             Actions\DeleteAction::make(),
-        //     Actions\Action::make('save')
-        //         ->label('Update Ticket')
-        //         ->submit('save')
-        //         ->color('primary'),
         ];
+    }
+
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        // Get the ticket model
+        $ticket = Tickets::find($data['id']);
+        
+        // If ticket exists and has a contact, pre-fill the contact information
+        if ($ticket && $ticket->contact) {
+            $data['contact_id'] = $ticket->contact_id;
+            $data['contact_ref_no'] = $ticket->contact_ref_no;
+            $data['requested_email'] = $ticket->requested_email;
+            
+            // Assuming these are stored as JSON in the database
+            $data['to_recipients'] = $ticket->to_recipients ? json_decode($ticket->to_recipients, true) : [];
+            $data['cc_recipients'] = $ticket->cc_recipients ? json_decode($ticket->cc_recipients, true) : [];
+        }
+        
+        return $data;
     }
 
     public function form(Forms\Form $form): Forms\Form
@@ -83,9 +100,41 @@ class EditTickets extends EditRecord
                                             ->options(Priority::all()->pluck('name', 'id'))
                                             ->required(),
                                             
-                                        Select::make('assigned_to_id')
-                                            ->options(User::getAssignableUsers())
-                                            ->required(),
+                                         Select::make('assigned_to_id')
+                                            ->label('Assigned To')
+                                            ->options(function () {
+                                                $authUser = auth()->user();
+                                                
+                                                // Start with current user (always included)
+                                                $usersQuery = User::where('id', $authUser->id);
+                                                
+                                                // If current user can assign to others, include other assignable users from same company
+                                                if ($authUser->assigned_to_others) {
+                                                    $usersQuery->orWhere(function ($query) use ($authUser) {
+                                                        $query->where('company_id', $authUser->company_id)
+                                                            // ->where('assigned_to_others', true)
+                                                            ->where('id', '!=', $authUser->id) // Exclude current user (already included)
+                                                            ->whereHas('status', function($query) {
+                                                                $query->where('name', 'Active');
+                                                            });
+                                                    });
+                                                }
+                                                
+                                                $users = $usersQuery->orderBy('name')->get();
+                                                
+                                                return $users->mapWithKeys(function ($user) use ($authUser) {
+                                                    return [
+                                                        $user->id => $user->id === $authUser->id 
+                                                            ? $user->name . ' (Me)' 
+                                                            : $user->name
+                                                    ];
+                                                });
+                                            })
+                                            ->searchable()
+                                            ->preload()
+                                            ->default(auth()->id()) // Default to current user
+                                            ->required()
+                                            ->rules(['required', 'integer', 'exists:users,id']),
 
                                         Select::make('notification_type_id')
                                             ->options(NotificationType::all()->pluck('name', 'id'))
@@ -106,33 +155,51 @@ class EditTickets extends EditRecord
                                 Section::make('Contact Information')
                                     ->schema([
                                         Select::make('contact_id')
-                                            ->options(User::all()->pluck('name', 'id'))
-                                            ->required(),
+                                            ->label('Contact Person')
+                                            ->options(Contacts::all()->pluck('name', 'id'))
+                                            ->required()
+                                            ->searchable()
+                                            ->preload(),
                                             
-                                        TextInput::make('contact_ref_no'),
+                                        
                                             
-                                        TextInput::make('requested_email')
-                                            ->email()
+                                        Select::make('requested_email')
+                                            ->label('From Email')
+                                            ->options(
+                                                Tickets::whereNotNull('requested_email')
+                                                    ->orderBy('requested_email')
+                                                    ->pluck('requested_email', 'id')
+                                            )
+                                            ->searchable()
+                                            ->preload()
                                             ->required(),
 
-                                        Grid::make(2)
-                                           ->schema([
+                        
                                                 TagsInput::make('to_recipients')->required(),
                                                 TagsInput::make('cc_recipients')->required(),
-                                           ])
+
+                                                TextInput::make('contact_ref_no'),
+                                           
                                     ])->compact(),
                                     
                                 Hidden::make('company_id'),
                                                                 
                                 Section::make('Settings & Attachments')
                                     ->schema([
-                                        Select::make('sla_configuration_id')
+                                        Select::make('SLA')
+                                            ->label('SLA Type')
+                                            ->placeholder('Select SLA')
                                             ->options(SlaConfiguration::all()->pluck('name', 'id'))
+                                            ->searchable()
+                                            ->preload()
+                                            ->required()
                                             ->reactive()
                                             ->afterStateUpdated(function ($set, $state) {
                                                 $sla = SlaConfiguration::find($state);
                                                 if ($sla) {
+                                                    $set('response_time_id', $sla->id);
                                                     $set('response_time', $sla->response_time);
+                                                    $set('resolution_time_id', $sla->id);
                                                     $set('resolution_time', $sla->resolution_time);
                                                 }
                                             }),
@@ -158,8 +225,6 @@ class EditTickets extends EditRecord
                     ->columns(['lg' => 2]),
             ]);
     }
-
-    
 
     protected function getRedirectUrl(): string
     {

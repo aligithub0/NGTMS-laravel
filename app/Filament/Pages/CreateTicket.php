@@ -18,6 +18,7 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\TagsInput;
 use App\Models\User;
+use App\Models\Contacts;
 use App\Models\Tickets;
 use App\Models\TicketAttachment;
 use App\Models\TicketStatus;
@@ -203,17 +204,22 @@ class CreateTicket extends Page
                                         Select::make('contact_id')
                                             ->label('Contact Person')
                                             ->placeholder('Select a contact')
-                                            ->options(User::all()->pluck('name', 'id'))
+                                            ->options(Contacts::all()->pluck('name', 'id'))
                                             ->searchable()
                                             ->preload()
                                             ->required(),
                                             
-                                        TextInput::make('requested_email')
+                                        Select::make('requested_email')
                                             ->label('From Email')
-                                            ->placeholder('Enter email address')
-                                            ->required()
-                                            ->email()
-                                            ->rules(['email', 'required', 'max:255']),
+                                            ->options(
+                                                Tickets::whereNotNull('requested_email')
+                                                    ->orderBy('requested_email')
+                                                    ->pluck('requested_email', 'id')
+                                            )
+                                            ->searchable()
+                                            ->preload()
+                                            ->required(),
+                                        
 
                                         TagsInput::make('to_recipients')
                                             ->placeholder(' ')

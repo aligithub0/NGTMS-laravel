@@ -21,6 +21,8 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Forms\Components\Select;
 use Carbon\CarbonInterval;
+use Filament\Forms\Components\Textarea;
+
 
 
 class SlaConfigurationResource extends Resource
@@ -82,6 +84,8 @@ public static function canDelete($record): bool
                     'max:255',
                 ])
                 ->helperText('Only letters and spaces are allowed.'),
+
+                
                 
                 Select::make('department_id')
                 ->label('Department')
@@ -90,6 +94,8 @@ public static function canDelete($record): bool
                 ->preload()
                 ->nullable(),
 
+
+                Textarea::make('description')->required()->rows(2),
 
                 Select::make('purpose_id')
                 ->label('Purpose')
@@ -101,69 +107,69 @@ public static function canDelete($record): bool
 
                 TextInput::make('response_time')
                 ->label('Response Time')
-                ->required()            
-                ->formatStateUsing(function ($state) {
-                    if (!$state) return null;
+                ->required(),            
+                // ->formatStateUsing(function ($state) {
+                //     if (!$state) return null;
             
-                    [$hours, $minutes, $seconds] = explode(':', $state);
+                //     [$hours, $minutes, $seconds] = explode(':', $state);
             
-                    $parts = [];
+                //     $parts = [];
             
-                    if ((int) $hours > 0) {
-                        $parts[] = (int) $hours . ' hour' . ((int) $hours > 1 ? 's' : '');
-                    }
+                //     if ((int) $hours > 0) {
+                //         $parts[] = (int) $hours . ' hour' . ((int) $hours > 1 ? 's' : '');
+                //     }
             
-                    if ((int) $minutes > 0) {
-                        $parts[] = (int) $minutes . ' minute' . ((int) $minutes > 1 ? 's' : '');
-                    }
+                //     if ((int) $minutes > 0) {
+                //         $parts[] = (int) $minutes . ' minute' . ((int) $minutes > 1 ? 's' : '');
+                //     }
             
-                    if ((int) $hours === 0 && (int) $minutes === 0 && (int) $seconds > 0) {
-                        $parts[] = (int) $seconds . ' second' . ((int) $seconds > 1 ? 's' : '');
-                    }
+                //     if ((int) $hours === 0 && (int) $minutes === 0 && (int) $seconds > 0) {
+                //         $parts[] = (int) $seconds . ' second' . ((int) $seconds > 1 ? 's' : '');
+                //     }
             
-                    return implode(' ', $parts);
-                })
-                ->dehydrateStateUsing(function ($state) {
-                    try {
-                        $interval = CarbonInterval::make($state);
-                        return $interval ? gmdate('H:i:s', $interval->totalSeconds) : null;
-                    } catch (\Exception $e) {
-                        return null;
-                    }
-                }),
+                //     return implode(' ', $parts);
+                // })
+                // ->dehydrateStateUsing(function ($state) {
+                //     try {
+                //         $interval = CarbonInterval::make($state);
+                //         return $interval ? gmdate('H:i:s', $interval->totalSeconds) : null;
+                //     } catch (\Exception $e) {
+                //         return null;
+                //     }
+                // }),
             
                 TextInput::make('resolution_time')
                 ->label('Resolution Time')
-                ->required()            
-                ->formatStateUsing(function ($state) {
-                    if (!$state) return null;
+                ->required(),            
+                // ->formatStateUsing(function ($state) {
+                //     if (!$state) return null;
             
-                    [$hours, $minutes, $seconds] = explode(':', $state);
+                //     [$hours, $minutes, $seconds] = explode(':', $state);
             
-                    $parts = [];
+                //     $parts = [];
             
-                    if ((int) $hours > 0) {
-                        $parts[] = (int) $hours . ' hour' . ((int) $hours > 1 ? 's' : '');
-                    }
+                //     if ((int) $hours > 0) {
+                //         $parts[] = (int) $hours . ' hour' . ((int) $hours > 1 ? 's' : '');
+                //     }
             
-                    if ((int) $minutes > 0) {
-                        $parts[] = (int) $minutes . ' minute' . ((int) $minutes > 1 ? 's' : '');
-                    }
+                //     if ((int) $minutes > 0) {
+                //         $parts[] = (int) $minutes . ' minute' . ((int) $minutes > 1 ? 's' : '');
+                //     }
             
-                    if ((int) $hours === 0 && (int) $minutes === 0 && (int) $seconds > 0) {
-                        $parts[] = (int) $seconds . ' second' . ((int) $seconds > 1 ? 's' : '');
-                    }
+                //     if ((int) $hours === 0 && (int) $minutes === 0 && (int) $seconds > 0) {
+                //         $parts[] = (int) $seconds . ' second' . ((int) $seconds > 1 ? 's' : '');
+                //     }
             
-                    return implode(' ', $parts);
-                })
-                ->dehydrateStateUsing(function ($state) {
-                    try {
-                        $interval = CarbonInterval::make($state);
-                        return $interval ? gmdate('H:i:s', $interval->totalSeconds) : null;
-                    } catch (\Exception $e) {
-                        return null;
-                    }
-                }),
+                //     return implode(' ', $parts);
+                // })
+                // ->dehydrateStateUsing(function ($state) {
+                //     try {
+                //         $interval = CarbonInterval::make($state);
+                //         return $interval ? gmdate('H:i:s', $interval->totalSeconds) : null;
+                //     } catch (\Exception $e) {
+                //         return null;
+                //     }
+                // }),
 
                 Select::make('escalated_to_user_id')
                 ->label('Escalated to')
@@ -186,60 +192,61 @@ public static function canDelete($record): bool
         return $table
             ->columns([
                 TextColumn::make('name')->searchable(),
+                TextColumn::make('description')->searchable()->label('Ticket Issue'),
                 TextColumn::make('department.name')->label('Department'),
                 TextColumn::make('purpose.name')->label('Purpose'),
 
                 TextColumn::make('response_time')
-                    ->label('Response Time')
-                    ->formatStateUsing(function ($state) {
-                        if (!$state) {
-                            return '-';
-                        }
+                    ->label('Response Time'),
+                    // ->formatStateUsing(function ($state) {
+                    //     if (!$state) {
+                    //         return '-';
+                    //     }
                 
-                        [$hours, $minutes, $seconds] = explode(':', $state);
+                    //     [$hours, $minutes, $seconds] = explode(':', $state);
                 
-                        $parts = [];
+                    //     $parts = [];
                 
-                        if ((int) $hours > 0) {
-                            $parts[] = (int) $hours . ' hour' . ((int) $hours > 1 ? 's' : '');
-                        }
+                    //     if ((int) $hours > 0) {
+                    //         $parts[] = (int) $hours . ' hour' . ((int) $hours > 1 ? 's' : '');
+                    //     }
                 
-                        if ((int) $minutes > 0) {
-                            $parts[] = (int) $minutes . ' minute' . ((int) $minutes > 1 ? 's' : '');
-                        }
+                    //     if ((int) $minutes > 0) {
+                    //         $parts[] = (int) $minutes . ' minute' . ((int) $minutes > 1 ? 's' : '');
+                    //     }
                 
-                        if ((int) $hours === 0 && (int) $minutes === 0 && (int) $seconds > 0) {
-                            $parts[] = (int) $seconds . ' second' . ((int) $seconds > 1 ? 's' : '');
-                        }
+                    //     if ((int) $hours === 0 && (int) $minutes === 0 && (int) $seconds > 0) {
+                    //         $parts[] = (int) $seconds . ' second' . ((int) $seconds > 1 ? 's' : '');
+                    //     }
                 
-                        return implode(' ', $parts);
-                    }),
+                    //     return implode(' ', $parts);
+                    // }),
                     
                     TextColumn::make('resolution_time')
-                    ->label('Resolution Time')
-                    ->formatStateUsing(function ($state) {
-                        if (!$state) {
-                            return '-';
-                        }
+                    ->label('Resolution Time'),
+                    // ->formatStateUsing(function ($state) {
+                    //     if (!$state) {
+                    //         return '-';
+                    //     }
                 
-                        [$hours, $minutes, $seconds] = explode(':', $state);
+                    //     [$hours, $minutes, $seconds] = explode(':', $state);
                 
-                        $parts = [];
+                    //     $parts = [];
                 
-                        if ((int) $hours > 0) {
-                            $parts[] = (int) $hours . ' hour' . ((int) $hours > 1 ? 's' : '');
-                        }
+                    //     if ((int) $hours > 0) {
+                    //         $parts[] = (int) $hours . ' hour' . ((int) $hours > 1 ? 's' : '');
+                    //     }
                 
-                        if ((int) $minutes > 0) {
-                            $parts[] = (int) $minutes . ' minute' . ((int) $minutes > 1 ? 's' : '');
-                        }
+                    //     if ((int) $minutes > 0) {
+                    //         $parts[] = (int) $minutes . ' minute' . ((int) $minutes > 1 ? 's' : '');
+                    //     }
                 
-                        if ((int) $hours === 0 && (int) $minutes === 0 && (int) $seconds > 0) {
-                            $parts[] = (int) $seconds . ' second' . ((int) $seconds > 1 ? 's' : '');
-                        }
+                    //     if ((int) $hours === 0 && (int) $minutes === 0 && (int) $seconds > 0) {
+                    //         $parts[] = (int) $seconds . ' second' . ((int) $seconds > 1 ? 's' : '');
+                    //     }
                 
-                        return implode(' ', $parts);
-                    }),
+                    //     return implode(' ', $parts);
+                    // }),
 
                 TextColumn::make('escalated.name')->label('Escalated To'),
 

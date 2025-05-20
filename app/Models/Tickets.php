@@ -120,6 +120,11 @@ class Tickets extends Model
     {
         return $this->belongsTo(TicketSource::class, 'ticket_source_id');
     }
+
+    public function contacts()
+    {
+        return $this->belongsTo(Contacts::class, 'contact_id');
+    }
  
     public function purposeTypes()
     {
