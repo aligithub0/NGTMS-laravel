@@ -86,13 +86,23 @@ class ContactsResource extends Resource
                 ->preload()
                 ->required(),
 
-                TextInput::make('preferred_contact_method')
+                Select::make('preferred_contact_method')
                 ->label('Preferred Contact Method')
-                ->maxLength(50),
+                ->required()
+                ->options([
+                    'Phone' => 'Phone',
+                    'SMS' => 'SMS',
+                    'Email' => 'Email',
+                ]),
 
-                TextInput::make('contact_priority')
+                Select::make('contact_priority')
                 ->label('Contact Priority')
-                ->maxLength(50),
+                ->required()
+                ->options([
+                    'Normal' => 'Normal',
+                    'Medium' => 'Medium',
+                    'High' => 'High',
+                ]),
 
                 TextInput::make('time_zone')
                 ->label('Time Zone')

@@ -2620,7 +2620,7 @@ select {
   margin-top: 30px;
   margin-bottom: 30px;
   border-radius: 10px;
-  box-shadow: 2px 2px 10px gray;
+  box-shadow: 2px 2px 10px rgb(159 155 155);
 }
 
 .max-w-fit {
@@ -3089,7 +3089,7 @@ select {
 }
 
 .gap-y-7 {
-  row-gap: 1.75rem
+  row-gap: 0.75rem
 }
 
 .gap-y-8 {
@@ -3241,7 +3241,8 @@ select {
 }
 
 .overflow-x-clip {
-  overflow-x: clip
+  overflow-x: clip;
+  box-shadow: 2px 2px 5px rgb(159, 155, 155)
 }
 
 .truncate {
@@ -3280,7 +3281,7 @@ select {
 
 .rounded-xl {
   border-radius: .75rem;
-  box-shadow: 2px 2px 5px #c1c1c1 !important;
+  box-shadow: 2px 2px 3px #c1c1c1 !important;
 }
 
 .rounded-b-xl {
@@ -5922,6 +5923,7 @@ input:focus-visible+.dark\:\[input\:focus-visible\+\&\]\:ring-white\/20:is(.dark
   overflow-y: scroll !important;
   /* Enables vertical scrolling */
   scrollbar-width: none !important;
+  box-shadow: 2px 2px 5px rgb(160, 159, 159);
   /* Firefox */
   -ms-overflow-style: none !important;
   /* IE and Edge */
