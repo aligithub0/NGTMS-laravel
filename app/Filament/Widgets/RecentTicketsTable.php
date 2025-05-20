@@ -174,9 +174,9 @@ class RecentTicketsTable extends BaseWidget
 ],)
             ->actions([
                 Tables\Actions\EditAction::make()
-                    ->label('Edit')
-                    ->icon('heroicon-s-pencil')
-                    ->url(fn (Tickets $record): string => TicketsResource::getUrl('edit', ['record' => $record])),
+    ->label('Edit')
+    ->icon('heroicon-s-pencil')
+    ->url(fn (Tickets $record): string => TicketsResource::getUrl('edit', ['record' => $record])),
                     Tables\Actions\ViewAction::make()
                     ->label('View')
                     ->icon('heroicon-s-eye')
