@@ -30,8 +30,24 @@ class TicketsManager extends Page
     protected static ?string $navigationIcon = 'heroicon-s-user';
     protected static ?string $navigationLabel = 'Tickets Manager';
     protected static ?string $title = 'Tickets Manager';
-    protected static ?string $navigationGroup = 'Reports';
+    protected static ?string $navigationGroup = 'Ticket Management';
 
+
+     protected function getHeaderActions(): array
+{
+    return [
+        Action::make('create')
+            ->label('Create Ticket')
+            ->url(CreateTicket::getUrl()) // Changed from form() to url()
+            ->icon('heroicon-o-plus')
+    ];
+}
+
+
+        public static function getNavigationSort(): ?int
+{
+    return 1; // Change the number according to the order you want
+}
     public $showFilterModal = false;
     // public $title;
     public $description;
@@ -46,6 +62,14 @@ class TicketsManager extends Page
 //             ->icon('heroicon-o-plus')
 //     ];
 // }
+
+// public static function canAccess(): bool
+// {
+//     $roleName = auth()->user()?->role?->name;
+
+//     return in_array($roleName, ['Admin', 'Manager']);
+// }
+
 
     protected function getHeaderWidgets(): array
     {

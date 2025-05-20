@@ -54,6 +54,61 @@ class TicketsResource extends Resource
         return NavigationOrder::getNavigationGroupByFilename($currentFile);
     }
 
+//     public static function canViewAny(): bool
+// {
+//     return auth()->user()?->role?->name === 'Admin';
+// }
+
+ public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()?->role?->name === 'Admin';
+    }
+
+
+     public static function canView($record): bool
+    {
+        $user = auth()->user();
+        
+        // Admin can view all tickets
+        if ($user->role->name === 'Admin') {
+            return true;
+        }
+        
+        // User can view tickets assigned to them or created by them
+        return $record->assigned_to_id === $user->id || 
+               $record->created_by_id === $user->id;
+    }
+
+    // Custom logic for editing tickets
+    public static function canEdit($record): bool
+    {
+        $user = auth()->user();
+        
+        // Admin can edit all tickets
+        if ($user->role->name === 'Admin') {
+            return true;
+        }
+        
+        // User can edit tickets assigned to them
+        return $record->assigned_to_id === $user->id || $record->created_by_id === $user->id;
+    }
+
+public static function canCreate(): bool
+{
+    return auth()->user()?->role?->name === 'Admin';
+}
+
+// public static function canEdit($record): bool
+// {
+//     return auth()->user()?->role?->name === 'Admin';
+// }
+
+public static function canDelete($record): bool
+{
+    return auth()->user()?->role?->name === 'Admin';
+}
+
+
     protected static ?string $navigationIcon = 'heroicon-s-ticket';
 
     public static function form(Form $form): Form

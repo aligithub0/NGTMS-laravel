@@ -43,7 +43,7 @@ class TicketReplies extends Model
         return $this->belongsTo(Tickets::class, 'ticket_id');
     }
 
-    public function users()
+    public function user()
     {
         return $this->belongsTo(User::class, 'replied_by_user_id');
     }

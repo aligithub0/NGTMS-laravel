@@ -29,8 +29,13 @@ class TicketsDashboard extends Page
     protected static string $view = 'filament.pages.tickets-dashboard';
     protected static ?string $navigationIcon = 'heroicon-s-chart-bar';
     protected static ?string $navigationLabel = 'Tickets Dashboard';
-    protected static ?string $title = 'Tickets Overview';
-    protected static ?string $navigationGroup = 'Reports';
+    protected static ?string $title = 'Tickets Dashboard';
+    protected static ?string $navigationGroup = 'Dashboard';
+
+    public static function getNavigationSort(): ?int
+{
+    return 1; // Change the number according to the order you want
+}
 
     public $showFilterModal = false;
     // public $title;
@@ -46,6 +51,14 @@ class TicketsDashboard extends Page
             ->icon('heroicon-o-plus')
     ];
 }
+
+
+    public static function canAccess(): bool
+    {
+        $roleName = auth()->user()?->role?->name;
+
+        return in_array($roleName, ['Admin']);
+    }
 
     protected function getHeaderWidgets(): array
     {

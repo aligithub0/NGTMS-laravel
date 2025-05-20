@@ -2,189 +2,163 @@
 
 namespace App\Filament\Pages;
 
-use Filament\Forms\Form;
-use Filament\Pages\Page;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\RichEditor;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Toggle;
-use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\TagsInput;
-use Filament\Forms\Components\Grid;
-use App\Models\Tickets;
 use App\Models\TicketReplies;
-use App\Models\User;
-use App\Models\TicketStatus;
-use App\Models\Priority;
-use App\Models\TicketSource;
+use App\Models\Tickets;
+use Filament\Actions\Action;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Forms\Form;
 use Filament\Notifications\Notification;
-use Illuminate\Support\Facades\Storage;
+use Filament\Pages\Page;
+use Illuminate\Contracts\Support\Htmlable;
+use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\RichEditor;
 
 class TicketReply extends Page
 {
-    protected static ?string $navigationIcon = 'heroicon-s-chat-bubble-left-ellipsis';
-    protected static ?string $navigationLabel = 'Ticket Replies';
-    protected static ?string $title = 'Ticket Conversation';
+    protected static ?string $navigationIcon = 'heroicon-o-chat-bubble-bottom-center-text';
+    protected static ?string $navigationGroup = 'Ticket Management';
     protected static string $view = 'filament.pages.ticket-reply';
 
-    public ?array $data = [];
+            public static function getNavigationSort(): ?int
+            {
+                return 2;
+            }
+
+            public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()?->role?->name === 'Admin';
+    }
+
     public Tickets $ticket;
+    public ?array $replyData = [];
 
     public function mount(Tickets $ticket): void
-    {
-        $this->ticket = $ticket;
-    }
+{
+    $this->ticket = $ticket->load([
+        'replies.user',  // This loads the user for each reply
+        'ticketStatus',
+        'priority',
+        'createdBy',    // Changed from 'user' to 'createdBy'
+        'assignedTo'    // If you need the assigned user as well
+    ]);
+    $this->form->fill(['subject' => "Re: {$ticket->subject}"]);
+}
 
     public function form(Form $form): Form
     {
         return $form
             ->schema([
-                Section::make('Reply Information')
+                Section::make('')
                     ->schema([
                         TextInput::make('subject')
-                            ->label('Subject')
                             ->required()
-                            ->maxLength(255)
-                            ->default($this->ticket->title),
-                            
-                        RichEditor::make('message')
-                            ->label('Message')
-                            ->required()
-                            ->columnSpanFull(),
-                            
-                        Grid::make(3)
-                            ->schema([
-                                Select::make('priority_type_id')
-                                    ->label('Priority')
-                                    ->options(Priority::all()->pluck('name', 'id'))
-                                    ->required(),
-                                    
-                                Select::make('reply_type')
-                                    ->label('Reply Type')
-                                    ->options(TicketSource::all()->pluck('name', 'id'))
-                                    ->required(),
-                                    
-                                Select::make('status_after_reply')
-                                    ->label('Status After Reply')
-                                    ->options(TicketStatus::all()->pluck('name', 'id'))
-                                    ->required(),
-                            ]),
-                    ])
-                    ->compact(),
-                    
-                Section::make('Contact Information')
-                    ->schema([
-                        Grid::make(3)
-                            ->schema([
-                                Select::make('contact_id')
-                                    ->label('Contact Person')
-                                    ->options(User::query()
-                                        ->whereHas('roles', fn($q) => $q->where('name', 'client'))
-                                        ->orWhere('type', 'client')
-                                        ->pluck('name', 'id'))
-                                    ->searchable()
-                                    ->preload(),
-                                    
-                                TextInput::make('contact_ref_no')
-                                    ->label('Reference No'),
-                                    
-                                TextInput::make('contact_email')
-                                    ->label('Email')
-                                    ->email(),
-                            ]),
-                            
-                        Grid::make(2)
-                            ->schema([
-                                TagsInput::make('to_recipients')
-                                    ->label('To Recipients')
-                                    ->placeholder('Add email')
-                                    ->nestedRecursiveRules(['email']),
-                                    
-                                TagsInput::make('cc_recipients')
-                                    ->label('CC Recipients')
-                                    ->placeholder('Add email')
-                                    ->nestedRecursiveRules(['email']),
-                            ]),
-                    ])
-                    ->compact(),
-                    
-                Section::make('Notes & Attachments')
-                    ->schema([
-                        RichEditor::make('internal_notes')
-                            ->label('Internal Notes')
-                            ->disableToolbarButtons(['attachFiles', 'codeBlock'])
-                            ->columnSpanFull(),
-                            
-                        RichEditor::make('external_notes')
-                            ->label('External Notes')
-                            ->disableToolbarButtons(['attachFiles', 'codeBlock'])
-                            ->columnSpanFull(),
+                            ->default("Re: {$this->ticket->subject}")
+                            ->placeholder('Subject'),
+                        
+                       RichEditor::make('message')
+                        ->required()
+                        ->maxLength(5000)
+                        ->placeholder('Type your reply here...'),
+
+                         Textarea::make('internal_notes')
+                         ->label('Internal Notes')
+                        ->required()
+                        ->maxLength(5000)
+                        ->placeholder('notes here...'),
                             
                         FileUpload::make('attachment_path')
-                            ->label('Attachments')
-                            ->directory('ticket-replies')
-                            ->multiple()
+                            ->label('Attachment')  // Singular
+                            ->directory('ticket-attachments')
                             ->downloadable()
+                            ->openable()
                             ->preserveFilenames()
-                            ->columnSpanFull(),
+                            ->acceptedFileTypes(['image/*', 'application/pdf', 'application/msword'])
+                            ->maxSize(5120), // 5MB
+                            
+                        // Grid::make()
+                        // ->schema([    
+                        // Toggle::make('is_desc_send_to_contact')
+                        //     ->label('Show description to contact')
+                        //     ->inline(false),
+                            
+                        // Toggle::make('is_contact_notify')
+                        //     ->label('Notify contact of reply')
+                        //     ->inline(false),
+
+                        // ])
                     ])
-                    ->compact(),
-                    
-                Section::make('Settings')
-                    ->schema([
-                        Grid::make(3)
-                            ->schema([
-                                Toggle::make('is_desc_send_to_contact')
-                                    ->label('Send Description to Contact')
-                                    ->default(true),
-                                    
-                                Toggle::make('is_reply_from_contact')
-                                    ->label('Reply From Contact')
-                                    ->default(false),
-                                    
-                                Toggle::make('is_contact_notify')
-                                    ->label('Notify Contact')
-                                    ->default(true),
-                            ]),
-                    ])
-                    ->compact(),
+                    ,
             ])
-            ->statePath('data');
+            ->statePath('replyData');
     }
 
-    public function save(): void
+    protected function getHeaderActions(): array
     {
-        $data = $this->form->getState();
-        
-        try {
-            $reply = new TicketReplies();
-            $reply->ticket_id = $this->ticket->id;
-            $reply->replied_by_user_id = auth()->id();
-            $reply->fill($data);
-            
-            if (isset($data['attachment_path'])) {
-                $reply->attachment_path = json_encode($data['attachment_path']);
-            }
-            
-            $reply->save();
-            
-            $this->ticket->update([
-                'ticket_status_id' => $data['status_after_reply'],
-                'priority_id' => $data['priority_type_id'],
-            ]);
-            
-            Notification::make()
-                ->title('Reply added successfully')
-                ->success()
-                ->send();
+        return [
+            Action::make('close')
+            ->label('Close Ticket')
+            ->color('danger')
+            ->requiresConfirmation()
+            ->action(function () {
+                $this->ticket->update(['ticket_status_id' => 'closed']);  // Changed from status_id
+                Notification::make()
+                    ->title('Ticket closed successfully')
+                    ->success()
+                    ->send();
+            }),
                 
-        } catch (\Exception $e) {
-            Notification::make()
-                ->title('Error saving reply')
-                ->danger()
-                ->body($e->getMessage())
-                ->send();
-        }
+            // Action::make('assign')
+            //     ->label('Assign Ticket')
+            //     ->form([
+            //         Select::make('assigned_to_id')
+            //             ->label('Assign to')
+            //             ->options(\App\Models\User::all()->pluck('name', 'id'))
+            //             ->required(),
+            //     ])
+            //     ->action(function (array $data) {
+            //         $this->ticket->update($data);
+            //         Notification::make()
+            //             ->title('Ticket assigned successfully')
+            //             ->success()
+            //             ->send();
+            //     }),
+        ];
+    }
+
+    public function submitReply(): void
+{
+    $data = $this->form->getState();
+
+    $reply = TicketReplies::create([
+        'ticket_id' => $this->ticket->id,
+        'replied_by_user_id' => auth()->id(),
+        'subject' => $data['subject'],
+        'message' => $data['message'],
+        'is_desc_send_to_contact' => $data['is_desc_send_to_contact'] ?? false,
+        'is_contact_notify' => $data['is_contact_notify'] ?? false,
+        'attachment_path' => $data['attachment_path'] ?? null,
+        'internal_notes' => $data['internal_notes'] ?? null,
+    ]);
+
+    // Optionally update ticket status if needed
+    // $this->ticket->update(['ticket_status_id' => 'replied']);
+
+    Notification::make()
+        ->title('Reply sent successfully')
+        ->body('Your reply has been added to the ticket.')
+        ->success()
+        ->send();
+
+    $this->form->fill(['subject' => "Re: {$this->ticket->subject}", 'message' => '']);
+}
+
+    public function getTitle(): string|Htmlable
+    {
+        return "Reply to Ticket #{$this->ticket->id}";
     }
 }

@@ -35,16 +35,25 @@ use Illuminate\Support\Facades\Storage;
 class CreateTicket extends Page
 {
     protected static ?string $navigationIcon = 'heroicon-s-ticket';
-    protected static ?string $navigationLabel = 'Create Ticket';
-    protected static ?string $title = 'Create New Ticket';
-    protected static ?string $navigationGroup = 'Reports';
+    protected static ?string $navigationLabel = 'New Ticket';
+    protected static ?string $title = 'New Ticket';
+    protected static ?string $navigationGroup = 'Ticket Management';
     protected static string $view = 'filament.pages.create-ticket';
+
+    public static function getNavigationSort(): ?int
+    {
+        return 2;
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()?->role?->name === 'Admin';
+    }
 
     public ?array $data = [];
 
     public function mount(): void
 {
-    // Get all default values
     $authUser = auth()->user();
     $defaultStatus = TicketStatus::where('is_default', true)->first();
     $defaultPriority = Priority::where('is_default', true)->first();
@@ -55,7 +64,7 @@ class CreateTicket extends Page
 
     $this->form->fill([
         'created_by_id' => auth()->id(),
-        'assigned_to_id' => $authUser->id,
+        'assigned_to_id' => $authUser->id, // Always default to current user
         'ticket_status_id' => $defaultStatus?->id,
         'priority_id' => $defaultPriority?->id,
         'ticket_source_id' => $defaultSource?->id,
@@ -70,13 +79,10 @@ class CreateTicket extends Page
     ]);
 }
 
-    
     public function form(Form $form): Form
     {
         return $form
             ->schema([
-                // First Row: Ticket Details (left) and Assignment (right)
-                // First Row: Ticket Details (left) and Assignment (right)
                 Grid::make()
                     ->schema([
                         // Left Column
@@ -84,31 +90,20 @@ class CreateTicket extends Page
                             ->schema([
                                 Section::make('Ticket Details')
                                     ->schema([
-
                                         Select::make('purpose_type_id')
-                                                    ->label('Purpose')
-                                                    ->placeholder('Select purposes')
-                                                    ->options(Purpose::all()->pluck('name', 'id'))
-                                                    ->multiple()
-                                                    ->searchable()
-                                                    ->preload()
-                                                    ->required()
-                                                    ->afterStateHydrated(function ($component, $state) {
-                                                        if (is_string($state)) {
-                                                            $component->state(json_decode($state, true));
-                                                        }
-                                                    })
-                                                    ->dehydrateStateUsing(fn ($state) => json_encode($state)),
-                                            // ->suffixAction(
-                                            //     Action::make('selectAllPurpose')
-                                            //         ->label('Select All')
-                                            //         ->icon('heroicon-m-check')
-                                            //         ->action(function ($component) {
-                                            //             $component->state(
-                                            //                 Purpose::all()->pluck('id')->toArray()
-                                            //             );
-                                            //         })
-                                            // ),
+                                            ->label('Purpose')
+                                            ->placeholder('Select purposes')
+                                            ->options(Purpose::all()->pluck('name', 'id'))
+                                            ->multiple()
+                                            ->searchable()
+                                            ->preload()
+                                            ->required()
+                                            ->afterStateHydrated(function ($component, $state) {
+                                                if (is_string($state)) {
+                                                    $component->state(json_decode($state, true));
+                                                }
+                                            })
+                                            ->dehydrateStateUsing(fn ($state) => json_encode($state)),
                                             
                                         TextInput::make('title')
                                             ->label('Title')
@@ -121,25 +116,22 @@ class CreateTicket extends Page
                                             ->extraAttributes(['class' => 'max-h-[100px]'])
                                             ->columnSpanFull(),
                                             
-                                
-                                                Select::make('ticket_status_id')
-                                                ->label('Status')
-                                                ->placeholder('Select status')
-                                                ->options(TicketStatus::all()->pluck('name', 'id'))
-                                                ->searchable()
-                                                ->preload()
-                                                ->required(),
+                                        Select::make('ticket_status_id')
+                                            ->label('Status')
+                                            ->placeholder('Select status')
+                                            ->options(TicketStatus::all()->pluck('name', 'id'))
+                                            ->searchable()
+                                            ->preload()
+                                            ->required(),
                                                     
-                                                Select::make('ticket_source_id')
-                                                ->label('Source')
-                                                ->placeholder('Select source')
-                                                ->options(TicketSource::all()->pluck('name', 'id'))
-                                                ->searchable()
-                                                ->preload()
-                                                ->required(),
+                                        Select::make('ticket_source_id')
+                                            ->label('Source')
+                                            ->placeholder('Select source')
+                                            ->options(TicketSource::all()->pluck('name', 'id'))
+                                            ->searchable()
+                                            ->preload()
+                                            ->required(),
 
-                                            
-                                            
                                         Select::make('priority_id')
                                             ->label('Priority')
                                             ->placeholder('Select priority')
@@ -148,15 +140,43 @@ class CreateTicket extends Page
                                             ->preload()
                                             ->required(),
                                             
-                                            Select::make('assigned_to_id')
+                                      Select::make('assigned_to_id')
                                             ->label('Assigned To')
-                                            ->placeholder('Select assignee')
-                                            ->options(fn() => User::getAssignableUsers())
+                                            ->options(function () {
+                                                $authUser = auth()->user();
+                                                
+                                                // Start with current user (always included)
+                                                $usersQuery = User::where('id', $authUser->id);
+                                                
+                                                // If current user can assign to others, include other assignable users from same company
+                                                if ($authUser->assigned_to_others) {
+                                                    $usersQuery->orWhere(function ($query) use ($authUser) {
+                                                        $query->where('company_id', $authUser->company_id)
+                                                            // ->where('assigned_to_others', true)
+                                                            ->where('id', '!=', $authUser->id) // Exclude current user (already included)
+                                                            ->whereHas('status', function($query) {
+                                                                $query->where('name', 'Active');
+                                                            });
+                                                    });
+                                                }
+                                                
+                                                $users = $usersQuery->orderBy('name')->get();
+                                                
+                                                return $users->mapWithKeys(function ($user) use ($authUser) {
+                                                    return [
+                                                        $user->id => $user->id === $authUser->id 
+                                                            ? $user->name . ' (Me)' 
+                                                            : $user->name
+                                                    ];
+                                                });
+                                            })
                                             ->searchable()
                                             ->preload()
-                                            ->required(),
+                                            ->default(auth()->id()) // Default to current user
+                                            ->required()
+                                            ->rules(['required', 'integer', 'exists:users,id']),
 
-                                            Select::make('notification_type_id')
+                                        Select::make('notification_type_id')
                                             ->label('Notification Types')
                                             ->placeholder('Select notification types')
                                             ->options(NotificationType::all()->pluck('name', 'id'))
@@ -170,32 +190,14 @@ class CreateTicket extends Page
                                                 }
                                             })
                                             ->dehydrateStateUsing(fn ($state) => json_encode($state)),
-                                        
-                                            
                                     ])
                                     ->compact(),
-
-
-                                    // Section::make('Assignment & Categorization')
-                                    // ->schema([
-                                        
-                                    // ])
-                                    // ->compact(),
-                                    // Section::make('Response & Resolution')
-                                    // ->schema([
-                                       
-                                    // ])
-                                    // ->compact(),
-       
-                         
-
                             ])
                             ->columnSpan(['lg' => 1]),
                             
                         // Right Column
                         Grid::make(1)
                             ->schema([
-                                    
                                 Section::make('Contact Information')
                                     ->schema([
                                         Select::make('contact_id')
@@ -206,224 +208,193 @@ class CreateTicket extends Page
                                             ->preload()
                                             ->required(),
                                             
-                                        TextInput::make('contact_ref_no')
-                                            ->label('Contact Reference No')
-                                            ->placeholder('Enter contact reference number')
-                                            ->nullable(),
-                                            
                                         TextInput::make('requested_email')
-                                            ->label('Requested By Email')
+                                            ->label('From Email')
                                             ->placeholder('Enter email address')
                                             ->required()
                                             ->email()
                                             ->rules(['email', 'required', 'max:255']),
 
-                                    Grid::make(2)
-                                       ->schema([
                                         TagsInput::make('to_recipients')
-                                        ->placeholder(' ')
+                                            ->placeholder(' ')
                                             ->label('To Recipients')
                                             ->required(),
                                             
                                         TagsInput::make('cc_recipients')
-                                        ->placeholder(' ')
+                                            ->placeholder(' ')
                                             ->label('CC Recipients')
                                             ->required(),
-                                       ])
+
+                                        TextInput::make('contact_ref_no')
+                                            ->label('Contact Reference No')
+                                            ->placeholder('Enter contact reference number')
+                                            ->nullable(),
                                     ])
                                     ->compact(),
                                     
-                                    Hidden::make('company_id')
+                                Hidden::make('company_id')
                                     ->default(auth()->user()->company_id)
                                     ->dehydrated(),
                                                                     
-                                    // Section::make('Notes')
-                                    // ->schema([
-                                    //     Textarea::make('internal_note')
-                                    //         ->label('Internal Note')
-                                    //         ->rows(1)
-                                    //         ->required(),
-                                            
-                                    //     Textarea::make('external_note')
-                                    //         ->label('External Note')
-                                    //         ->rows(2)
-                                    //         ->required(),
-                                    // ])
-                                    // ->compact(),
-
-                                    
-
-                                    Section::make('Settings & Attachments')
-                            ->schema([
-                                Select::make('SLA')
-                                    ->label('SLA Type')
-                                    ->placeholder('Select SLA')
-                                    ->options(SlaConfiguration::all()->pluck('name', 'id'))
-                                    ->searchable()
-                                    ->preload()
-                                    ->required()
-                                    ->reactive()
-                                    ->afterStateUpdated(function ($set, $state) {
-                                        $sla = SlaConfiguration::find($state);
-                                        if ($sla) {
-                                            $set('response_time_id', $sla->id);
-                                            $set('response_time', $sla->response_time);
-                                            $set('resolution_time_id', $sla->id);
-                                            $set('resolution_time', $sla->resolution_time);
-                                        }
-                                    }),
-                                    
-                                Grid::make(2)
+                                Section::make('Settings & Attachments')
                                     ->schema([
-                                        Select::make('response_time_id')
-                                            ->label('Response Time')
-                                            ->options(SlaConfiguration::all()->pluck('response_time', 'id'))
+                                        Select::make('SLA')
+                                            ->label('SLA Type')
+                                            ->placeholder('Select SLA')
+                                            ->options(SlaConfiguration::all()->pluck('name', 'id'))
                                             ->searchable()
                                             ->preload()
                                             ->required()
                                             ->reactive()
                                             ->afterStateUpdated(function ($set, $state) {
                                                 $sla = SlaConfiguration::find($state);
-                                                if ($sla) $set('response_time', $sla->response_time);
+                                                if ($sla) {
+                                                    $set('response_time_id', $sla->id);
+                                                    $set('response_time', $sla->response_time);
+                                                    $set('resolution_time_id', $sla->id);
+                                                    $set('resolution_time', $sla->resolution_time);
+                                                }
                                             }),
-                                        Hidden::make('response_time'),
-                                        
-                                        Select::make('resolution_time_id')
-                                            ->label('Resolution Time')
-                                            ->options(SlaConfiguration::all()->pluck('resolution_time', 'id'))
-                                            ->searchable()
-                                            ->preload()
-                                            ->required()
-                                            ->reactive()
-                                            ->afterStateUpdated(function ($set, $state) {
-                                                $sla = SlaConfiguration::find($state);
-                                                if ($sla) $set('resolution_time', $sla->resolution_time);
-                                            }),
-                                        Hidden::make('resolution_time'),
-                                    ]),
-                                    
-                                FileUpload::make('attachments')
-                                    ->label('Attachments')
-                                    ->placeholder('Drag & drop files here or click to upload')
-                                    ->directory('ticket-attachments')
-                                    ->multiple()
-                                    ->downloadable()
-                                    ->extraAttributes(['class' => 'max-h-[100px]'])
-                                    ->preserveFilenames()
-                                    ->openable()
-                                    ->acceptedFileTypes(['image/*'])
-                                    ->maxSize(10240)
-                                    ->columnSpanFull(),
-                            ])
-                            ->compact(),  
-                                                        
-                                                            
-                                                                // Toggle::make('reminder_flag')
-                                                                //     ->label('Set Reminder?')
-                                                                //     ->default(false)
-                                                                //     ->inline(false)
-                                                                //     ->reactive(),
-                                                                    
-                                                                Section::make()
-                                                                ->schema([
-                                                                DateTimePicker::make('reminder_datetime')
-                                                                // ->hiddenLabel()
-                                                                    ->nullable()
-                                                                    ->extraAttributes(['style' => 'padding: 19px;'])
-                                                                    ->required(),
-                                                                    // ->visible(fn ($get) => $get('reminder_flag')),
-                                                                    ])
-                                                        
-                                                    ])
-                                                    ->columnSpan(['lg' => 1]),
-                                            ])
-                                            ->columns(['lg' => 2]),
                                             
-                                        // Hidden field
-                                        Hidden::make('created_by_id')
-                                            ->default(auth()->id()),
+                                        Grid::make(2)
+                                            ->schema([
+                                                Select::make('response_time_id')
+                                                    ->label('Response Time')
+                                                    ->options(SlaConfiguration::all()->pluck('response_time', 'id'))
+                                                    ->searchable()
+                                                    ->preload()
+                                                    ->required()
+                                                    ->reactive()
+                                                    ->afterStateUpdated(function ($set, $state) {
+                                                        $sla = SlaConfiguration::find($state);
+                                                        if ($sla) $set('response_time', $sla->response_time);
+                                                    }),
+                                                Hidden::make('response_time'),
+                                                
+                                                Select::make('resolution_time_id')
+                                                    ->label('Resolution Time')
+                                                    ->options(SlaConfiguration::all()->pluck('resolution_time', 'id'))
+                                                    ->searchable()
+                                                    ->preload()
+                                                    ->required()
+                                                    ->reactive()
+                                                    ->afterStateUpdated(function ($set, $state) {
+                                                        $sla = SlaConfiguration::find($state);
+                                                        if ($sla) $set('resolution_time', $sla->resolution_time);
+                                                    }),
+                                                Hidden::make('resolution_time'),
+                                            ]),
                                             
-                                        // Submit Button
-                                        // Submit Button
-                                        Actions::make([
-                                            Action::make('create')
-                                                ->label('Create Ticket')
-                                                ->submit('create')
-                                                ->size('lg')
-                                        ])->alignEnd()
+                                        FileUpload::make('attachments')
+                                            ->label('Attachments')
+                                            ->placeholder('Drag & drop files here or click to upload')
+                                            ->directory('ticket-attachments')
+                                            ->multiple()
+                                            ->downloadable()
+                                            ->extraAttributes(['class' => 'max-h-[100px]'])
+                                            ->preserveFilenames()
+                                            ->openable()
+                                            ->acceptedFileTypes(['image/*'])
+                                            ->maxSize(10240)
+                                            ->columnSpanFull(),
                                     ])
-                                    ->statePath('data');
-                            }
+                                    ->compact(),  
+                                    
+                                Section::make()
+                                    ->schema([
+                                        DateTimePicker::make('reminder_datetime')
+                                            ->nullable()
+                                            ->required(),
+                                    ])
+                            ])
+                            ->columnSpan(['lg' => 1]),
+                    ])
+                    ->columns(['lg' => 2]),
+                    
+                // Hidden field
+                Hidden::make('created_by_id')
+                    ->default(auth()->id()),
+                    
+                // Submit Button
+                Actions::make([
+                    Action::make('create')
+                        ->label('Create Ticket')
+                        ->submit('create')
+                        ->size('lg')
+                ])->alignEnd()
+            ])
+            ->statePath('data');
+    }
 
-                public function create(): void
-                            {
-                                $data = $this->form->getState();
-                                
-                                // Ensure created_by_id is set
-                                if (!isset($data['created_by_id'])) {
-                                    $data['created_by_id'] = auth()->id();
-                                }
-                            
-                                // Force company_id if not set
-                                $data['company_id'] = $data['company_id'] ?? auth()->user()->company_id;
-                                
-                                // Ensure arrays are properly encoded
-                                if (isset($data['purpose_type_id']) && is_array($data['purpose_type_id'])) {
-                                    $data['purpose_type_id'] = json_encode($data['purpose_type_id']);
-                                }
-                                
-                                if (isset($data['notification_type_id']) && is_array($data['notification_type_id'])) {
-                                    $data['notification_type_id'] = json_encode($data['notification_type_id']);
-                                }
-                                
-                                try {
-                                    // Create the ticket
-                                    $ticket = Tickets::create($data);
-                                    
-                                    // Create the initial TicketJourney record
-                                    TicketJourney::create([
-                                        'ticket_id' => $ticket->id,
-                                        'from_agent' => auth()->id(), // No previous agent (new ticket)
-                                        'to_agent' => $data['assigned_to_id'],
-                                        'from_status' => $data['ticket_status_id'], // No previous status (new ticket)
-                                        'to_status' => $data['ticket_status_id'],
-                                        'actioned_by' => auth()->id(),
-                                        'logged_time' => now(),
-                                    ]);
-                                    
-                                    // Handle attachments
-                                    if (isset($data['attachments'])) {
-                                        foreach ($data['attachments'] as $attachment) {
-                                            TicketAttachment::create([
-                                                'ticket_id' => $ticket->id,
-                                                'file_url' => $attachment,
-                                                'uploaded_by' => auth()->id(),
-                                            ]);
-                                        }
-                                    }
-                                    
-                                    // Show success notification
-                                    Notification::make()
-                                        ->title('Ticket created successfully')
-                                        ->success()
-                                        ->send();
-                                        
-                                    // Redirect to tickets dashboard
-                                    $this->redirect(TicketsManager::getUrl());
-                                } catch (\Exception $e) {
-                                    // Clean up any uploaded files if there was an error
-                                    if (isset($data['attachments'])) {
-                                        foreach ($data['attachments'] as $attachment) {
-                                            Storage::delete($attachment);
-                                        }
-                                    }
-                            
-                                    // Show error notification
-                                    Notification::make()
-                                        ->title('Error creating ticket')
-                                        ->danger()
-                                        ->body($e->getMessage())
-                                        ->send();
-                                }
-                            }
+    public function create(): void
+    {
+        $data = $this->form->getState();
+        
+        // Ensure created_by_id is set
+        if (!isset($data['created_by_id'])) {
+            $data['created_by_id'] = auth()->id();
+        }
+
+        // Force company_id if not set
+        $data['company_id'] = $data['company_id'] ?? auth()->user()->company_id;
+        
+        // Ensure arrays are properly encoded
+        if (isset($data['purpose_type_id']) && is_array($data['purpose_type_id'])) {
+            $data['purpose_type_id'] = json_encode($data['purpose_type_id']);
+        }
+        
+        if (isset($data['notification_type_id']) && is_array($data['notification_type_id'])) {
+            $data['notification_type_id'] = json_encode($data['notification_type_id']);
+        }
+        
+        try {
+            // Create the ticket
+            $ticket = Tickets::create($data);
+            
+            // Create the initial TicketJourney record
+            TicketJourney::create([
+                'ticket_id' => $ticket->id,
+                'from_agent' => auth()->id(),
+                'to_agent' => $data['assigned_to_id'],
+                'from_status' => $data['ticket_status_id'],
+                'to_status' => $data['ticket_status_id'],
+                'actioned_by' => auth()->id(),
+                'logged_time' => now(),
+            ]);
+            
+            // Handle attachments
+            if (isset($data['attachments'])) {
+                foreach ($data['attachments'] as $attachment) {
+                    TicketAttachment::create([
+                        'ticket_id' => $ticket->id,
+                        'file_url' => $attachment,
+                        'uploaded_by' => auth()->id(),
+                    ]);
+                }
+            }
+            
+            // Show success notification
+            Notification::make()
+                ->title('Ticket created successfully')
+                ->success()
+                ->send();
+                
+            // Redirect to tickets dashboard
+            $this->redirect(TicketsManager::getUrl());
+        } catch (\Exception $e) {
+            // Clean up any uploaded files if there was an error
+            if (isset($data['attachments'])) {
+                foreach ($data['attachments'] as $attachment) {
+                    Storage::delete($attachment);
+                }
+            }
+    
+            // Show error notification
+            Notification::make()
+                ->title('Error creating ticket')
+                ->danger()
+                ->body($e->getMessage())
+                ->send();
+        }
+    }
 }

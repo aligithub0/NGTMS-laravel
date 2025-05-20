@@ -25,6 +25,28 @@ class DesignationsResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-s-rectangle-stack';
 
+
+    public static function canViewAny(): bool
+{
+    return auth()->user()?->role?->name === 'Admin';
+}
+
+public static function canCreate(): bool
+{
+    return auth()->user()?->role?->name === 'Admin';
+}
+
+public static function canEdit($record): bool
+{
+    return auth()->user()?->role?->name === 'Admin';
+}
+
+public static function canDelete($record): bool
+{
+    return auth()->user()?->role?->name === 'Admin';
+}
+
+
     public static function getNavigationSort(): int
     {
         $currentFile = basename((new \ReflectionClass(static::class))->getFileName());

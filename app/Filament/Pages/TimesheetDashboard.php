@@ -20,8 +20,19 @@ class TimesheetDashboard extends Page
     
     protected static ?string $title = 'Timesheet Overview';
     
-    protected static ?string $navigationGroup = 'Reports';
+    protected static ?string $navigationGroup = 'TimeSheet Management';
 
+    public static function getNavigationSort(): ?int
+    {
+        return 2; // Change the number according to the order you want
+    }
+
+    //     public static function canAccess(): bool
+    // {
+    //     $roleName = auth()->user()?->role?->name;
+
+    //     return in_array($roleName, ['Admin', 'Manager']);
+    // }
 
     public function filtersForm(Form $form): Form
     {

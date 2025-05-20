@@ -157,8 +157,20 @@ class Tickets extends Model
     }
 
    
+    // public function replies()
+    // {
+    //     return $this->hasMany(TicketReplies::class)->orderBy('created_at', 'desc');
+    // }
+
     public function replies()
-    {
-        return $this->hasMany(TicketReplies::class)->orderBy('created_at', 'desc');
-    }
+{
+    return $this->hasMany(TicketReplies::class, 'ticket_id');
+}
+
+
+public function assignedUser()
+{
+    return $this->belongsTo(User::class, 'assigned_to_id'); 
+}
+
 }

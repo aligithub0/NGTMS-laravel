@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Models\Tickets;
+use App\Models\User;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
@@ -10,13 +11,52 @@ class TicketsOverview extends BaseWidget
 {
     protected function getStats(): array
     {
-        $totalTickets = Tickets::count();
-        $openTickets = Tickets::whereHas('ticketStatus', fn($q) => $q->where('name', 'initiated'))->count();
-        $assignedTickets = Tickets::where('assigned_to_id', auth()->id())->count();
-        $overdueTickets = Tickets::where('assigned_to_id', auth()->id())
-                            ->where('resolution_time', '<', now())
-                            ->count();
+        $user = auth()->user();
 
+        // For Admin - show all tickets
+        if ($user->hasRole('Admin')) {
+            $totalTickets = Tickets::count();
+            $openTickets = Tickets::whereHas('ticketStatus', fn($q) => $q->where('id', '3'))->count(); //ticket opened
+            $assignedTickets = Tickets::where('assigned_to_id', $user->id)->count();
+            $overdueTickets = Tickets::where('assigned_to_id')
+                             ->whereHas('ticketStatus', fn($q) => $q->where('id', '8'))   //ticket closed
+                                ->where('resolution_time', '<', now())
+                                ->count();
+        } 
+        // For Manager - show their tickets and their agents' tickets
+        elseif ($user->hasRole('Manager')) {
+            // Get the agents under this manager
+            $agentIds = User::where('manager_id', $user->id)->pluck('id');
+            
+            $totalTickets = Tickets::where('assigned_to_id', $user->id)
+                            ->orWhereIn('assigned_to_id', $agentIds)
+                            ->count();
+                            
+            $openTickets = Tickets::whereHas('ticketStatus', fn($q) => $q->where('name', 'initiated'))
+                            ->where(function($query) use ($user, $agentIds) {
+                                $query->where('assigned_to_id', $user->id)
+                                    ->orWhereIn('assigned_to_id', $agentIds);
+                            })
+                            ->count();
+                            
+            $assignedTickets = Tickets::where('assigned_to_id', $user->id)->count();
+            
+            $overdueTickets = Tickets::where('assigned_to_id', $user->id)
+                                ->orWhereIn('assigned_to_id', $agentIds)
+                                ->where('resolution_time', '<', now())
+                                ->count();
+        } 
+            // For regular users - only show their own tickets
+            else {
+                $totalTickets = Tickets::where('assigned_to_id', $user->id)->count();
+                $openTickets = Tickets::whereHas('ticketStatus', fn($q) => $q->where('name', 'initiated'))
+                                ->where('assigned_to_id', $user->id)
+                                ->count();
+                $assignedTickets = $totalTickets; // For regular users, assigned tickets = total tickets
+                $overdueTickets = Tickets::where('assigned_to_id', $user->id)
+                                    ->where('resolution_time', '<', now())
+                                    ->count();
+            }
         return [
             Stat::make('Total Tickets', $totalTickets)
                 ->description('All tickets in the system')
