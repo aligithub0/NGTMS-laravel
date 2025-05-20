@@ -43,8 +43,7 @@ class FieldVariablesResource extends Resource
                 TextInput::make('name')
                 ->label('Variable Name')
                 ->required()
-                ->unique(ignoreRecord: true)
-                ->helperText('Only letters and spaces are allowed.'),
+                ->unique(ignoreRecord: true),
 
                 TextInput::make('value')
                 ->label('Value / Label')
