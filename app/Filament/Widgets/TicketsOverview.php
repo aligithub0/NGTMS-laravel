@@ -16,7 +16,7 @@ class TicketsOverview extends BaseWidget
         // For Admin - show all tickets
         if ($user->hasRole('Admin')) {
             $totalTickets = Tickets::count();
-            $openTickets = Tickets::whereHas('ticketStatus', fn($q) => $q->where('id', '3'))->count(); //ticket opened
+            $openTickets = Tickets::whereHas('ticketStatus', fn($q) => $q->where('ticket_status_id', 3))->count(); //ticket opened
             $assignedTickets = Tickets::where('assigned_to_id', $user->id)->count();
             $overdueTickets = Tickets::where('assigned_to_id')
                              ->whereHas('ticketStatus', fn($q) => $q->where('id', '8'))   //ticket closed
@@ -32,7 +32,7 @@ class TicketsOverview extends BaseWidget
                             ->orWhereIn('assigned_to_id', $agentIds)
                             ->count();
                             
-            $openTickets = Tickets::whereHas('ticketStatus', fn($q) => $q->where('name', 'initiated'))
+            $openTickets = Tickets::whereHas('ticketStatus', fn($q) => $q->where('id', '3'))
                             ->where(function($query) use ($user, $agentIds) {
                                 $query->where('assigned_to_id', $user->id)
                                     ->orWhereIn('assigned_to_id', $agentIds);
@@ -49,7 +49,7 @@ class TicketsOverview extends BaseWidget
             // For regular users - only show their own tickets
             else {
                 $totalTickets = Tickets::where('assigned_to_id', $user->id)->count();
-                $openTickets = Tickets::whereHas('ticketStatus', fn($q) => $q->where('name', 'initiated'))
+                $openTickets = Tickets::whereHas('ticketStatus', fn($q) => $q->where('id', '3'))
                                 ->where('assigned_to_id', $user->id)
                                 ->count();
                 $assignedTickets = $totalTickets; // For regular users, assigned tickets = total tickets
