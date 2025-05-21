@@ -6,7 +6,7 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Navigation\MenuItem; // Add this line
+use Filament\Navigation\MenuItem; // Ensure this is imported
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -33,12 +33,9 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
-            ->pages([
-            ])
+            ->pages([])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
-            ->widgets([
-               
-            ])
+            ->widgets([])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -52,8 +49,21 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ])->sidebarCollapsibleOnDesktop()
+            ])
+            ->sidebarCollapsibleOnDesktop()
             ->databaseNotifications()
-            ->databaseNotificationsPolling('2s');;
+            ->databaseNotificationsPolling('2s')
+            // Add this to customize the user menu:
+            ->userMenuItems([
+    MenuItem::make()
+        ->label(function () {
+            $user = auth()->user();
+            $role = is_string($user->role) ? $user->role : ($user->role['name'] ?? 'N/A');
+            return "Role". ' (' . $role . ')';
+        })
+        ->url('#')
+        ->icon('heroicon-o-user')
+        
+]);
     }
 }

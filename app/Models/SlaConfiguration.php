@@ -17,6 +17,12 @@ class SlaConfiguration extends Model
     return $this->belongsTo(Department::class, 'department_id');
 }
 
+// In each model
+public static function getDefault()
+{
+    return self::where('is_default', true)->first();
+}
+
 public function purpose()
 {
     return $this->belongsTo(Purpose::class, 'purpose_id');

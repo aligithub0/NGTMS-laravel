@@ -20,4 +20,10 @@ class Purpose extends Model
     {
         return $this->hasMany(Purpose::class, 'parent_id');
     }
+
+    // In each model
+    public static function getDefault()
+    {
+        return self::where('is_default', true)->first();
+    }
 }

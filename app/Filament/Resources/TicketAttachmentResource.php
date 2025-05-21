@@ -41,6 +41,27 @@ class TicketAttachmentResource extends Resource
         return NavigationOrder::getNavigationGroupByFilename($currentFile);
     }
 
+    public static function canViewAny(): bool
+{
+    return auth()->user()?->role?->name === 'Admin';
+}
+
+public static function canCreate(): bool
+{
+    return auth()->user()?->role?->name === 'Admin';
+}
+
+public static function canEdit($record): bool
+{
+    return auth()->user()?->role?->name === 'Admin';
+}
+
+public static function canDelete($record): bool
+{
+    return auth()->user()?->role?->name === 'Admin';
+}
+
+
     protected static ?string $navigationIcon = 'heroicon-s-ticket';
 
     public static function form(Form $form): Form

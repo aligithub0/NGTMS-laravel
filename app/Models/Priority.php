@@ -9,5 +9,13 @@ class Priority extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'description', 'status', 'is_default'];
+   protected $fillable = ['name', 'description', 'status', 'is_default'];
+
+
+    // In each model
+    public static function getDefault()
+    {
+        return self::where('is_default', true)->first();
+    }
+    
 }

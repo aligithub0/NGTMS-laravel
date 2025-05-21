@@ -66,6 +66,11 @@ public function department()
     return $this->belongsTo(Department::class);
 }
 
+public function hasRole($roleName): bool
+{
+    return $this->role->name === $roleName;
+}
+
 public function manager()
 {
     return $this->belongsTo(User::class, 'manager_id');
@@ -74,6 +79,37 @@ public function manager()
 public function status()
 {
     return $this->belongsTo(UserStatus::class, 'status_id');
+}
+
+// In User model
+public function assignedTickets()
+{
+    return $this->hasMany(Tickets::class, 'assigned_to');
+}
+
+public function createdTickets()
+{
+    return $this->hasMany(Tickets::class, 'created_by');
+}
+
+
+// Get all users who report to this manager (direct reports)
+public function agents()
+{
+    return $this->hasMany(User::class, 'manager_id');
+}
+
+// Check if this user is a manager (has agents)
+public function isManager(): bool
+{
+    return $this->agents()->exists();
+}
+
+// Get all tickets assigned to this manager's agents
+public function teamTickets()
+{
+    $agentIds = $this->agents()->pluck('id');
+    return Tickets::whereIn('assigned_to', $agentIds);
 }
 
 public function designation()
@@ -101,6 +137,37 @@ protected static function booted()
             }
         }
     });
+}
+
+// In User model
+public function scopeActive($query)
+{
+    return $query->whereHas('status', function($query) {
+        $query->where('name', 'Active');
+    });
+}
+
+// In App\Models\User
+public static function getAssignableUsers(): \Illuminate\Support\Collection
+{
+    $authUser = auth()->user();
+    
+    $query = self::where('company_id', $authUser->company_id)
+        ->where('department_id', $authUser->department_id)
+        ->where('assigned_to_others', true)
+        ->whereHas('status', fn($q) => $q->where('name', 'Active'))
+        ->orderBy('name');
+    
+    // Include current user if they can be assigned
+    if ($authUser->assigned_to_others) {
+        $query->orWhere('id', $authUser->id);
+    }
+    
+    return $query->get()->mapWithKeys(fn($user) => [
+        $user->id => $user->id === $authUser->id 
+            ? $user->name . ' (Me)' 
+            : $user->name
+    ]);
 }
 
 }

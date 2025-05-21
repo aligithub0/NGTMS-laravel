@@ -28,9 +28,9 @@ class TicketsBySLAChart extends BarChartWidget
                     'backgroundColor' => [
                         '#3b82f6', // blue
                         '#6366f1', // indigo
-                        '#8b5cf6', // violet
-                        '#a855f7', // purple
-                        '#d946ef', // fuchsia
+                        '#10b981', // emerald (low priority)
+                        '#f59e0b', // amber (medium priority)
+                        '#ef4444', // red (high priority)
                     ],
                     'borderColor' => '#ffffff',
                     'borderWidth' => 1,

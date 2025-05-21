@@ -23,26 +23,17 @@ use App\Filament\Pages\CreateTicket;
 
 
 
-class TicketsDashboard extends Page
+class TicketsManager extends Page
 {
-    protected static string $resource = TicketsResource::class;
-    protected static string $view = 'filament.pages.tickets-dashboard';
-    protected static ?string $navigationIcon = 'heroicon-s-chart-bar';
-    protected static ?string $navigationLabel = 'Tickets Dashboard';
-    protected static ?string $title = 'Tickets Dashboard';
-    protected static ?string $navigationGroup = 'Dashboard';
+    // protected static string $resource = TicketsResource::class;
+    protected static string $view = 'filament.pages.tickets-manager';
+    protected static ?string $navigationIcon = 'heroicon-s-user';
+    protected static ?string $navigationLabel = 'Tickets Manager';
+    protected static ?string $title = 'Tickets Manager';
+    protected static ?string $navigationGroup = 'Ticket Management';
 
-    public static function getNavigationSort(): ?int
-{
-    return 1; // Change the number according to the order you want
-}
 
-    public $showFilterModal = false;
-    // public $title;
-    public $description;
-    public $priority; // Add other fields you need
-
- protected function getHeaderActions(): array
+     protected function getHeaderActions(): array
 {
     return [
         Action::make('create')
@@ -53,12 +44,32 @@ class TicketsDashboard extends Page
 }
 
 
-    public static function canAccess(): bool
-    {
-        $roleName = auth()->user()?->role?->name;
+        public static function getNavigationSort(): ?int
+{
+    return 1; // Change the number according to the order you want
+}
+    public $showFilterModal = false;
+    // public $title;
+    public $description;
+    public $priority; // Add other fields you need
 
-        return in_array($roleName, ['Admin']);
-    }
+//  protected function getHeaderActions(): array
+// {
+//     return [
+//         Action::make('create')
+//             ->label('Create Ticket')
+//             ->url(CreateTicket::getUrl()) // Changed from form() to url()
+//             ->icon('heroicon-o-plus')
+//     ];
+// }
+
+// public static function canAccess(): bool
+// {
+//     $roleName = auth()->user()?->role?->name;
+
+//     return in_array($roleName, ['Admin', 'Manager']);
+// }
+
 
     protected function getHeaderWidgets(): array
     {

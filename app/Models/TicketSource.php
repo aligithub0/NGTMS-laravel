@@ -14,4 +14,11 @@ class TicketSource extends Model
         'status',
         'is_default'
     ];
+
+    // In each model
+public static function getDefault()
+{
+    return self::where('is_default', true)->first();
+}
+
 }
