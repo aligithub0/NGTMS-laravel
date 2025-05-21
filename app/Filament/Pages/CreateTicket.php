@@ -77,6 +77,7 @@ class CreateTicket extends Page
         'resolution_time' => $defaultSla?->resolution_time,
         'notification_type_id' => $defaultNotificationTypes,
         'purpose_type_id' => $defaultPurposes,
+        'requested_email' => auth()->user()?->email,
     ]);
 }
 
@@ -201,36 +202,126 @@ class CreateTicket extends Page
                             ->schema([
                                 Section::make('Contact Information')
                                     ->schema([
-                                        Select::make('contact_id')
-                                            ->label('Contact Person')
-                                            ->placeholder('Select a contact')
-                                            ->options(Contacts::all()->pluck('name', 'id'))
-                                            ->searchable()
-                                            ->preload()
-                                            ->required(),
+                                       Select::make('contact_id')
+                                        ->label('Contact Person')
+                                        ->placeholder('Select a contact')
+                                        ->options(Contacts::all()->pluck('name', 'id'))
+                                        ->searchable()
+                                        ->preload()
+                                        ->required()
+                                        ->live() // This makes the field reactive
+                                        ->afterStateUpdated(function ($state, $set) {
+                                            if ($state) {
+                                                $contact = Contacts::find($state);
+                                                if ($contact && $contact->email) {
+                                                    // Set the to_recipients field with the contact's email
+                                                    $set('to_recipients', [$contact->email]);
+                                                }
+                                            }
+                                        }),
+
                                             
+                                        // Select::make('requested_email')
+                                        // ->label('From Email')
+                                        // ->options(
+                                        //         Tickets::whereNotNull('requested_email')
+                                        //             ->orderBy('requested_email')
+                                        //             ->pluck('requested_email', 'id')
+                                        //     )
+                                        // ->default(auth()->user()?->email)
+                                        // ->searchable()
+                                        // ->preload()
+                                        // ->required(),
+
                                         Select::make('requested_email')
                                             ->label('From Email')
-                                            ->options(
-                                                Tickets::whereNotNull('requested_email')
-                                                    ->orderBy('requested_email')
-                                                    ->pluck('requested_email', 'id')
-                                            )
+                                            ->options(function () {
+                                                $userEmail = auth()->user()?->email;
+                                                $query = Tickets::whereNotNull('requested_email');
+                                                
+                                                if ($userEmail) {
+                                                    $query->where('requested_email', '!=', $userEmail);
+                                                }
+                                                
+                                                $emails = $query->orderBy('requested_email')
+                                                    ->pluck('requested_email', 'requested_email')
+                                                    ->toArray();
+                                                    
+                                                return $userEmail 
+                                                    ? [$userEmail => $userEmail] + $emails 
+                                                    : $emails;
+                                            })
+                                            ->default(auth()->user()?->email)
                                             ->searchable()
+                                            ->disabled()
                                             ->preload()
                                             ->required(),
+
                                         
 
-                                        TagsInput::make('to_recipients')
-                                            ->placeholder(' ')
-                                            ->label('To Recipients')
-                                            ->required(),
-                                            
-                                        TagsInput::make('cc_recipients')
-                                            ->placeholder(' ')
-                                            ->label('CC Recipients')
-                                            ->required(),
+                                        // In your CreateTicket form class, replace the current TagsInput fields with:
 
+                    
+
+Select::make('to_recipients')
+    ->label('To Recipients')
+    ->placeholder('Select contacts')
+    ->multiple()
+    ->searchable()
+    ->preload()
+    ->options(function () {
+        return Contacts::query()
+            ->whereNotNull('email')
+            ->orderBy('name')
+            ->limit(10)
+            ->get()
+            ->mapWithKeys(function ($contact) {
+                return [
+                    $contact->email => "{$contact->name} <{$contact->email}>"
+                ];
+            });
+    })
+    ->getSearchResultsUsing(function (string $search) {
+        return Contacts::query()
+            ->where('email', 'like', "%{$search}%")
+            ->orWhere('name', 'like', "%{$search}%")
+            ->orderBy('name')
+            ->limit(50)
+            ->get()
+            ->mapWithKeys(function ($contact) {
+                return [
+                    $contact->email => "{$contact->name} <{$contact->email}>"
+                ];
+            });
+    })
+    ->rules(['array'])
+    ->afterStateHydrated(function ($component, $state) {
+        if (is_string($state)) {
+            $component->state(json_decode($state, true));
+        }
+    })
+    ->dehydrateStateUsing(fn ($state) => json_encode($state)),
+
+                            TagsInput::make('cc_recipients')
+                                ->placeholder('Add email and press enter')
+                                ->label('CC Recipients')
+                                // ->required()
+                                ->suggestions(
+                                    Tickets::query()
+                                        ->whereNotNull('cc_recipients')
+                                        ->pluck('cc_recipients')
+                                        ->flatten()
+                                        ->unique()
+                                        ->values()
+                                        ->toArray()
+                                )
+                                ->rules(['array'])
+                                ->afterStateHydrated(function ($component, $state) {
+                                    if (is_string($state)) {
+                                        $component->state(json_decode($state, true));
+                                    }
+                                })
+                                ->dehydrateStateUsing(fn ($state) => json_encode($state)),
                                         TextInput::make('contact_ref_no')
                                             ->label('Contact Reference No')
                                             ->placeholder('Enter contact reference number')
