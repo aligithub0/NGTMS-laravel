@@ -46,48 +46,46 @@ class RecentTicketsTable extends BaseWidget
     public function table(Table $table): Table
     {
         return $table
-            ->query($this->getTableQuery()->limit(10))
-            ->columns([
-                TextColumn::make('title')
-                    ->searchable()
-                    ->limit(30),
-                    
-                TextColumn::make('ticketStatus.name')
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'Open' => 'danger',
-                        'In Progress' => 'warning',
-                        'Resolved' => 'success',
+        ->query($this->getTableQuery()->limit(10))
+        ->columns([
+            TextColumn::make('title')
+                ->searchable()
+                ->limit(30),
+                
+            // Remove one of these duplicate status columns
+            TextColumn::make('ticketStatus.name')
+                ->label('Ticket Status')
+                ->badge()
+                ->color(function (string $state): string {
+                    return match ($state) {
+                        'Draft' => 'gray',
+                        'Created' => 'success',
+                        'Assigned' => 'info',
+                        'Inprogress' => 'warning',
+                        'Waiting' => 'warning',
+                        'Approval' => 'primary',
                         default => 'gray',
-                    }),
-                    
-                TextColumn::make('ticketStatus.name')
-                    ->label('Ticket Status')
-                    ->badge()
-                    ->color(function (string $state): string {
-                        return match ($state) {
-                            'Draft' => 'gray',
-                            'Created' => 'success',
-                            'Assigned' => 'info',
-                            'Inprogress' => 'warning',
-                            'Waiting' => 'warning',
-                            'Approval' => 'primary',
-                            default => 'gray',
-                        };
-                    })
-                    ->sortable(),
-                    
-               TextColumn::make('assignedUser.name') 
+                    };
+                })
+                ->sortable(),
+                
+            TextColumn::make('assignedUser.name') 
                 ->label('Assigned To'),
-                    
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable(),
-                    
-                TextColumn::make('resolution_time')
-                    ->label('Due Date')
-                    ->dateTime(),
-            ])
+                
+            TextColumn::make('created_at')
+                ->dateTime()
+                ->sortable(),
+                
+            TextColumn::make('resolution_time')
+                ->label('Due Date')
+                ->formatStateUsing(function ($state) {
+                    try {
+                        return \Carbon\Carbon::parse($state)->format('Y-m-d H:i:s');
+                    } catch (\Exception $e) {
+                        return 'Invalid date';
+                    }
+                }),
+        ])
             ->filters([
                 SelectFilter::make('status')
                     ->relationship('ticketStatus', 'name')

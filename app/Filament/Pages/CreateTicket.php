@@ -51,6 +51,7 @@ class CreateTicket extends Page
         return auth()->user()?->role?->name === 'Admin';
     }
 
+
     public ?array $data = [];
 
     public function mount(): void
@@ -107,6 +108,8 @@ class CreateTicket extends Page
                                             })
                                             ->dehydrateStateUsing(fn ($state) => json_encode($state)),
                                             
+                                       
+                                            
                                         TextInput::make('title')
                                             ->label('Title')
                                             ->placeholder('Enter ticket Title')
@@ -116,8 +119,10 @@ class CreateTicket extends Page
                                         RichEditor::make('message')
                                             ->required()
                                             ->extraAttributes(['class' => 'max-h-[100px]'])
+                                            ->extraAttributes(['class' => 'max-h-[100px]'])
                                             ->columnSpanFull(),
                                             
+        
                                         Select::make('ticket_status_id')
                                             ->label('Status')
                                             ->placeholder('Select status')
@@ -133,6 +138,8 @@ class CreateTicket extends Page
                                             ->searchable()
                                             ->preload()
                                             ->required(),
+
+
 
                                         Select::make('priority_id')
                                             ->label('Priority')
@@ -172,8 +179,40 @@ class CreateTicket extends Page
                                                     ];
                                                 });
                                             })
+                                            ->options(function () {
+                                                $authUser = auth()->user();
+                                                
+                                                // Start with current user (always included)
+                                                $usersQuery = User::where('id', $authUser->id);
+                                                
+                                                // If current user can assign to others, include other assignable users from same company
+                                                if ($authUser->assigned_to_others) {
+                                                    $usersQuery->orWhere(function ($query) use ($authUser) {
+                                                        $query->where('company_id', $authUser->company_id)
+                                                            // ->where('assigned_to_others', true)
+                                                            ->where('id', '!=', $authUser->id) // Exclude current user (already included)
+                                                            ->whereHas('status', function($query) {
+                                                                $query->where('name', 'Active');
+                                                            });
+                                                    });
+                                                }
+                                                
+                                                $users = $usersQuery->orderBy('name')->get();
+                                                
+                                                return $users->mapWithKeys(function ($user) use ($authUser) {
+                                                    return [
+                                                        $user->id => $user->id === $authUser->id 
+                                                            ? $user->name . ' (Me)' 
+                                                            : $user->name
+                                                    ];
+                                                });
+                                            })
                                             ->searchable()
                                             ->preload()
+                                            ->default(auth()->id()) // Default to current user
+                                            ->required()
+                                            ->rules(['required', 'integer', 'exists:users,id'])
+
                                             ->default(auth()->id()) // Default to current user
                                             ->required()
                                             ->rules(['required', 'integer', 'exists:users,id']),
@@ -333,8 +372,14 @@ Select::make('to_recipients')
                                     ->default(auth()->user()->company_id)
                                     ->dehydrated(),
                                                                     
+                                
+                                Hidden::make('company_id')
+                                    ->default(auth()->user()->company_id)
+                                    ->dehydrated(),
+                                                                    
                                 Section::make('Settings & Attachments')
                                     ->schema([
+                                            
                                         Select::make('SLA')
                                             ->label('SLA Type')
                                             ->placeholder('Select SLA')
@@ -382,6 +427,7 @@ Select::make('to_recipients')
                                                 Hidden::make('resolution_time'),
                                             ]),
                                             
+                                            
                                         FileUpload::make('attachments')
                                             ->label('Attachments')
                                             ->placeholder('Drag & drop files here or click to upload')
@@ -399,9 +445,10 @@ Select::make('to_recipients')
                                     
                                 Section::make()
                                     ->schema([
+                                        
                                         DateTimePicker::make('reminder_datetime')
-                                            ->nullable()
-                                            ->required(),
+                                            ->nullable(),
+                                            
                                     ])
                             ])
                             ->columnSpan(['lg' => 1]),
@@ -419,6 +466,7 @@ Select::make('to_recipients')
                         ->submit('create')
                         ->size('lg')
                 ])->alignEnd()
+                
             ])
             ->statePath('data');
     }
@@ -431,6 +479,9 @@ Select::make('to_recipients')
         if (!isset($data['created_by_id'])) {
             $data['created_by_id'] = auth()->id();
         }
+
+        // Force company_id if not set
+        $data['company_id'] = $data['company_id'] ?? auth()->user()->company_id;
 
         // Force company_id if not set
         $data['company_id'] = $data['company_id'] ?? auth()->user()->company_id;
@@ -447,6 +498,17 @@ Select::make('to_recipients')
         try {
             // Create the ticket
             $ticket = Tickets::create($data);
+            
+            // Create the initial TicketJourney record
+            TicketJourney::create([
+                'ticket_id' => $ticket->id,
+                'from_agent' => auth()->id(),
+                'to_agent' => $data['assigned_to_id'],
+                'from_status' => $data['ticket_status_id'],
+                'to_status' => $data['ticket_status_id'],
+                'actioned_by' => auth()->id(),
+                'logged_time' => now(),
+            ]);
             
             // Create the initial TicketJourney record
             TicketJourney::create([
@@ -478,6 +540,7 @@ Select::make('to_recipients')
                 
             // Redirect to tickets dashboard
             $this->redirect(TicketsManager::getUrl());
+            $this->redirect(TicketsManager::getUrl());
         } catch (\Exception $e) {
             // Clean up any uploaded files if there was an error
             if (isset($data['attachments'])) {
@@ -485,6 +548,7 @@ Select::make('to_recipients')
                     Storage::delete($attachment);
                 }
             }
+    
     
             // Show error notification
             Notification::make()
