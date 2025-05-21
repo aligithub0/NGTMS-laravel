@@ -203,22 +203,24 @@ class UserResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('name')
-                ->label('Name')
-                ->formatStateUsing(function ($state, $record) {
-                    $url = $record->picture
-                        ? Storage::disk('public')->url($record->picture)
-                        : 'https://ui-avatars.com/api/?name=' . urlencode($record->name);
-                
-                    return '<div class="flex items-center gap-2">
-                                <img src="' . $url . '" class="h-8 w-8 rounded-full object-cover" />
-                                <span>' . e($record->name) . '</span>
-                            </div>';
-                })
-                ->html()
-                ->searchable(),
+                    ->label('Name')
+                    ->formatStateUsing(function ($state, $record) {
+                        $url = $record->picture
+                            ? asset('storage/' . $record->picture)
+                            : 'https://ui-avatars.com/api/?name=' . urlencode($record->name);
+
+                        return <<<HTML
+                            <div class="flex items-center gap-2">
+                                <img src="{$url}" class="h-8 w-8 rounded-full object-cover" />
+                                <span>{$record->name}</span>
+                            </div>
+                        HTML;
+                    })
+                    ->html()
+                    ->searchable(),
 
 
-                            TextColumn::make('email'),
+                TextColumn::make('email'),
                 TextColumn::make('role.name')->label('Role'),
                 TextColumn::make('userType.name')->label('User Type'),
                 TextColumn::make('company.name')->label('Company'),

@@ -3242,7 +3242,7 @@ select {
 
 .overflow-x-clip {
   overflow-x: clip;
-  box-shadow: 2px 2px 5px rgb(159, 155, 155)
+  box-shadow: 2px 2px 3px rgb(159, 155, 155)
 }
 
 .truncate {
