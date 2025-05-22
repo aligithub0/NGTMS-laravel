@@ -97,7 +97,6 @@ class CreateTicket extends Page
                                             ->label('Purpose')
                                             ->placeholder('Select purposes')
                                             ->options(Purpose::all()->pluck('name', 'id'))
-                                            ->multiple()
                                             ->searchable()
                                             ->preload()
                                             ->required()

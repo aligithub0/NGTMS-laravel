@@ -48,9 +48,35 @@ class RecentTicketsTable extends BaseWidget
         return $table
         ->query($this->getTableQuery()->limit(10))
         ->columns([
+
+            TextColumn::make('ticket_id')
+                ->searchable()
+                ->limit(30),
+
             TextColumn::make('title')
                 ->searchable()
                 ->limit(30),
+
+            
+            // Show SLA name instead of ID
+            TextColumn::make('slaConfiguration.name')
+                ->label('SLA')
+                ->sortable()
+                ->searchable(),
+                
+            // Add Priority column
+            TextColumn::make('priority.name')
+                ->label('Priority')
+                ->badge()
+                ->color(function ($state) {
+                    return match ($state) {
+                        'High' => 'danger',
+                        'Medium' => 'warning',
+                        'Low' => 'success',
+                        default => 'gray',
+                    };
+                })
+                ->sortable(),
                 
             // Remove one of these duplicate status columns
             TextColumn::make('ticketStatus.name')
@@ -78,13 +104,14 @@ class RecentTicketsTable extends BaseWidget
                 
             TextColumn::make('resolution_time')
                 ->label('Due Date')
-                ->formatStateUsing(function ($state) {
-                    try {
-                        return \Carbon\Carbon::parse($state)->format('Y-m-d H:i:s');
-                    } catch (\Exception $e) {
-                        return 'Invalid date';
-                    }
-                }),
+                ->dateTime(),
+                // ->formatStateUsing(function ($state) {
+                //     try {
+                //         return \Carbon\Carbon::parse($state)->format(config('constants.default_datetime_format'));
+                //     } catch (\Exception $e) {
+                //         return 'Invalid date';
+                //     }
+                // }),
         ])
             ->filters([
                 SelectFilter::make('status')
@@ -99,6 +126,14 @@ class RecentTicketsTable extends BaseWidget
                     ->label('Ticket Source')
                     ->searchable()
                     ->preload(),
+
+                SelectFilter::make('sla')
+                    ->relationship('slaConfiguration', 'name')
+                    ->label('SLA Configuration'),
+                    
+                SelectFilter::make('priority')
+                    ->relationship('priority', 'name')
+                    ->label('Ticket Priority'),
                 
                 Filter::make('created_at')
                     ->form([
