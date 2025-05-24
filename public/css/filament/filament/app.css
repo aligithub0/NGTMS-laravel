@@ -3076,6 +3076,10 @@ select {
   row-gap: .5rem
 }
 
+.ql-container {
+  min-height: 200px !important;
+}
+
 .gap-y-3 {
   row-gap: .75rem
 }
@@ -3294,8 +3298,12 @@ select {
   border-top-right-radius: .75rem
 }
 
-.border {
+/* .border {
   border-width: 1px
+} */
+
+.tooltip_custom .tooltip_custom_absolute {
+  background: yellow !important;
 }
 
 .border-2 {
@@ -3974,10 +3982,10 @@ select {
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)
 }
 
-.shadow-lg {
+/* .shadow-lg {
   --tw-shadow: 0 10px 15px -3px rgba(0, 0, 0, .1), 0 4px 6px -4px rgba(0, 0, 0, .1);
   --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color)
-}
+} */
 
 .shadow-sm {
   --tw-shadow: 0 1px 2px 0 rgba(0, 0, 0, .05);

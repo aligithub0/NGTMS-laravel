@@ -13,7 +13,7 @@
                                 <!-- To Recipients -->
                                 <div class="flex w-full items-center">
                                 <div class="w-full flex items-center">
-                                    <label style="padding-right:42px;" class="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2 px-2">To:</label>
+                                    <label style="padding-right:42px;" class="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2 px-2">To</label>
                                     <input 
                                         type="email" 
                                         wire:model="replyData.to_recipients" 
@@ -28,7 +28,7 @@
     <!-- CC Recipients -->
     <div class="flex w-full items-center">
         <div class="w-full flex items-center">
-            <label style="padding-right:38px;" class="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2 px-2">CC:</label>
+            <label style="padding-right:38px;" class="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2 px-2">CC</label>
             <input 
                 type="email" 
                 wire:model="replyData.cc_recipients"
@@ -41,7 +41,7 @@
     <!-- BCC Recipients -->
     <div class="flex w-full items-center">
         <div class="w-full flex items-center">
-            <label style="padding-right:29px;" class="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2 px-2">BCC:</label>
+            <label style="padding-right:29px;" class="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2 px-2">BCC</label>
             <input 
                 type="email" 
                 wire:model="replyData.bcc"
@@ -54,7 +54,7 @@
     <!-- Subject -->
     <div class="flex w-full items-center">
         <div class="w-full flex items-center">
-            <label  class="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2 px-2">Subject:</label>
+            <label  class="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2 px-2">Subject</label>
             <input 
                 type="text" 
                 wire:model="replyData.subject" 
@@ -89,7 +89,7 @@
     });
 "
 wire:ignore>
-    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Message</label>
+    <!-- <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Message</label> -->
 
     {{-- The editable div --}}
     <div x-ref="quillEditor"
@@ -112,7 +112,7 @@ wire:ignore>
     </div>
 
     <!-- Notify Customer Checkbox -->
-    <div class="flex items-center">
+    <!-- <div class="flex items-center">
         <input 
             type="checkbox" 
             wire:model="replyData.notify_customer" 
@@ -122,7 +122,7 @@ wire:ignore>
             for="notify_customer" 
             class="ml-2 block text-sm text-gray-900 dark:text-white"
             style="font-size:13px;">Notify customer</label>
-    </div>
+    </div> -->
 
     <!-- Attachment -->
     <div class="w-full">
@@ -365,7 +365,7 @@ wire:ignore>
                                 <div class="flex items-center">
                                     <x-heroicon-o-calendar class="w-4 h-4 mr-2 text-primary-500 dark:text-primary-400 flex-shrink-0" />
                                     <span class="text-xs font-medium text-gray-500 dark:text-gray-400 px-2">Message: </span>
-                                    <div class="relative">
+                                    <div class="relative tooltip_custom">
                                         <!-- Truncated preview text -->
                                         <span class="font-semibold text-gray-800 dark:text-white truncate cursor-pointer"
                                             @mouseenter="showTooltip = true" 
@@ -380,7 +380,7 @@ wire:ignore>
                                         
                                         <!-- Standard colored tooltip with plain text -->
                                         <div x-show="showTooltip" x-transition
-                                            class="absolute z-50 w-64 p-3 mt-2 text-md font-normal text-black bg-white  dark:bg-gray-600 rounded-md shadow-lg whitespace-pre-line">
+                                            class="absolute z-50 w-64 p-3 mt-2 text-md font-normal bg-red tooltip_custom_absolute text-black dark:bg-gray-600 rounded-md shadow-lg">
                                             @php
                                                 // Convert to plain text with preserved line breaks
                                                 $plainText = html_entity_decode(strip_tags($this->record->message));
@@ -391,7 +391,7 @@ wire:ignore>
                                             {!! $plainText !!}
                                             
                                             <!-- Tooltip arrow -->
-                                            <div class="absolute -top-1 left-4 w-2 h-2 bg-gray-800 dark:bg-gray-600 transform rotate-45"></div>
+                                            <div class="absolute -top-1 left-4 w-10 h-2 bg-gray-800 dark:bg-gray-600 transform rotate-45"></div>
                                         </div>
                                     </div>
                                 </div>
