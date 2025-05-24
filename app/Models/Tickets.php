@@ -77,7 +77,7 @@ class Tickets extends Model
                     'to_status' => $ticket->ticket_status_id,
                     'actioned_by' => auth()->id(),
                     'logged_time' => now(),
-                    'total_time_diff'=> now()
+                    // 'total_time_diff'=> now()
                 ]);
             }
         });
@@ -127,9 +127,9 @@ class Tickets extends Model
         return $this->belongsTo(Contacts::class, 'contact_id');
     }
  
-    public function purposeTypes()
+    public function purposeType()
     {
-        return Purpose::whereIn('id', $this->purpose_type_id ?? [])->get();
+        return $this->belongsTo(Purpose::class, 'purpose_type_id');
     }
  
     public function slaConfiguration()
@@ -167,16 +167,21 @@ class Tickets extends Model
     // {
     //     return $this->hasMany(TicketReplies::class)->orderBy('created_at', 'desc');
     // }
+    public function comments()
+    {
+        return $this->hasMany(Comments::class, 'ticket_id');
+    }
+
 
     public function replies()
-{
-    return $this->hasMany(TicketReplies::class, 'ticket_id');
-}
+    {
+        return $this->hasMany(TicketReplies::class, 'ticket_id');
+    }
 
 
-public function assignedUser()
-{
-    return $this->belongsTo(User::class, 'assigned_to_id'); 
-}
+    public function assignedUser()
+    {
+        return $this->belongsTo(User::class, 'assigned_to_id'); 
+    }
 
 }

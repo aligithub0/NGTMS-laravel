@@ -2620,7 +2620,7 @@ select {
   margin-top: 30px;
   margin-bottom: 30px;
   border-radius: 10px;
-  box-shadow: 2px 2px 10px rgb(159 155 155);
+  /* box-shadow: 2px 2px 10px rgb(159 155 155); */
 }
 
 .max-w-fit {
@@ -3242,7 +3242,7 @@ select {
 
 .overflow-x-clip {
   overflow-x: clip;
-  box-shadow: 2px 2px 3px rgb(159, 155, 155)
+  /* box-shadow: 2px 2px 3px rgb(159, 155, 155) */
 }
 
 .truncate {
@@ -3281,7 +3281,7 @@ select {
 
 .rounded-xl {
   border-radius: .75rem;
-  box-shadow: 2px 2px 3px #c1c1c1 !important;
+  /* box-shadow: 2px 2px 3px #c1c1c1 !important; */
 }
 
 .rounded-b-xl {
@@ -5923,7 +5923,7 @@ input:focus-visible+.dark\:\[input\:focus-visible\+\&\]\:ring-white\/20:is(.dark
   overflow-y: scroll !important;
   /* Enables vertical scrolling */
   scrollbar-width: none !important;
-  box-shadow: 2px 2px 5px rgb(160, 159, 159);
+  /* box-shadow: 2px 2px 5px rgb(160, 159, 159); */
   /* Firefox */
   -ms-overflow-style: none !important;
   /* IE and Edge */
@@ -5933,15 +5933,17 @@ input:focus-visible+.dark\:\[input\:focus-visible\+\&\]\:ring-white\/20:is(.dark
   display: none !important;
   /* Chrome, Safari, Opera */
 }
-/* 
+ 
 .fi-sidebar {
   background-color: white !important;
 }
 
 .fi-main {
-  background-color: white !important;
-} */
+  max-width: 100% !important;
+  margin-top: 0 !important;
+} 
 
+/*
 .fi-header-heading {
   font-size: 1.5rem !important;
   font-weight: 600 !important;
@@ -5963,6 +5965,15 @@ input:focus-visible+.dark\:\[input\:focus-visible\+\&\]\:ring-white\/20:is(.dark
   font-size: 16px !important;
   /* font-family: 'Archivo' !important; */
 }
+
+.fi-fo-component-ctn  {
+  gap: 1rem !important; /* gap-3 is 0.75rem */
+}
+
+/* .fi-fo-field-wrp{
+  display: flex;
+} */
+
 
 .fi-sidebar-item-icon {
   color: #29d;
