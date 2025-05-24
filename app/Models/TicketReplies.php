@@ -29,7 +29,8 @@ class TicketReplies extends Model
         'is_reply_from_contact',
         'is_contact_notify',
         'activity_log',
-        'attachment_path'
+        'attachment_path',
+        'is_read'
     ];
 
     protected $casts = [

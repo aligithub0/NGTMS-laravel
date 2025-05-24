@@ -97,12 +97,7 @@ public static function canDelete($record): bool
 
                 Textarea::make('description')->required()->rows(2),
 
-                Select::make('purpose_id')
-                ->label('Purpose')
-                ->options(Purpose::all()->pluck('name', 'id'))
-                ->searchable()
-                ->preload()
-                ->nullable(),
+             
 
 
                 TextInput::make('response_time')
@@ -194,7 +189,6 @@ public static function canDelete($record): bool
                 TextColumn::make('name')->searchable(),
                 TextColumn::make('description')->searchable()->label('Ticket Issue'),
                 TextColumn::make('department.name')->label('Department'),
-                TextColumn::make('purpose.name')->label('Purpose'),
 
                 TextColumn::make('response_time')
                     ->label('Response Time'),

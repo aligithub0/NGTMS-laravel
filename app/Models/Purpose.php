@@ -9,7 +9,7 @@ class Purpose extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'parent_id', 'description', 'status', 'is_default'];
+    protected $fillable = ['name', 'parent_id', 'sla_id', 'description', 'status', 'is_default'];
 
     public function parent()
     {
@@ -19,6 +19,11 @@ class Purpose extends Model
     public function children()
     {
         return $this->hasMany(Purpose::class, 'parent_id');
+    }
+
+    public function sla()
+    {
+        return $this->belongsTo(SlaConfiguration::class, 'sla_id');
     }
 
     // In each model

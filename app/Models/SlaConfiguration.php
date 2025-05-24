@@ -9,7 +9,7 @@ class SlaConfiguration extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'description', 'department_id', 'purpose_id', 'response_time', 'resolution_time', 'escalated_to_user_id', 'is_default'];
+    protected $fillable = ['name', 'description', 'department_id', 'response_time', 'resolution_time', 'escalated_to_user_id', 'is_default'];
 
 
     public function department()
@@ -23,10 +23,7 @@ public static function getDefault()
     return self::where('is_default', true)->first();
 }
 
-public function purpose()
-{
-    return $this->belongsTo(Purpose::class, 'purpose_id');
-}
+
 
 
 public function escalated()

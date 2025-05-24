@@ -38,6 +38,7 @@ class Tickets extends Model
         'to_recipients',
         'cc_recipients',
         'ticket_id',
+        'is_read',
     ];
  
     protected $casts = [

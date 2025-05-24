@@ -161,7 +161,11 @@ class TicketRepliesResource extends Resource
 
                     TagsInput::make('to_recipients')->label('To Recipents')
                     ->required(),
-
+                    
+                    Toggle::make('is_read')
+                    ->label('Is Read?')
+                    ->default(false)
+                    ->inline(false),
                     
                     Textarea::make('internal_notes'),
                     Textarea::make('external_notes'),

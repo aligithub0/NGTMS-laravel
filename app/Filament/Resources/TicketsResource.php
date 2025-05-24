@@ -298,7 +298,10 @@ public static function canDelete($record): bool
                     ->required(),
 
                
-               
+                    Toggle::make('is_read')
+                    ->label('Is Read?')
+                    ->default(false)
+                    ->inline(false),
 
                 Toggle::make('reminder_flag')
                 ->label('Reminder Flag')

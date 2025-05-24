@@ -20,7 +20,7 @@ use Filament\Forms\Components\RichEditor;
 
 class TicketReply extends Page
 {
-    protected static ?string $navigationIcon = 'heroicon-o-chat-bubble-bottom-center-text';
+    protected static ?string $navigationIcon = 'heroicon-s-chat-bubble-bottom-center-text';
     protected static ?string $navigationGroup = 'Ticket Management';
     protected static string $view = 'filament.pages.ticket-reply';
 
