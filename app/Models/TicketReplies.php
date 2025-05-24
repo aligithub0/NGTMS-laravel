@@ -30,7 +30,10 @@ class TicketReplies extends Model
         'is_contact_notify',
         'activity_log',
         'attachment_path',
-        'is_read'
+        'is_read',
+        'parent_reply_id',
+        'parent_message_id',
+        'message_id',
     ];
 
     protected $casts = [

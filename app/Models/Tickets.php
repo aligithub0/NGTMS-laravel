@@ -78,6 +78,7 @@ class Tickets extends Model
                     'to_status' => $ticket->ticket_status_id,
                     'actioned_by' => auth()->id(),
                     'logged_time' => now(),
+                    'total_time_diff'=> now()
                 ]);
             }
         });

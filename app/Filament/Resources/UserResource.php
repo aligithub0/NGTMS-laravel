@@ -82,10 +82,9 @@ class UserResource extends Resource
                 ->required()
                 ->rules([
                     'required',
-                    'regex:/^[A-Za-z\s]+$/',
+                    
                     'max:255',
-                ])
-                ->helperText('Only letters and spaces are allowed.'),
+                ]),
 
                 TextInput::make('email')
                 ->required()
@@ -208,14 +207,14 @@ class UserResource extends Resource
                 ->enableOpen()
                 ,
     
-                    TextInput::make('max_ticket_threshold')
-                    ->numeric()
-                    ->rules(['required', 'integer', 'min:1']),
+                TextInput::make('max_ticket_threshold')
+                ->numeric()
+                ->rules(['required', 'integer', 'min:1']),
 
-                    Toggle::make('is_first_time')
-                    ->label('Is First Time')
-                    ->default(true)
-                    ->inline(false),
+                Toggle::make('is_first_time')
+                ->label('Is First Time')
+                ->default(true)
+                ->inline(false),
             ]);
     }
 

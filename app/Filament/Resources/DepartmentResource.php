@@ -65,10 +65,8 @@ public static function canDelete($record): bool
                 ->required()
                 ->rules([
                     'required',
-                    'regex:/^[A-Za-z\s]+$/',
                     'max:255',
-                ])
-                ->helperText('Only letters and spaces are allowed.'),
+                ]),
 
                 Toggle::make('status')
                 ->label('Active')

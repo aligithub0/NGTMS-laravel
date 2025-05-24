@@ -275,6 +275,8 @@ public static function canDelete($record): bool
                 TagsInput::make('cc_recipients')->label('CC Recipents')
                 ->required(),
 
+                
+
              Select::make('resolution_time_id')
                 ->label('Resolution Time')
                 ->options(SlaConfiguration::all()->pluck('resolution_time', 'id'))
@@ -366,7 +368,7 @@ public static function canDelete($record): bool
             'create' => Pages\CreateTickets::route('/create'),
             'edit' => Pages\EditTickets::route('/{record}/edit'),
             'view' => Pages\ViewTicket::route('/{record}'),
-            // 'edit-ticket' => Filament\Pages\EditTicket::route('/{record}/edit-ticket')
+            'reply' => Pages\ReplyTicket::route('/{record}/reply'),
         ];
     }
 }

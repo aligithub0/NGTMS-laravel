@@ -103,7 +103,7 @@
         /* Main content grid */
         .content-grid {
             display: grid;
-            grid-template-columns: 2.5fr 1.5fr;
+            grid-template-columns: 2.5fr 1.1fr;
             gap: 20px;
             width: 100%;
             min-width: 0;
@@ -221,7 +221,6 @@
         color: #3b82f6;
         }
 
-
 </style>
 
 <div class="dashboard-container">
@@ -274,97 +273,60 @@
         </div>
 
             <!-- Right: KPI cards and Tickets Journey -->
-            <div>
-    <div class="kpi-container">
-        <div class="kpi-card pink">
-            <div class="kpi-label">Total Tickets</div>
-            <div class="kpi-value">{{ $totalTickets }}</div>
-        </div>
-        <div class="kpi-card purple">
-            <div class="kpi-label">Users</div>
-            <div class="kpi-value">{{ $totalUsers }}</div>
-        </div>
-        <div class="kpi-card blue">
-            <div class="kpi-label">Companies</div>
-            <div class="kpi-value">{{ $totalCompanies }}</div>
-        </div>
-        <div class="kpi-card orange">
-            <div class="kpi-label">Departments</div>
-            <div class="kpi-value">{{ $totalDepartments }}</div>
-        </div>
-        <div class="kpi-card indigo">
-            <div class="kpi-label">Designations</div>
-            <div class="kpi-value">{{ $totalDesignations }}</div>
-        </div>
-        <div class="kpi-card red">
-            <div class="kpi-label">Projects</div>
-            <div class="kpi-value">{{ $totalProjects }}</div>
-        </div>
+    <div>
+        <div class="kpi-container">
+            <div class="kpi-card pink">
+                <div class="kpi-label">Total Tickets</div>
+                <div class="kpi-value">{{$totalTickets}} </div>
+            </div>
+            <div class="kpi-card purple">
+                <div class="kpi-label">New Tickets</div>
+                <div class="kpi-value">{{$openTickets}} </div>
+            </div>
+            <div class="kpi-card blue">
+                <div class="kpi-label">Open Tickets</div>
+                <div class="kpi-value">{{$assignedTickets}}</div>
+            </div>
+            <div class="kpi-card orange">
+                <div class="kpi-label">Assigned to Me</div>
+                <div class="kpi-value">{{$newTickets}}</div>
+            </div>
+
+            <div class="kpi-card indigo  ">
+                <div class="kpi-label">Overdue Tickets</div>
+                <div class="kpi-value">{{$overdueTickets}}</div>
+            </div>
+
+            <div class="kpi-card red">
+                <div class="kpi-label">In Progress</div>
+                <div class="kpi-value">{{$inProgressTickets}}</div>
+            </div>
+
+            <div class="kpi-card green">
+                <div class="kpi-label">On Hold</div>
+                <div class="kpi-value">{{$onHoldTickets}}</div>
+            </div>
+
+            <div class="kpi-card aqua">
+                <div class="kpi-label">Reopened</div>
+                <div class="kpi-value">{{$reopenedTickets}}</div>
+            </div>
     </div>
-</div>
 
-
-
-                <div class="card recent-tickets-journey-card">
-                    <div class="card-header">Recent Tickets Journey</div>
-                    <div class="ticket-list">
-                        <div class="ticket-item open">
-                            <div class="status-dot"></div>
-                            <div class="ticket-info">
-                                <div class="ticket-id">Ticket #128</div>
-                                <div class="ticket-desc">New - Assigned to John</div>
-                            </div>
-                            <div class="ticket-status">Open</div>
-                        </div>
-                        <div class="ticket-item in-progress">
-                            <div class="status-dot"></div>
-                            <div class="ticket-info">
-                                <div class="ticket-id">Ticket #122</div>
-                                <div class="ticket-desc">In Progress - Assigned to Alice</div>
-                            </div>
-                            <div class="ticket-status">In Progress</div>
-                        </div>
-                        <div class="ticket-item closed">
-                            <div class="status-dot"></div>
-                            <div class="ticket-info">
-                                <div class="ticket-id">Ticket #110</div>
-                                <div class="ticket-desc">Closed - Resolved by Mark</div>
-                            </div>
-                            <div class="ticket-status">Closed</div>
-                        </div>
-                        <div class="ticket-item overdue">
-                            <div class="status-dot"></div>
-                            <div class="ticket-info">
-                                <div class="ticket-id">Ticket #99</div>
-                                <div class="ticket-desc">Overdue - Pending response</div>
-                            </div>
-                            <div class="ticket-status">Overdue</div>
-                        </div>
-                        <div class="ticket-item on-hold">
-                            <div class="status-dot"></div>
-                            <div class="ticket-info">
-                                <div class="ticket-id">Ticket #85</div>
-                                <div class="ticket-desc">On Hold - Waiting for info</div>
-                            </div>
-                            <div class="ticket-status">On Hold</div>
-                        </div>
-                    </div>
-                    
-                </div>
             </div>
         </div>
     </div>
 
-@push('scripts')
-<!-- ApexCharts -->
-<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-<!-- Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<!-- ECharts -->
-<script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
-<script src="https://kit.fontawesome.com/a11f41f0d2.js" crossorigin="anonymous"></script>
+    @push('scripts')
+    <!-- ApexCharts -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- ECharts -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+    <script src="https://kit.fontawesome.com/a11f41f0d2.js" crossorigin="anonymous"></script>
 
-<script>
+    <script>
     document.addEventListener('DOMContentLoaded', function () {
         setTimeout(() => {
             // ApexCharts - Tickets Overview Bar Chart
