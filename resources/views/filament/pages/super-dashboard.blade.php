@@ -1,128 +1,109 @@
 <x-filament::page>
+    <div>
 <style>
         /* Basic container padding */
         .dashboard-container {
             padding: 20px 15px;
         }
-        /* Banner styles */
-        .top-banner {
-            background: #f3f4f6;
-            border-radius: 12px;
-            padding: 25px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-        }
-        .banner-text {
-            max-width: 60%;
-        }
-        .banner-text h2 {
-            color: #2563eb;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-        .banner-text p {
-            color: #4b5563;
-            font-size: 14px;
-        }
-        .banner-btn {
-            border: 1px solid #2563eb;
-            padding: 6px 15px;
-            border-radius: 6px;
-            color: #2563eb;
-            font-weight: 500;
-            cursor: pointer;
-            background: white;
-            transition: background 0.3s ease;
-        }
-        .banner-btn:hover {
-            background: #2563eb;
-            color: white;
-        }
-        .banner-img img {
-            max-height: 120px;
-        }
 
         /* KPI small cards on right */
         .kpi-container {
-    display: flex;
-    gap: 15px;
-    flex-wrap: wrap;
-    margin-bottom: 45px;
-}
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        margin-bottom: 45px;
+    }
 
-.kpi-card {
-    flex: 1 1 200px;
-    border-radius: 12px;
-    color: white;
-    padding: 20px 25px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    min-height: 120px;
-    box-shadow: 0 8px 20px rgb(0 0 0 / 0.12);
-    position: relative;
-    overflow: hidden;
-    cursor: default;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
+    .kpi-card {
+        flex: 1 1 200px;
+        border-radius: 12px;
+        color: white;
+        padding: 20px 25px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-height: 120px;
+        box-shadow: 0 8px 20px rgb(0 0 0 / 0.12);
+        position: relative;
+        overflow: hidden;
+        cursor: default;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
 
-.kpi-label {
-    font-weight: 600;
-    font-size: 1rem;
-    opacity: 0.9;
-    margin-bottom: 8px;
-}
+    .kpi-label {
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-bottom: 8px;
+    }
 
-.kpi-value {
-    font-size: 2.8rem;
-    font-weight: 700;
-    line-height: 1;
-}
+    .kpi-value {
+        font-size: 2.8rem;
+        font-weight: 700;
+        line-height: 1;
+    }
 
-.kpi-subtext {
-    font-weight: 500;
-    font-size: 0.875rem;
-    opacity: 0.8;
-    margin-top: 6px;
-}
+    .kpi-subtext {
+        font-weight: 500;
+        font-size: 0.875rem;
+        opacity: 0.8;
+        margin-top: 6px;
+    }
 
-/* Dropdown for Bounce Rate card */
-.kpi-dropdown {
-    margin-top: 8px;
-    background: rgba(255 255 255 / 0.3);
-    border: none;
-    border-radius: 6px;
-    padding: 4px 10px;
-    font-weight: 600;
-    color: white;
-    width: 100px;
-    cursor: pointer;
-}
+    /* Dropdown for Bounce Rate card */
+    .kpi-dropdown {
+        margin-top: 8px;
+        background: rgba(255 255 255 / 0.3);
+        border: none;
+        border-radius: 6px;
+        padding: 4px 10px;
+        font-weight: 600;
+        color: white;
+        width: 100px;
+        cursor: pointer;
+    }
 
-/* Color variations */
-.pink {
-    background: linear-gradient(135deg, #f72585, #b5179e);
-}
+    /* Color variations */
+    .pink {
+        background: linear-gradient(135deg, #f72585, #b5179e);
+    }
 
-.purple {
-    background: linear-gradient(135deg, #720026, #141E30);
-}
+    .purple {
+        background: linear-gradient(135deg, #720026, #141E30);
+    }
 
-.blue {
-    background: linear-gradient(135deg, #00B4DB, #0083B0);
-}
+    .blue {
+        background: linear-gradient(135deg, #00B4DB, #0083B0);
+    }
 
-.orange {
-    background: linear-gradient(135deg, #f7971e, #ffd200);
-}
+    .orange {
+        background: linear-gradient(135deg, #f7971e, #ffd200);
+    }
+
+        .green {
+        background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    }
+
+    .red {
+        background: linear-gradient(135deg, #ff5858 0%, #f09819 100%);
+    }
+
+    .aqua {
+        background: linear-gradient(135deg, #13547a 0%, #80d0c7 100%);
+    }
+
+    .indigo {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .gray {
+        background: linear-gradient(135deg, #a7a7a7 0%, #e0e0e0 100%);
+    }
 
 
         /* Main content grid */
         .content-grid {
             display: grid;
-            grid-template-columns: 2.5fr 1fr;
+            grid-template-columns: 2.5fr 1.5fr;
             gap: 20px;
             width: 100%;
             min-width: 0;
@@ -244,17 +225,6 @@
 </style>
 
 <div class="dashboard-container">
-    <!-- Top Banner -->
-    <div class="top-banner">
-        <div class="banner-text">
-            <h2>Congratulations John! 🎉</h2>
-            <p>You have handled 128 tickets today.<br>Keep up the great work in supporting users.</p>
-            <button class="banner-btn">View Tickets</button>
-        </div>
-        <div class="banner-img">
-            <img src="https://cdn-icons-png.flaticon.com/512/4305/4305529.png" alt="Person working">
-        </div>
-    </div>
 
     <!-- Main Grid -->
     <div class="content-grid">
@@ -281,13 +251,16 @@
                     </div>
                 </div>
                 <div style="flex: 1; margin-left: 10px; width: 100%;">
-                    <div class="card-header" style="font-size: 1rem;">Ticket Stats</div>
-                    <div id="orderStatsDonut" style="height: 140px; width: 100%;"></div>
+                       <!-- New ECharts Pie Chart -->
+                <div id="echartsPie" style="width: 100%; height: 160px;"></div>
+                <div style="text-align: center; font-weight: 600; margin-top: 15px;">
+                Ticket Status Breakdown
+                    </div>
                 </div>
             </div>
 
             <div class="card" style="margin-top: 10px;">
-                <div class="card-header">User & Ticket Activity (ApexCharts)</div>
+                <div class="card-header">User & Ticket Activity</div>
                 <div id="incomeChart" style="height: 180px; width: 100%;"></div>
 
                 <div style="font-weight: 700; font-size: 1.3rem; margin-top: 15px;">Current Stats</div>
@@ -298,89 +271,89 @@
             </div>
 
            
-
-            <!-- New ECharts Pie Chart -->
-            <div class="card" style="margin-top: 10px;">
-                <div class="card-header">Ticket Status Breakdown</div>
-                <div id="echartsPie" style="width: 100%; height: 260px;"></div>
-            </div>
         </div>
 
-        <!-- Right: KPI cards and Tickets Journey -->
-        <div>
-        <div class="kpi-container">
-    <div class="kpi-card pink">
-        <div class="kpi-label">Total Tickets</div>
-        <div class="kpi-value">128 </div>
+            <!-- Right: KPI cards and Tickets Journey -->
+            <div>
+    <div class="kpi-container">
+        <div class="kpi-card pink">
+            <div class="kpi-label">Total Tickets</div>
+            <div class="kpi-value">{{ $totalTickets }}</div>
+        </div>
+        <div class="kpi-card purple">
+            <div class="kpi-label">Users</div>
+            <div class="kpi-value">{{ $totalUsers }}</div>
+        </div>
+        <div class="kpi-card blue">
+            <div class="kpi-label">Companies</div>
+            <div class="kpi-value">{{ $totalCompanies }}</div>
+        </div>
+        <div class="kpi-card orange">
+            <div class="kpi-label">Departments</div>
+            <div class="kpi-value">{{ $totalDepartments }}</div>
+        </div>
+        <div class="kpi-card indigo">
+            <div class="kpi-label">Designations</div>
+            <div class="kpi-value">{{ $totalDesignations }}</div>
+        </div>
+        <div class="kpi-card red">
+            <div class="kpi-label">Projects</div>
+            <div class="kpi-value">{{ $totalProjects }}</div>
+        </div>
     </div>
-    <div class="kpi-card purple">
-        <div class="kpi-label">Users</div>
-        <div class="kpi-value">42 </div>
-    </div>
-    <div class="kpi-card blue">
-        <div class="kpi-label">Companies</div>
-        <div class="kpi-value">18</div>
-    </div>
-    <div class="kpi-card orange">
-        <div class="kpi-label">Departments</div>
-        <div class="kpi-value">6</div>
-    </div>
-    <!-- <div class="kpi-card teal">
-        <div class="kpi-label">Projects</div>
-        <div class="kpi-value">11 </div>
-    </div> -->
 </div>
 
 
-            <div class="card recent-tickets-journey-card">
-                <div class="card-header">Recent Tickets Journey</div>
-                <div class="ticket-list">
-                    <div class="ticket-item open">
-                        <div class="status-dot"></div>
-                        <div class="ticket-info">
-                            <div class="ticket-id">Ticket #128</div>
-                            <div class="ticket-desc">New - Assigned to John</div>
+
+                <div class="card recent-tickets-journey-card">
+                    <div class="card-header">Recent Tickets Journey</div>
+                    <div class="ticket-list">
+                        <div class="ticket-item open">
+                            <div class="status-dot"></div>
+                            <div class="ticket-info">
+                                <div class="ticket-id">Ticket #128</div>
+                                <div class="ticket-desc">New - Assigned to John</div>
+                            </div>
+                            <div class="ticket-status">Open</div>
                         </div>
-                        <div class="ticket-status">Open</div>
-                    </div>
-                    <div class="ticket-item in-progress">
-                        <div class="status-dot"></div>
-                        <div class="ticket-info">
-                            <div class="ticket-id">Ticket #122</div>
-                            <div class="ticket-desc">In Progress - Assigned to Alice</div>
+                        <div class="ticket-item in-progress">
+                            <div class="status-dot"></div>
+                            <div class="ticket-info">
+                                <div class="ticket-id">Ticket #122</div>
+                                <div class="ticket-desc">In Progress - Assigned to Alice</div>
+                            </div>
+                            <div class="ticket-status">In Progress</div>
                         </div>
-                        <div class="ticket-status">In Progress</div>
-                    </div>
-                    <div class="ticket-item closed">
-                        <div class="status-dot"></div>
-                        <div class="ticket-info">
-                            <div class="ticket-id">Ticket #110</div>
-                            <div class="ticket-desc">Closed - Resolved by Mark</div>
+                        <div class="ticket-item closed">
+                            <div class="status-dot"></div>
+                            <div class="ticket-info">
+                                <div class="ticket-id">Ticket #110</div>
+                                <div class="ticket-desc">Closed - Resolved by Mark</div>
+                            </div>
+                            <div class="ticket-status">Closed</div>
                         </div>
-                        <div class="ticket-status">Closed</div>
-                    </div>
-                    <div class="ticket-item overdue">
-                        <div class="status-dot"></div>
-                        <div class="ticket-info">
-                            <div class="ticket-id">Ticket #99</div>
-                            <div class="ticket-desc">Overdue - Pending response</div>
+                        <div class="ticket-item overdue">
+                            <div class="status-dot"></div>
+                            <div class="ticket-info">
+                                <div class="ticket-id">Ticket #99</div>
+                                <div class="ticket-desc">Overdue - Pending response</div>
+                            </div>
+                            <div class="ticket-status">Overdue</div>
                         </div>
-                        <div class="ticket-status">Overdue</div>
-                    </div>
-                    <div class="ticket-item on-hold">
-                        <div class="status-dot"></div>
-                        <div class="ticket-info">
-                            <div class="ticket-id">Ticket #85</div>
-                            <div class="ticket-desc">On Hold - Waiting for info</div>
+                        <div class="ticket-item on-hold">
+                            <div class="status-dot"></div>
+                            <div class="ticket-info">
+                                <div class="ticket-id">Ticket #85</div>
+                                <div class="ticket-desc">On Hold - Waiting for info</div>
+                            </div>
+                            <div class="ticket-status">On Hold</div>
                         </div>
-                        <div class="ticket-status">On Hold</div>
                     </div>
+                    
                 </div>
-                
             </div>
         </div>
     </div>
-</div>
 
 @push('scripts')
 <!-- ApexCharts -->
@@ -422,15 +395,6 @@
                 labels: ['SLA Compliance']
             }).render();
 
-            // ApexCharts - Ticket Status Donut
-            new ApexCharts(document.querySelector("#orderStatsDonut"), {
-                chart: { type: 'donut', height: 140 },
-                series: [55, 30, 15],
-                labels: ['Open', 'In Progress', 'Closed'],
-                colors: ['#2563eb', '#fbbf24', '#22c55e'],
-                legend: { position: 'bottom' }
-            }).render();
-
             // ApexCharts - User & Ticket Activity Line Chart
             new ApexCharts(document.querySelector("#incomeChart"), {
                 chart: { type: 'area', height: 180 },
@@ -452,7 +416,7 @@
 
             option = {
                 tooltip: { trigger: 'item' },
-                legend: { bottom: '5%', left: 'center' },
+                legend: { bottom: '0%', left: 'center' },
                 series: [
                     {
                         name: 'Ticket Status',
@@ -486,4 +450,5 @@
 </script>
 @endpush
 
+</div>
 </x-filament::page>
