@@ -364,8 +364,6 @@ public static function canDelete($record): bool
             'edit' => Pages\EditTickets::route('/{record}/edit'),
             'view' => Pages\ViewTicket::route('/{record}'),
             'reply' => Pages\ReplyTicket::route('/{record}/reply'),
-
-            // 'edit-ticket' => Filament\Pages\EditTicket::route('/{record}/edit-ticket')
         ];
     }
 }

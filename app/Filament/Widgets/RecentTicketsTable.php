@@ -194,17 +194,17 @@ class RecentTicketsTable extends BaseWidget
                 ])
             ->actions([
                 Tables\Actions\EditAction::make()
-                    ->label('Edit')
+                    ->label('')
                     ->icon('heroicon-s-pencil')
                     ->url(fn (Tickets $record): string => TicketsResource::getUrl('edit', ['record' => $record])),
                     
                 Tables\Actions\ViewAction::make()
-                    ->label('View')
+                    ->label('')
                     ->icon('heroicon-s-eye')
                     ->url(fn (Tickets $record): string => TicketsResource::getUrl('view', ['record' => $record])),
                     
                 Tables\Actions\Action::make('reply')
-                ->label('Reply')
+                ->label('')
                 ->icon('heroicon-o-chat-bubble-bottom-center-text')
                 ->url(fn (Tickets $record): string => TicketsResource::getUrl('reply', ['record' => $record]))
             ])

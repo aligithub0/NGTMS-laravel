@@ -15,6 +15,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Page;
 use Filament\Forms\Components\RichEditor;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Tickets;
 
 class ReplyTicket extends Page
 {
@@ -27,28 +28,29 @@ class ReplyTicket extends Page
     public ?array $replyData = [];
 
     public function mount($record): void
-    {
-        // Load the record with relationships
-        $this->record = $record->load([
-            'replies.user',
-            'ticketStatus',
-            'priority',
-            'createdBy',
-            'assignedTo',
-            'slaConfiguration'
-        ]);
+{
+    // First resolve the record from the ID
+    $this->record = Tickets::findOrFail($record);
+    
+    // Then load the relationships
+    $this->record->load([
+        'replies.user',
+        'ticketStatus',
+        'priority',
+        'createdBy',
+        'assignedTo',
+        'slaConfiguration'
+    ]);
 
-        // static::authorizeResourceAccess();
-        
-        // Pre-fill form with default values
-        $this->form->fill([
-            'subject' => "Re: {$this->record->subject}",
-            'to_recipients' => $this->record->createdBy->email ?? null,
-            'message' => '',
-            'notify_customer' => true,
-            'attachment_path' => null,
-        ]);
-    }
+    // Pre-fill form with default values
+    $this->form->fill([
+        'subject' => "Re: {$this->record->title}", // Changed from subject to title if that's your field
+        'to_recipients' => $this->record->createdBy->email ?? null,
+        'message' => '',
+        'notify_customer' => true,
+        'attachment_path' => null,
+    ]);
+}
 
     public function form(Form $form): Form
     {
