@@ -35,7 +35,7 @@ class TicketReplies extends Model
     protected $casts = [
         'to_recipients' => 'array',
         'cc_recipients' => 'array',
-        'attachment_path'
+        'attachment_path' => 'array',
     ];
 
     public function ticket()

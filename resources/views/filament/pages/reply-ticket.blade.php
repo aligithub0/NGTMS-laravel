@@ -6,10 +6,185 @@
             <!-- Left Sidebar - 70% width -->
             <div class="w-full md:w-[70%] space-y-6">
                 <!-- Compose Reply -->
+
+                <!-- Reply History -->
+                <div id="myDiv" class="p-6 bg-white rounded-xl shadow-lg dark:bg-gray-800"  style="height: 800px; overflow-y: scroll; ">
+                        <!-- <h3 class="font-semibold text-lg text-gray-800 dark:text-white mb-4 flex items-center">
+                            <x-heroicon-o-chat-bubble-bottom-center-text class="w-6 h-6 mr-2 text-primary-500 dark:text-primary-400" />
+                            Reply History
+                        </h3> -->
+                        
+                        <div class="space-y-6">
+                            @forelse ($this->record->replies->sortBy('created_at') as $index => $reply)
+
+                                @php
+                                    $isEven = $index % 2 === 0;
+                                    $isCurrentUser = $reply->user_id === auth()->id();
+                                    $isSystem = !isset($reply->user);
+                                @endphp
+                                
+                                <div class="relative group">
+                                    <!-- Timeline indicator (centered) -->
+                                    <div class="absolute left-1/2 -ml-px top-0 h-full w-0.5 bg-gradient-to-b from-gray-300 via-gray-200 to-gray-300 dark:from-gray-600 dark:via-gray-700 dark:to-gray-600"></div>
+                                    
+                                    <div class="relative pl-0">
+                                        <!-- Reply Card - Alternating sides -->
+                                        <div class="flex @if($isEven)  justify-start @else  justify-end @endif">
+                                            <div class="@if($isEven) ml-8  @else mr-8 
+                                            @endif w-full max-w-2xl">
+                                                <div style = "background-color:#e3e3e3; @if(!$isEven) background-color:#ADD8E6;@endif"class="border border-gray-200 dark:border-gray-700  dark:bg-gray-800 rounded-xl px-6 py-4 hover:border-primary-300 dark:hover:border-primary-600 transition-all duration-200 shadow-sm hover:shadow-md mb-6">
+                                                    <div class="flex items-start gap-4 ">
+                                                        <!-- User Avatar -->
+                                                        <div class="flex-shrink-0 relative group">
+                        {{-- Glowing gradient background --}}
+                        <div class="absolute -inset-1 rounded-full blur-sm opacity-75 group-hover:opacity-100 transition-opacity duration-200
+                            @if($isCurrentUser)
+                                bg-gradient-to-r from-primary-500 to-primary-600
+                            @else
+                                bg-gradient-to-r from-gray-500 to-gray-600
+                            @endif">
+                        </div>
+
+                        {{-- Avatar content --}}
+                        <div class="relative w-10 h-10 rounded-full flex items-center justify-center text-white ring-2 ring-white dark:ring-gray-800
+                            @if($isCurrentUser)
+                                bg-gradient-to-r from-primary-500 to-primary-600
+                            @else
+                                bg-gradient-to-r from-gray-500 to-gray-600
+                            @endif">
+
+                            @if($reply->user->profile_photo_url ?? false)
+                                <img src="{{ $reply->user->profile_photo_url }}" 
+                                    class="w-full h-full rounded-full object-cover" 
+                                    alt="{{ $reply->user->name ?? 'User avatar' }}">
+                            @else
+                                <x-heroicon-o-user class="w-5 h-5" />
+                            @endif
+                        </div>
+                    </div>
+
+                                    
+                                    <!-- Reply Content -->
+                                    <div class="flex-1 min-w-0 space-y-4 ">
+                                        <!-- Header (User + Timestamp) -->
+                                        <div class="flex justify-between items-center">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-base text-gray-900 dark:text-white">
+                                            {{ $reply->user->name ?? 'System' }}
+                                            @if($reply->user && $reply->user->email)
+                                                ({{ $reply->user->email }})
+                                            @endif
+                                        </span>
+                                        @if($reply->is_contact_notify)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200">
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
+                                                <x-heroicon-o-lock-closed class="w-3 h-3 mr-1" /> Internal
+                                            </span>
+                                        @endif
+                                    </div>
+                                    <span class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                                        <x-heroicon-o-clock class="w-3 h-3 inline mr-1" />
+                                        {{ $reply->created_at->format('M d, Y h:i A') }}
+                                    </span>
+                                </div>
+
+
+                                        <!-- Recipients -->
+                                      
+                                        
+                                        <!-- Main Message -->
+                                        <div class="prose text-sm dark:prose-invert max-w-none p-2 bg-gray-50 dark:bg-gray-700/30 rounded-lg border border-gray-100 dark:border-gray-700 ">
+                                            {!! Str::markdown($reply->message) !!}
+                                        </div>
+
+                                        <!-- Notes Section (Conditional) -->
+                                        @if($reply->internal_notes)
+                                        <div class="relative @if(!$isEven) pr-10 @else pl-10 @endif mb-6">
+                                            <!-- Notes Indicator (Smaller line) -->
+                                            <div class="absolute @if(!$isEven) right-0 @else left-0 @endif top-0 h-full w-0.5 bg-gray-200 dark:bg-gray-700 "></div>
+                                            
+                                            <!-- Notes Card -->
+                                            <div class="border border-yellow-200 dark:border-yellow-800 bg-yellow-50/80 dark:bg-yellow-900/20 rounded-lg px-4 shadow-xs">
+                                                <div class="flex items-start gap-3 ">
+                                                    <!-- Notes Icon -->
+                                                    <div class="flex-shrink-0 mt-0.5">
+                                                        <div class="w-8 h-8 rounded-full bg-yellow-100 dark:bg-yellow-900/40 flex items-center justify-center text-yellow-600 dark:text-yellow-300">
+                                                            <x-heroicon-o-document-text class="w-4 h-4" />
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!-- Notes Content -->
+                                                    <div class="flex-1 min-w-0 ">
+                                                        <div class="flex items-center justify-between mb-1 @if(!$isEven) flex-row-reverse @endif">
+                                                            <span class="text-sm font-medium text-yellow-800 dark:text-yellow-200">Internal Notes</span>
+                                                            <span class="text-xs text-yellow-600/80 dark:text-yellow-400/80">
+                                                                {{ $reply->updated_at->diffForHumans() }}
+                                                            </span>
+                                                        </div>
+                                                        <div class="text-sm text-yellow-700 dark:text-yellow-300 whitespace-pre-wrap">{{ $reply->internal_notes }}</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        @endif
+                                        
+                                        <!-- Attachment -->
+                                        @php
+                                            $attachments = json_decode($reply->attachment_path);
+                                        @endphp
+
+                                        @if (!empty($attachments))
+                                            <div class="mt-1 text-right">
+                                                @foreach ($attachments as $attachment)
+                                                    <a href="{{ Storage::url($attachment) }}"
+                                                    target="_blank"
+                                                    class="inline-flex items-center text-xs  text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 bg-primary-50/70 dark:bg-primary-900/30 px-3 rounded-lg border border-primary-100 dark:border-primary-800 hover:bg-primary-100 dark:hover:bg-primary-900/50 transition-colors">
+                                                        
+                                                        <x-heroicon-o-paper-clip class="w-4 h-4 mr-2" />
+
+                                                        <span class="truncate max-w-xs">{{ basename($attachment) }}</span>
+
+                                                        <x-heroicon-o-paper-clip class="w-4 h-4 ml-2" />
+                                                        <x-heroicon-o-arrow-down-tray class="w-4 h-4 mr-2 ml-2 opacity-70" />
+                                                    </a>
+                                                @endforeach
+                                            </div>
+                                        @endif
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @empty
+            <!-- Empty State -->
+            <div class="text-center py-12 px-4">
+                <div class="mx-auto max-w-md">
+                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 mb-4">
+                        <x-heroicon-o-chat-bubble-left-right class="w-8 h-8 text-gray-500 dark:text-gray-400" />
+                    </div>
+                    <h4 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No replies yet</h4>
+                    <p class="text-gray-500 dark:text-gray-400">Be the first to reply to this ticket. Your response will appear here.</p>
+                    <div class="mt-4">
+                        <x-heroicon-o-arrow-long-down class="w-6 h-6 mx-auto text-gray-400 dark:text-gray-500 animate-bounce" />
+                    </div>
+                </div>
+            </div>
+        @endforelse
+    </div>
+</div>
                 <form wire:submit="submitReply">
                     <div class="p-6 bg-white rounded-xl shadow-lg dark:bg-gray-800 border border-primary-200 dark:border-primary-800">
                         <div class="space-y-3">
                             <div class="space-y-1">
+
+            <!-- Top Right Controls -->
+            
+                            
                                 <!-- To Recipients -->
                                 <div class="flex w-full items-center">
                                 <div class="w-full flex items-center">
@@ -26,7 +201,7 @@
 
                                 <div class="space-y-1">
     <!-- CC Recipients -->
-    <div class="flex w-full items-center">
+    <!-- <div class="flex w-full items-center">
         <div class="w-full flex items-center">
             <label style="padding-right:38px;" class="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2 px-2">CC</label>
             <input 
@@ -36,23 +211,25 @@
                 placeholder="CC email"
                 style="font-size:13px; padding:3px;">
         </div>
-    </div>
+    </div> -->
 
-    <!-- BCC Recipients -->
+    <!-- BCC Recipients - Conditionally shown -->
+@if($showBcc)
     <div class="flex w-full items-center">
         <div class="w-full flex items-center">
             <label style="padding-right:29px;" class="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2 px-2">BCC</label>
             <input 
                 type="email" 
                 wire:model="replyData.bcc"
-                class="flex-1 font-small  border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                class="flex-1 font-small border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500"
                 placeholder="BCC email"
                 style="font-size:13px; padding:3px;">
         </div>
     </div>
+@endif
 
     <!-- Subject -->
-    <div class="flex w-full items-center">
+    <!-- <div class="flex w-full items-center">
         <div class="w-full flex items-center">
             <label  class="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2 px-2">Subject</label>
             <input 
@@ -64,7 +241,7 @@
                 placeholder="Subject"
                 style="font-size:13px; padding:3px;">
         </div>
-    </div>
+    </div> -->
 
 <div class="w-full max-w-[200px]" x-data x-init="
     const quill = new Quill($refs.quillEditor, {
@@ -124,60 +301,145 @@ wire:ignore>
             style="font-size:13px;">Notify customer</label>
     </div> -->
 
-    <!-- Attachment -->
-    <div class="w-full">
-        <div class="flex items-center mb-1">
-            <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2 px-2">Attachment:</label>
-        </div>
-        <div x-data="{ isUploading: false, progress: 0 }"
-            x-on:livewire-upload-start="isUploading = true"
-            x-on:livewire-upload-finish="isUploading = false"
-            x-on:livewire-upload-error="isUploading = false"
-            x-on:livewire-upload-progress="progress = $event.detail.progress">
-            <div class="flex items-center justify-center w-full">
-                <label class="flex flex-col w-full border-2 border-dashed rounded-lg cursor-pointer hover:border-primary-300 dark:hover:border-primary-600">
-                    <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                        <x-heroicon-o-cloud-arrow-up class="w-10 h-10 mb-3 text-gray-400 dark:text-gray-500" />
-                        <p class="mb-2 text-sm text-gray-500 dark:text-gray-400" style="font-size:13px;">
-                            <span class="font-semibold">Click to upload</span> or drag and drop
-                        </p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400" style="font-size:11px;">
-                            PDF, DOC, XLS, or images (max. 10MB)
-                        </p>
-                    </div>
-                    <input 
-                        type="file" 
-                        wire:model="replyData.attachment_path" 
-                        class="hidden"
-                        accept="image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
-                </label>
-            </div>
-            <!-- Progress Bar -->
-            <div x-show="isUploading" class="w-full mt-2">
-                <div class="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                    <div class="h-full bg-primary-500" x-bind:style="`width: ${progress}%`"></div>
-                </div>
-                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400" style="font-size:11px;" x-text="`Uploading... ${progress}%`"></p>
-            </div>
-            <!-- File Preview -->
-            <div wire:loading.remove wire:target="replyData.attachment_path" class="mt-2">
-                <template wire:if="replyData.attachment_path">
-                    <div class="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                        <button 
-                            type="button" 
-                            wire:click="removeAttachment"
-                            class="text-red-500 hover:text-red-700 dark:hover:text-red-400">
-                            <x-heroicon-o-x-mark class="w-5 h-5" />
-                        </button>
-                    </div>
-                </template>
-            </div>
-        </div>
-    </div>
-</div>
+                               
+                            </div>
                             </div>
                         </div>
-                        <div class="flex justify-end mt-6 space-x-3">
+                <div class="flex justify-end mt-6 space-x-3">
+            <div class="flex justify-end items-center space-x-2">
+                                <!-- BCC Toggle Button -->
+                                <!-- <button 
+                                    type="button" 
+                                    wire:click="$toggle('showBcc')"
+                                    class="flex items-center text-xs px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded hover:bg-sky-100 dark:hover:bg-sky-900/50 transition-colors duration-200">
+                                    {{ $showBcc ? 'Hide BCC' : 'Show BCC' }}
+                                </button> -->
+                                
+                                
+                            
+                                <!-- Attachment Button -->
+                                <div x-data="{ isUploading: false }"
+                                    x-on:livewire-upload-start="isUploading = true"
+                                    x-on:livewire-upload-finish="isUploading = false"
+                                    x-on:livewire-upload-error="isUploading = false">
+                                    <label class="flex items-center cursor-pointer text-xs px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded hover:bg-sky-100 dark:hover:bg-sky-900/50 transition-colors duration-200">
+                                        <x-heroicon-o-paper-clip class="w-4 h-4 mr-1" />
+                                        Attach File
+                                        <input 
+                                            type="file" 
+                                            wire:model="replyData.attachment_path" 
+                                            class="hidden"
+                                            multiple 
+                                            accept="image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+                                    </label>
+                                    
+                                    <!-- Upload Progress Bar -->
+                                    <div x-show="isUploading" class="mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                                        <div class="bg-sky-500 h-1.5 rounded-full" style="width: 0%"
+                                            x-on:livewire-upload-progress="document.querySelector('.bg-sky-500').style.width = `${event.detail.progress}%`">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- File Preview Section -->
+                                <div class="mt-2 text-right">
+                                    <!-- Loading State -->
+                                    <div wire:loading wire:target="replyData.attachment_path" class="text-xs text-gray-500 dark:text-gray-400">
+                                        Uploading...
+                                    </div>
+                                    
+                                    <!-- Uploaded File Preview -->
+                                    <div wire:loading.remove wire:target="replyData.attachment_path">
+                                        @if (is_array($replyData['attachment_path'] ?? null))
+                                            @foreach ($replyData['attachment_path'] as $index => $file)
+                                                @if (is_object($file) && method_exists($file, 'getClientOriginalName'))
+                                                    <div class="flex items-center justify-end space-x-2 mt-1" wire:key="attachment-{{ $index }}">
+                                                        @if (str_starts_with($file->getClientMimeType(), 'image/'))
+                                                            <button type="button"
+                                                                    x-on:click="$dispatch('img-preview', { src: '{{ $file->temporaryUrl() }}' })"
+                                                                    class="text-sky-600 dark:text-sky-400 hover:underline text-xs flex items-center">
+                                                                <x-heroicon-o-photo class="w-4 h-4 mr-1" />
+                                                                {{ $file->getClientOriginalName() }}
+                                                            </button>
+                                                        @else
+                                                            <a href="#"
+                                                            wire:click.prevent="downloadTemporaryFile({{ $index }})"
+                                                            class="text-sky-600 dark:text-sky-400 hover:underline text-xs flex items-center">
+                                                                <x-heroicon-o-document-text class="w-4 h-4 mr-1" />
+                                                                {{ $file->getClientOriginalName() }}
+                                                            </a>
+                                                        @endif
+                                                        
+                                                        <button type="button"
+                                                                wire:click="removeAttachment({{ $index }})"
+                                                                class="text-red-500 hover:text-red-700 dark:hover:text-red-400">
+                                                            <x-heroicon-o-x-mark class="w-4 h-4" />
+                                                        </button>
+                                                    </div>
+                                                @endif
+                                            @endforeach
+                                        @elseif (is_string($replyData['attachment_path'] ?? null))
+                                            <div class="flex items-center justify-end space-x-2">
+                                                @php
+                                                    $isImage = in_array(pathinfo($replyData['attachment_path'], PATHINFO_EXTENSION), ['jpg', 'jpeg', 'png', 'gif']);
+                                                    $fullPath = Storage::url('ticket-attachments/' . $replyData['attachment_path']);
+                                                @endphp
+                                                
+                                                @if ($isImage)
+                                                    <button type="button"
+                                                            x-on:click="$dispatch('img-preview', { src: '{{ $fullPath }}' })"
+                                                            class="text-sky-600 dark:text-sky-400 hover:underline text-xs flex items-center">
+                                                        <x-heroicon-o-photo class="w-4 h-4 mr-1" />
+                                                        {{ $replyData['attachment_path'] }}
+                                                    </button>
+                                                @else
+                                                    <a href="{{ $fullPath }}" 
+                                                    target="_blank"
+                                                    download="{{ $replyData['attachment_path'] }}"
+                                                    class="text-sky-600 dark:text-sky-400 hover:underline text-xs flex items-center">
+                                                        <x-heroicon-o-document-text class="w-4 h-4 mr-1" />
+                                                        {{ $replyData['attachment_path'] }}
+                                                    </a>
+                                                @endif
+                                                
+                                                <button type="button"
+                                                        wire:click="removeAttachment('{{ $replyData['attachment_path'] }}')"
+                                                        class="text-red-500 hover:text-red-700 dark:hover:text-red-400">
+                                                    <x-heroicon-o-x-mark class="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+
+                                <!-- Image Preview Modal -->
+                                <div x-data="{ show: false, imgSrc: '' }" 
+                                    x-on:img-preview.window="show = true; imgSrc = $event.detail.src"
+                                    x-show="show"
+                                    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4">
+                                    <div class="relative max-w-5xl max-h-screen">
+                                        <img :src="imgSrc" alt="Preview" class="max-w-full max-h-screen">
+                                        <button x-on:click="show = false" 
+                                                class="absolute top-4 right-4 text-white bg-red-500 hover:bg-red-600 rounded-full p-2">
+                                            <x-heroicon-o-x-mark class="w-6 h-6" />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Image Preview Modal -->
+                            <div x-data="{ show: false, imgSrc: '' }" 
+                                x-on:img-preview.window="show = true; imgSrc = $event.detail.src"
+                                x-show="show"
+                                class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4">
+                                <div class="relative max-w-5xl max-h-screen">
+                                    <img :src="imgSrc" alt="Preview" class="max-w-full max-h-screen">
+                                    <button x-on:click="show = false" 
+                                            class="absolute top-4 right-4 text-white bg-red-500 hover:bg-red-600 rounded-full p-2">
+                                        <x-heroicon-o-x-mark class="w-6 h-6" />
+                                    </button>
+                                </div>
+                            </div> 
                             <x-filament::button type="submit" size="lg" class="bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700">
                                 Send Reply
                             </x-filament::button>
@@ -185,162 +447,13 @@ wire:ignore>
                     </div>
                 </form>
                 
-                <!-- Reply History -->
-                <div class="p-6 bg-white rounded-xl shadow-lg dark:bg-gray-800">
-                    <h3 class="font-semibold text-lg text-gray-800 dark:text-white mb-4 flex items-center ">
-                        <x-heroicon-o-chat-bubble-bottom-center-text class="w-6 h-6 mr-2  text-primary-500 dark:text-primary-400" />
-                        Reply History
-                    </h3>
-                    
-                    <div class="space-y-6">
-                        <!-- Inside your reply history section -->
-                        @forelse ($this->record->replies->sortByDesc('created_at') as $reply)
-                            <div class="relative group">
-                                <!-- Timeline indicator (gradient line) -->
-                                <div class="absolute -left-3 top-0 h-full w-0.5 bg-gradient-to-b from-gray-300 via-gray-200 to-gray-300 dark:from-gray-600 dark:via-gray-700 dark:to-gray-600"></div>
-                                
-                                <div class="pl-6">
-                                    <!-- Reply Card -->
-                                    <div class="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl p-6 hover:border-primary-300 dark:hover:border-primary-600 transition-all duration-200 shadow-sm hover:shadow-md mb-6">
-                                        <div class="flex items-start gap-4">
-                                            <!-- User Avatar -->
-                                            <div class="flex-shrink-0 relative">
-                                                <div class="absolute -inset-1 bg-gradient-to-r from-primary-500 to-primary-600 rounded-full blur-sm opacity-75 group-hover:opacity-100 transition-opacity duration-200"></div>
-                                                <div class="relative w-10 h-10 rounded-full bg-gradient-to-r from-primary-500 to-primary-600 flex items-center justify-center text-white ring-2 ring-white dark:ring-gray-800">
-                                                    @if($reply->user->profile_photo_url ?? false)
-                                                        <img src="{{ $reply->user->profile_photo_url }}" class="w-full h-full rounded-full object-cover" alt="User avatar">
-                                                    @else
-                                                        <x-heroicon-o-user class="w-5 h-5" />
-                                                    @endif
-                                                </div>
-                                            </div>
-                                            
-                                            <!-- Reply Content -->
-                                            <div class="flex-1 min-w-0 space-y-4">
-                                                <!-- Header (User + Timestamp) -->
-                                                <div class="flex items-center justify-between">
-                                                    <div class="flex items-center space-x-2">
-                                                        <span class="font-semibold text-gray-900 dark:text-white">{{ $reply->user->name ?? 'System' }}</span>
-                                                        @if($reply->is_contact_notify)
-                                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200">
-                                                            </span>
-                                                        @else
-                                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
-                                                                <x-heroicon-o-lock-closed class="w-3 h-3 mr-1" /> Internal
-                                                            </span>
-                                                        @endif
-                                                    </div>
-                                                    <span class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
-                                                        <x-heroicon-o-clock class="w-3 h-3 inline mr-1" />
-                                                        {{ $reply->created_at->format('M d, Y h:i A') }}
-                                                    </span>
-                                                </div>
-                                                
-                                                <!-- Subject -->
-                                                @if($reply->subject)
-                                                <div class="flex items-start text-sm text-gray-700 dark:text-gray-300">
-                                                    <x-heroicon-o-tag class="flex-shrink-0 w-4 h-4 mt-0.5 mr-2 text-gray-400 dark:text-gray-500" />
-                                                    <span class="font-medium">Subject:</span>
-                                                    <span class="ml-1">{{ $reply->subject }}</span>
-                                                </div>
-                                                @endif
-                                                
-                                                <!-- Recipients -->
-                                                @if($reply->to_recipients || $reply->cc_recipients)
-                                                <div class="space-y-1 text-sm">
-                                                    @if($reply->to_recipients)
-                                                    <div class="flex items-start text-gray-700 dark:text-gray-300">
-                                                        <x-heroicon-o-envelope class="flex-shrink-0 w-4 h-4 mt-0.5 mr-2 text-gray-400 dark:text-gray-500" />
-                                                        <span class="font-medium">To:</span>
-                                                        <span class="ml-1">{{ $reply->to_recipients }}</span>
-                                                    </div>
-                                                    @endif
-                                                    @if($reply->cc_recipients)
-                                                    <div class="flex items-start text-gray-700 dark:text-gray-300">
-                                                        <x-heroicon-o-envelope class="flex-shrink-0 w-4 h-4 mt-0.5 mr-2 text-gray-400 dark:text-gray-500" />
-                                                        <span class="font-medium">CC:</span>
-                                                        <span class="ml-1">{{ $reply->cc_recipients }}</span>
-                                                    </div>
-                                                    @endif
-                                                </div>
-                                                @endif
-                                                
-                                                <!-- Main Message -->
-                                                <div class="prose dark:prose-invert max-w-none p-4 bg-gray-50 dark:bg-gray-700/30 rounded-lg border border-gray-100 dark:border-gray-700">
-                                                    {!! Str::markdown($reply->message) !!}
-                                                </div>
-
-                                                <!-- Notes Section (Conditional) -->
-                                                @if($reply->internal_notes)
-                                                <div class="relative pl-10 mb-6">
-                                                    <!-- Notes Indicator (Smaller line) -->
-                                                    <div class="absolute left-0 top-0 h-full w-0.5 bg-gray-200 dark:bg-gray-700 ml-[14px]"></div>
-                                                    
-                                                    <!-- Notes Card -->
-                                                    <div class="border border-yellow-200 dark:border-yellow-800 bg-yellow-50/80 dark:bg-yellow-900/20 rounded-lg p-4 shadow-xs">
-                                                        <div class="flex items-start gap-3">
-                                                            <!-- Notes Icon -->
-                                                            <div class="flex-shrink-0 mt-0.5">
-                                                                <div class="w-8 h-8 rounded-full bg-yellow-100 dark:bg-yellow-900/40 flex items-center justify-center text-yellow-600 dark:text-yellow-300">
-                                                                    <x-heroicon-o-document-text class="w-4 h-4" />
-                                                                </div>
-                                                            </div>
-                                                            
-                                                            <!-- Notes Content -->
-                                                            <div class="flex-1 min-w-0">
-                                                                <div class="flex items-center justify-between mb-1">
-                                                                    <span class="text-sm font-medium text-yellow-800 dark:text-yellow-200">Internal Notes</span>
-                                                                    <span class="text-xs text-yellow-600/80 dark:text-yellow-400/80">
-                                                                        {{ $reply->updated_at->diffForHumans() }}
-                                                                    </span>
-                                                                </div>
-                                                                <div class="text-sm text-yellow-700 dark:text-yellow-300 whitespace-pre-wrap">{{ $reply->internal_notes }}</div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                @endif
-                                                
-                                                <!-- Attachment -->
-                                                @if($reply->attachment_path)
-                                                <div class="mt-3">
-                                                    <a href="{{ Storage::url($reply->attachment_path) }}" 
-                                                    target="_blank"
-                                                    class="inline-flex items-center text-sm font-medium text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 bg-primary-50/70 dark:bg-primary-900/30 px-3 py-2 rounded-lg border border-primary-100 dark:border-primary-800 hover:bg-primary-100 dark:hover:bg-primary-900/50 transition-colors">
-                                                        <x-heroicon-o-paper-clip class="w-4 h-4 mr-2" />
-                                                        <span class="truncate max-w-xs">{{ basename($reply->attachment_path) }}</span>
-                                                        <x-heroicon-o-arrow-down-tray class="w-4 h-4 ml-2 opacity-70" />
-                                                    </a>
-                                                </div>
-                                                @endif
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        @empty
-                            <!-- Empty State -->
-                            <div class="text-center py-12 px-4">
-                                <div class="mx-auto max-w-md">
-                                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 mb-4">
-                                        <x-heroicon-o-chat-bubble-left-right class="w-8 h-8 text-gray-500 dark:text-gray-400" />
-                                    </div>
-                                    <h4 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No replies yet</h4>
-                                    <p class="text-gray-500 dark:text-gray-400">Be the first to reply to this ticket. Your response will appear here.</p>
-                                    <div class="mt-4">
-                                        <x-heroicon-o-arrow-long-down class="w-6 h-6 mx-auto text-gray-400 dark:text-gray-500 animate-bounce" />
-                                    </div>
-                                </div>
-                            </div>
-                        @endforelse
-                    </div>
-                </div>
+                
             </div>
          
             <!-- Right Panel - 30% width -->
-            <div class="w-[35%] md:w-[30%] min-w-[30%] space-y-6" style="width:32% !important">
+            <div class="w-[35%] md:w-[30%] min-w-[30%]  bg-white space-y-1 p-3 rounded" style="width:32% !important">
                 <!-- Ticket Card -->
-                <div class="p-6 bg-white rounded-xl shadow-lg dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                <div class="p-6 bg-white rounded-xl shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
                     <!-- Ticket Header -->
                     <div class="flex items-start justify-between mb-6">
                         <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-2">{{ $this->record->title }}</h2>
@@ -351,7 +464,7 @@ wire:ignore>
                         <div class="grid grid-cols-1 md:grid-cols-5 text-sm">
 
                         <!-- Purpose -->
-                            <div class="flex flex-col p-1 bg-gray-50/80 dark:bg-gray-700/60 rounded-lg">
+                            <div class="flex text-xs flex-col p-1 bg-gray-50/80 dark:bg-gray-700/60 rounded-lg">
                                 <div class="flex items-center ">
                                     <x-heroicon-o-calendar class="w-4 h-4 mr-2 text-primary-500 dark:text-primary-400 flex-shrink-0" />
                                     <span class="text-xs font-medium text-gray-500 dark:text-gray-400 px-2">Purpose: </span>
@@ -503,30 +616,50 @@ wire:ignore>
                     </div>
                 </div>
                 
-                <!-- Customer Info Card -->
-                <div class="p-6 bg-white rounded-xl shadow-lg dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                    <h3 class="font-semibold text-lg text-gray-800 dark:text-white mb-5 flex items-center">
-                        <x-heroicon-o-user-group class="w-6 h-6 mr-2 text-primary-500 dark:text-primary-400" />
-                        Customer Information
-                    </h3>
-                    <div class="">
-                        <div class="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
-                            <p class="text-xs text-blue-600 dark:text-blue-300">Email</p>
-                            <p class="font-medium text-gray-800 dark:text-white truncate">{{ $this->record->createdBy->email ?? 'N/A' }}</p>
+            <!-- Customer Info Card - Vertical Layout with Safe Icons -->
+            <div class="bg-white rounded-xl shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                <h3 class="font-semibold text-lg text-gray-800 dark:text-white px-4 py-2  flex items-center">
+                    <x-heroicon-o-user-group class="w-6 h-6 mr-2 text-primary-500 dark:text-primary-400" />
+                    Customer Information
+                </h3>
+                <div class="grid grid-cols-1 px-6">
+                    <!-- Email -->
+                    <div class="flex flex-col px-1 bg-gray-50/80 dark:bg-gray-700/60 rounded-lg">
+                        <div class="flex items-center">
+                            <x-heroicon-o-user-circle class="w-4 h-4 mr-2 text-primary-500 dark:text-primary-400 flex-shrink-0" />
+                            <span class="text-sm font-medium text-gray-500 dark:text-gray-400 px-2">Email: </span>
+                            <span class="font-semibold text-gray-800 dark:text-white truncate">{{ $this->record->requested_email ?? 'N/A' }}</span>
                         </div>
-                        <div class="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
-                            <p class="text-xs text-blue-600 dark:text-blue-300">Phone</p>
-                            <p class="font-medium text-gray-800 dark:text-white">{{ $this->record->createdBy->phone ?? 'N/A' }}</p>
+                    </div>
+                    
+                    <!-- Phone -->
+                    <div class="flex flex-col px-1 bg-gray-50/80 dark:bg-gray-700/60 rounded-lg">
+                        <div class="flex items-center">
+                            <x-heroicon-o-ticket class="w-4 h-4 mr-2 text-primary-500 dark:text-primary-400 flex-shrink-0" />
+                            <span class="text-sm font-medium text-gray-500 dark:text-gray-400 px-2">Phone: </span>
+                            <span class="font-semibold text-gray-800 dark:text-white">{{ $this->record->createdBy->phone ?? 'N/A' }}</span>
                         </div>
-                        <div class="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
-                            <p class="text-xs text-blue-600 dark:text-blue-300">Organization</p>
-                            <p class="font-medium text-gray-800 dark:text-white">{{ $this->record->createdBy->company->name ?? 'N/A' }}</p>
+                    </div>
+                    
+                    <!-- Organization -->
+                    <div class="flex flex-col px-1 bg-gray-50/80 dark:bg-gray-700/60 rounded-lg">
+                        <div class="flex items-center">
+                            <x-heroicon-o-calendar class="w-4 h-4 mr-2 text-primary-500 dark:text-primary-400 flex-shrink-0" />
+                            <span class="text-sm font-medium text-gray-500 dark:text-gray-400 px-2">Organization: </span>
+                            <span class="font-semibold text-gray-800 dark:text-white">{{ $this->record->createdBy->company->name ?? 'N/A' }}</span>
                         </div>
                     </div>
                 </div>
             </div>
+            </div>
         </div>
     </div>
+<script>
+window.onload = function () {
+  const div = document.getElementById("myDiv");
+  div.scrollTop = div.scrollHeight;
+};
 
+</script>
   
 </x-filament::page>

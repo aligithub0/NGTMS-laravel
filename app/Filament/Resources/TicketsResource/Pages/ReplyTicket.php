@@ -26,10 +26,11 @@ class ReplyTicket extends Page
 {
     protected static string $resource = TicketsResource::class;
     protected static string $view = 'filament.pages.reply-ticket';
-    protected static ?string $title = 'Reply to Ticket';
+    protected static ?string $title = 'Reply Details';
     protected static ?string $navigationIcon = 'heroicon-o-chat-bubble-bottom-center-text';
 
     public $record; // Make this public for Livewire
+    public $showBcc = false;
     public ?array $replyData = [];
 
     public function mount($record): void
@@ -49,7 +50,7 @@ class ReplyTicket extends Page
 
         $this->form->fill([
         'subject' => "Re: {$this->record->title}",
-        'to_recipients' => $this->record->createdBy->email ?? null,
+        'to_recipients' => $this->record->requested_email ?? null,
         'message' => '',
         'internal_notes' => '',
         'notify_customer' => true,
@@ -58,6 +59,28 @@ class ReplyTicket extends Page
         'bcc' => null,
     ]);
 
+}
+
+public function downloadAttachment($filename)
+{
+    $path = 'ticket-attachments/' . $filename;
+    
+    if (Storage::disk('public')->exists($path)) {
+        return Storage::disk('public')->download($path);
+    }
+    
+    $this->dispatch('notify', type: 'error', message: 'File not found');
+}
+
+public function removeAttachment($filename)
+{
+    $path = 'ticket-attachments/' . $filename;
+    
+    if (Storage::disk('public')->exists($path)) {
+        Storage::disk('public')->delete($path);
+    }
+    
+    $this->replyData['attachment_path'] = null;
 }
 
 public $replyData_1 = [
@@ -177,7 +200,10 @@ public function renderMarkdown($content)
                     FileUpload::make('attachment_path')
                         ->label('Attachment')
                         ->directory('ticket-attachments')
+                        ->multiple()
+                        ->maxFiles(5)
                         ->downloadable()
+                        ->disk('public') // Add this line
                         ->openable()
                         ->preserveFilenames()
                         ->acceptedFileTypes([
@@ -223,19 +249,42 @@ public function renderMarkdown($content)
     public function submitReply(): void
 {
     try {
-        $data = $this->form->getState();
+    $data = $this->form->getState();
 
-        $reply = TicketReplies::create([
-            'ticket_id' => $this->record->id,
-            'replied_by_user_id' => auth()->id(),
-            'subject' => $data['subject'],
-            'message' => $data['message'],
-            'internal_notes' => $data['internal_notes'] ?? null, // Save the notes
-            'is_contact_notify' => $data['notify_customer'] ?? false,
-            'attachment_path' => $data['attachment_path'] ?? null,
-            'to_recipients' => $data['to_recipients'] ?? null,
-            'cc_recipients' => $data['cc_recipients'] ?? null,
-        ]);
+    $attachmentPaths = [];
+
+    if (isset($data['attachment_path'])) {
+        $attachments = $data['attachment_path'];
+
+        if (is_array($attachments)) {
+            foreach ($attachments as $file) {
+                if ($file instanceof \Illuminate\Http\UploadedFile) {
+                    $path = $file->store('ticket-attachments', 'public');
+                    $attachmentPaths[] = 'ticket-attachments/' . basename($path);
+                } elseif (is_string($file)) {
+                    $attachmentPaths[] = $file;
+                }
+            }
+        } elseif ($attachments instanceof \Illuminate\Http\UploadedFile) {
+            $path = $attachments->store('ticket-attachments', 'public');
+            $attachmentPaths[] = 'ticket-attachments/' . basename($path);
+        } elseif (is_string($attachments)) {
+            $attachmentPaths[] = $attachments;
+        }
+    }
+
+    $reply = TicketReplies::create([
+        'ticket_id' => $this->record->id,
+        'replied_by_user_id' => auth()->id(),
+        'subject' => $this->record->ticket_id . ' - ' . $data['subject'],
+        'message' => $data['message'],
+        'internal_notes' => $data['internal_notes'] ?? null,
+        'is_contact_notify' => $data['notify_customer'] ?? false,
+        'attachment_path' => !empty($attachmentPaths) ? json_encode($attachmentPaths) : null, // store as JSON
+        'to_recipients' => $data['requested_email'] ?? null,
+        'cc_recipients' => $data['cc_recipients'] ?? null,
+        'bcc' => $data['bcc'] ?? null,
+    ]);
 
         // Update ticket's updated_at timestamp
         $this->record->touch();
@@ -248,7 +297,7 @@ public function renderMarkdown($content)
 
         // Reset form except subject
         $this->form->fill([
-            'subject' => "Re: {$this->record->subject}",
+            'subject' => "{$this->record->subject}",
             'message' => '',
             'internal_notes' => '',
             'notify_customer' => true,
