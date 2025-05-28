@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\TicketsResource\Pages;
 
 use App\Models\TicketReplies;
+use App\Models\StatusWorkflow;
 use App\Filament\Resources\TicketsResource;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Checkbox;
@@ -147,6 +148,23 @@ class ReplyTicket extends Page
 }
 
 
+protected function getAllowedStatuses()
+{
+    // Get all possible transitions from current status
+    $allowedTransitions = StatusWorkflow::where('from_status_id', $this->record->ticket_status_id)
+        ->with('toStatus')
+        ->get()
+        ->pluck('toStatus')
+        ->unique()
+        ->filter(); // remove null values
+
+    // If no specific transitions are defined, return all statuses (fallback)
+    if ($allowedTransitions->isEmpty()) {
+        return \App\Models\TicketStatus::all();
+    }
+
+    return $allowedTransitions;
+}
 
 
 
@@ -182,10 +200,26 @@ public function toggleAssigneeEdit(): void
 
 public function updateStatus(): void
 {
-    $this->validate(['newStatusId' => 'required|exists:ticket_statuses,id']);
+    $this->validate([
+        'newStatusId' => [
+            'required',
+            'exists:ticket_statuses,id',
+            function ($attribute, $value, $fail) {
+                $allowedStatuses = $this->getAllowedStatuses()->pluck('id')->toArray();
+                
+                if (!in_array($value, $allowedStatuses)) {
+                    $fail('This status transition is not allowed.');
+                }
+            },
+        ]
+    ]);
+    
     $this->record->update(['ticket_status_id' => $this->newStatusId]);
     $this->showStatusEdit = false;
     $this->dispatch('notify', type: 'success', message: 'Status updated successfully');
+    
+    // Refresh the allowed statuses after update
+    $this->getViewData();
 }
 
 public function updateAssignee(): void
@@ -199,7 +233,7 @@ public function updateAssignee(): void
 protected function getViewData(): array
 {
     return [
-        'statuses' => \App\Models\TicketStatus::all(),
+        'statuses' => $this->getAllowedStatuses(),
         'assignableUsers' => \App\Models\User::get(),
         'canAssignToOthers' => auth()->user()->where('assigned_to_others'),
     ];
