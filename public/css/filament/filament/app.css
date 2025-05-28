@@ -5995,3 +5995,123 @@ input:focus-visible+.dark\:\[input\:focus-visible\+\&\]\:ring-white\/20:is(.dark
   --tw-text-opacity: 1;
   color: rgb(19, 114, 168) !important;
 }
+
+
+.ticket-filter-btn {
+  width: 100%;
+  text-align: left;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  transition: background-color 0.2s ease;
+}
+
+.ticket-filter-btn:not(.selected) {
+  background-color: transparent;
+}
+
+.ticket-filter-btn.selected {
+  background-color: #e5e7eb; /* gray-200 */
+}
+
+.ticket-filter-btn:hover {
+  background-color: #e5e7eb; /* gray-200 */
+}
+
+.dark .ticket-filter-btn.selected {
+  background-color: #374151; /* gray-700 */
+}
+
+.dark .ticket-filter-btn:hover {
+  background-color: #374151; /* gray-700 */
+}
+
+.ticket-filter-count {
+  margin-left: auto;
+  font-size: 0.75rem;
+  background-color: #d1d5db; /* gray-300 */
+  border-radius: 9999px;
+  padding: 0.125rem 0.5rem;
+}
+
+.dark .ticket-filter-count {
+  background-color: #4b5563; /* gray-600 */
+}
+
+/* Add this to your app.css or in a <style> tag in your layout */
+.ticket-meta-item {
+    background-color: rgba(249, 250, 251, 0.8);
+    border-radius: 0.5rem;
+    /* padding: 0.5rem;
+    margin-bottom: 0.5rem; */
+    display: flex;
+    /* align-items: center; */
+}
+
+.ticket-meta-item.dark {
+    background-color: rgba(55, 65, 81, 0.6);
+}
+
+.ticket-meta-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #6b7280;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    min-width: 80px;
+}
+
+.ticket-meta-value {
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.dark .ticket-meta-value {
+    color: white;
+}
+
+.ticket-meta-edit-btn {
+    margin-left: 0.5rem;
+    padding: 0.25rem;
+    color: #6b7280;
+    cursor: pointer;
+}
+
+.ticket-meta-edit-btn:hover {
+    color: #3b82f6;
+}
+
+.ticket-meta-edit-select {
+    margin-left: 0.5rem;
+    border-radius: 0.375rem;
+    border: 1px solid #d1d5db;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+.dark .ticket-meta-edit-select {
+    border-color: #4b5563;
+    background-color: #374151;
+    color: white;
+}
+
+.ticket-meta-save-btn {
+    margin-left: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    color: white;
+    background-color: #10b981;
+    border-radius: 0.375rem;
+    cursor: pointer;
+}
+
+.ticket-meta-cancel-btn {
+    margin-left: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    color: white;
+    background-color: #ef4444;
+    border-radius: 0.375rem;
+    cursor: pointer;
+}

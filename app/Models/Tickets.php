@@ -38,6 +38,7 @@ class Tickets extends Model
         'to_recipients',
         'cc_recipients',
         'ticket_id',
+        'is_read',
     ];
  
     protected $casts = [
@@ -54,12 +55,13 @@ class Tickets extends Model
         static::created(function ($ticket) {
             TicketJourney::create([
                 'ticket_id' => $ticket->id,
-                'from_agent' => null,
+                'from_agent' => $ticket->assigned_to_id,
                 'to_agent' => $ticket->assigned_to_id,
-                'from_status' => null,
+                'from_status' => $ticket->ticket_status_id,
                 'to_status' => $ticket->ticket_status_id,
                 'actioned_by' => auth()->id(),
                 'logged_time' => now(),
+                'total_time_diff'=> now()
             ]);
         });
         
@@ -77,7 +79,7 @@ class Tickets extends Model
                     'to_status' => $ticket->ticket_status_id,
                     'actioned_by' => auth()->id(),
                     'logged_time' => now(),
-                    // 'total_time_diff'=> now()
+                    'total_time_diff'=> now()
                 ]);
             }
         });
@@ -101,6 +103,22 @@ class Tickets extends Model
         return $id;
     }
 
+    public function journeyEvents()
+    {
+        return $this->hasMany(TicketJourney::class, 'ticket_id')->orderBy('created_at', 'desc');
+    }
+
+    public function activityLogs()
+    {
+        return $this->hasMany(ActivityLog::class, 'ticket_id')->orderBy('created_at', 'desc');
+    }
+
+        public function relatedTickets()
+    {
+        return $this->hasMany(Tickets::class, 'requested_email', 'requested_email')
+            ->where('id', '!=', $this->id)
+            ->orderBy('created_at', 'desc');
+    }
  
     public function ticketStatus()
     {

@@ -2,13 +2,193 @@
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
     <div class="w-full max-w-[1920px] mx-auto ">
-        <div class="flex flex-col md:flex-row gap-8 w-full">
-            <!-- Left Sidebar - 70% width -->
-            <div class="w-full md:w-[70%] space-y-6">
+        <div class="flex flex-col md:flex-row gap-2 w-full">
+
+        <!-- Status Panel - 15% width -->
+            <div style="width: 10%;"class="w-[15%] min-w-[15%] bg-gray-100 dark:bg-gray-800 p-3 rounded-lg border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
+            <!-- Header -->
+            <div class="sticky top-0 z-10 bg-gray-100 dark:bg-gray-800 pb-3">
+                <div class="flex justify-between items-center">
+                    <h3 class="font-semibold text-medium text-gray-800 dark:text-white flex items-center">
+                        <x-heroicon-o-view-columns class="w-5 h-5 mr-2 text-primary-500 dark:text-primary-400" />
+                        Statuses
+                    </h3>
+                
+                </div>
+            </div>
+    
+            <!-- Status Filters -->
+            <div class="space-y-1">
+            <!-- All Tickets Button -->
+            <button 
+                wire:click="setFilter('status', null)"
+                class="ticket-filter-btn {{ !$statusFilter ? 'selected' : '' }}">
+                All Tickets
+                <span class="ticket-filter-count">
+                    {{ $this->totalTicketsCount ?? 0 }}
+                </span>
+            </button>
+            
+            @foreach($this->statuses as $status)
+                <button 
+                    wire:click="setFilter('status', '{{ $status->id }}')"
+                    class="ticket-filter-btn {{ $statusFilter == $status->id ? 'selected' : '' }}">
+                    {{ $status->name }}
+                    <span class="ticket-filter-count">
+                        {{ $status->tickets_count ?? 0 }}
+                    </span>
+                </button>
+            @endforeach
+        </div>
+        </div>
+
+        <!-- Left Panel - 25% width (Tickets List) -->
+    <div class="w-[25%] min-w-[25%] bg-white p-3 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
+        <!-- Header -->
+<div class="sticky top-0 z-10 bg-white dark:bg-gray-800 pb-3">
+    <div class="flex items-center justify-between mb-3">
+        <h3 class="font-semibold text-lg text-gray-800 dark:text-white flex items-center">
+            <x-heroicon-o-ticket class="w-5 h-5 mr-2 text-primary-500 dark:text-primary-400" />
+            Tickets
+        </h3>
+        
+        <div class="flex space-x-2">
+            <button 
+                wire:click="setReadFilter(null)"
+                class="text-sm px-3 py-1 rounded-md transition-colors
+                    @if($readFilter === null) 
+                        bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white
+                    @else 
+                        text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700
+                    @endif">
+                All
+            </button>
+            <button 
+                wire:click="setReadFilter(false)"
+                class="text-sm px-3 py-1 rounded-md transition-colors
+                    @if($readFilter === false) 
+                        bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white font-medium
+                    @else 
+                        text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700
+                    @endif">
+                Unread
+            </button>
+            
+        </div>
+    </div>
+    
+    <!-- Search Box -->
+    <div class="relative mb-3 mt-3">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+        </div>
+        <input 
+            x-data
+            x-on:input.debounce.300ms="$wire.set('search', $event.target.value)"
+            type="text"
+            class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+            placeholder="Search tickets...">
+    </div>
+</div>
+        <!-- Tickets List -->
+        <div class="space-y-2">
+            @forelse($this->tickets as $ticket)
+    <div 
+        wire:click="selectTicket({{ $ticket->id }})"
+        class="p-3 rounded-lg cursor-pointer transition-colors duration-150
+            @if($selectedTicketId == $ticket->id)
+                bg-primary-50 dark:bg-primary-900/30 border border-primary-200 dark:border-primary-700
+            @else
+                bg-gray-50 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600
+            @endif">
+        <!-- Ticket Header -->
+        <div class="flex justify-between items-start">
+            <h4 class="@if(!$ticket->is_read) font-bold @else font-xs @endif text-gray-900 dark:text-white truncate">
+                #{{ $ticket->ticket_id }} - {{ $ticket->title }}
+            </h4>
+            <span style="@if($ticket->priority->id === 3 ) background-color:#ffca3d;  @elseif( $ticket->priority->id === 1) background-color:#3fbd76; @else background-color:#ff3d3d ; @endif"class="text-xs px-2 py-1 rounded-full 
+                @if($ticket->priority->name === 'High')
+                    bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-200
+                @elseif($ticket->priority->name === 'Medium')
+                    bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-200
+                @else
+                    bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200
+                @endif">
+                {{ $ticket->priority->name }}
+            </span>
+        </div>
+        
+        <!-- Ticket Meta -->
+        <div class="mt-1 flex items-center justify-between">
+            <div class="flex items-center text-xs @if(!$ticket->is_read) font-semibold @endif text-gray-500 dark:text-gray-400">
+                <x-heroicon-o-user class="w-3 h-3 mr-1" />
+                {{ $ticket->createdBy->name ?? 'Unknown' }}
+                <span class="px-2 inline-flex items-center @if(!$ticket->is_read) font-semibold @endif text-gray-500 dark:text-gray-400">
+                    <x-heroicon-o-user-circle class="w-3 h-3 mr-1" />
+                    {{ $ticket->assignedTo->name ?? 'Unassigned' }}
+                </span>
+            </div>
+            <div class="text-xs @if(!$ticket->is_read) font-semibold @endif text-gray-500 dark:text-gray-400">
+                {{ $ticket->created_at->diffForHumans() }}
+            </div>
+        </div>
+        
+        <!-- Additional Info -->
+        <div class="mt-2 space-y-1">
+            <!-- Status and Assigned To -->
+             <div class="flex justify-between">
+
+              <!-- Requested Email -->
+            <div class="text-xs @if(!$ticket->is_read) font-semibold @endif text-gray-500 dark:text-gray-400 truncate">
+                <x-heroicon-o-envelope class="w-3 h-3 mr-1 inline" />
+                {{ $ticket->requested_email ?? 'No email' }}
+            </div>
+
+            <div class="flex justify-between items-center text-xs">
+                <span class="inline-flex items-center @if(!$ticket->is_read) font-semibold @endif text-gray-500 dark:text-gray-400">
+                    <x-heroicon-o-tag class="w-3 h-3 mr-1" />
+                    {{ $ticket->ticketStatus->name ?? 'No Status' }}
+                </span>
+                
+            </div>
+
+            </div>
+            
+            <!-- Replies Count -->
+            @if($ticket->replies_count > 0)
+                <span class="inline-flex items-center text-xs @if(!$ticket->is_read) font-semibold @endif text-gray-500 dark:text-gray-400">
+                    <x-heroicon-o-chat-bubble-left-right class="w-3 h-3 mr-1" />
+                    {{ $ticket->replies_count }}
+                </span>
+            @endif
+        </div>
+    </div>
+@empty
+    <div class="text-center py-8 px-4">
+        <div class="mx-auto max-w-md">
+            <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 mb-4">
+                <x-heroicon-o-inbox class="w-6 h-6 text-gray-500 dark:text-gray-400" />
+            </div>
+            <h4 class="text-md font-medium text-gray-900 dark:text-white mb-1">No tickets found</h4>
+            <p class="text-gray-500 dark:text-gray-400 text-sm">Try adjusting your search or filter criteria</p>
+        </div>
+    </div>
+@endforelse
+            <!-- Pagination -->
+            @if($this->tickets->hasPages())
+                <div class="mt-4 px-2">
+                    {{ $tickets->links() }}
+                </div>
+            @endif
+        </div>
+    </div>
+
+        
+            <!-- Middle -->
+            <div class="w-1/2 md:w-[50%] space-y-6">
                 <!-- Compose Reply -->
 
                 <!-- Reply History -->
-                <div id="myDiv" class="p-6 bg-white rounded-xl shadow-lg dark:bg-gray-800"  style="height: 800px; overflow-y: scroll; ">
+                <div id="myDiv" class="p-6 bg-white rounded-xl shadow-lg dark:bg-gray-800"  style="height: 800px; overflow-y: scroll; scrollbar-width: none; ">
                         <!-- <h3 class="font-semibold text-lg text-gray-800 dark:text-white mb-4 flex items-center">
                             <x-heroicon-o-chat-bubble-bottom-center-text class="w-6 h-6 mr-2 text-primary-500 dark:text-primary-400" />
                             Reply History
@@ -32,49 +212,51 @@
                                         <div class="flex @if($isEven)  justify-start @else  justify-end @endif">
                                             <div class="@if($isEven) ml-8  @else mr-8 
                                             @endif w-full max-w-2xl">
-                                                <div style = "background-color:#e3e3e3; @if(!$isEven) background-color:#ADD8E6;@endif"class="border border-gray-200 dark:border-gray-700  dark:bg-gray-800 rounded-xl px-6 py-4 hover:border-primary-300 dark:hover:border-primary-600 transition-all duration-200 shadow-sm hover:shadow-md mb-6">
-                                                    <div class="flex items-start gap-4 ">
+                                                <div style = "background-color:#e3e3e3; @if(!$isEven) background-color:#ADD8E6;@endif"class="border border-gray-200 dark:border-gray-700  dark:bg-gray-800 rounded-xl px-2 py-4 hover:border-primary-300 dark:hover:border-primary-600 transition-all duration-200 shadow-sm hover:shadow-md mb-6">
+                                                    <div class="flex items-start gap-2 ">
                                                         <!-- User Avatar -->
                                                         <div class="flex-shrink-0 relative group">
-                        {{-- Glowing gradient background --}}
-                        <div class="absolute -inset-1 rounded-full blur-sm opacity-75 group-hover:opacity-100 transition-opacity duration-200
-                            @if($isCurrentUser)
-                                bg-gradient-to-r from-primary-500 to-primary-600
-                            @else
-                                bg-gradient-to-r from-gray-500 to-gray-600
-                            @endif">
-                        </div>
+                                                        {{-- Glowing gradient background --}}
+                                                        <div class="absolute -inset-1 rounded-full blur-sm opacity-75 group-hover:opacity-100 transition-opacity duration-200
+                                                            @if($isCurrentUser)
+                                                                bg-gradient-to-r from-primary-500 to-primary-600
+                                                            @else
+                                                                bg-gradient-to-r from-gray-500 to-gray-600
+                                                            @endif">
+                                                        </div>
 
-                        {{-- Avatar content --}}
-                        <div class="relative w-10 h-10 rounded-full flex items-center justify-center text-white ring-2 ring-white dark:ring-gray-800
-                            @if($isCurrentUser)
-                                bg-gradient-to-r from-primary-500 to-primary-600
-                            @else
-                                bg-gradient-to-r from-gray-500 to-gray-600
-                            @endif">
+                                                        {{-- Avatar content --}}
+                                                        <div class="relative w-10 h-10 rounded-full flex items-center justify-center text-white ring-2 ring-white dark:ring-gray-800
+                                                            @if($isCurrentUser)
+                                                                bg-gradient-to-r from-primary-500 to-primary-600
+                                                            @else
+                                                                bg-gradient-to-r from-gray-500 to-gray-600
+                                                            @endif">
 
-                            @if($reply->user->profile_photo_url ?? false)
-                                <img src="{{ $reply->user->profile_photo_url }}" 
-                                    class="w-full h-full rounded-full object-cover" 
-                                    alt="{{ $reply->user->name ?? 'User avatar' }}">
-                            @else
-                                <x-heroicon-o-user class="w-5 h-5" />
-                            @endif
-                        </div>
-                    </div>
+                                                            @if($reply->user->picture ?? false)
+                                                            <img src="{{ asset('storage/' . $reply->user->picture) }}"
+                                                                class="w-full h-full rounded-full object-cover"
+                                                                alt="{{ $reply->user->name ?? 'User avatar' }}">
+                                                        @else
+                                                            <x-heroicon-o-user class="w-5 h-5" />
+                                                        @endif
+
+                                                        </div>
+                                                    </div>
 
                                     
                                     <!-- Reply Content -->
-                                    <div class="flex-1 min-w-0 space-y-4 ">
+                                    <div class="flex-1 min-w-0 space-y-1 ">
                                         <!-- Header (User + Timestamp) -->
                                         <div class="flex justify-between items-center">
                                     <div class="flex items-center space-x-2">
-                                        <span class="text-base text-gray-900 dark:text-white">
+                                        <span class="text-sm br text-gray-900 dark:text-white">
                                             {{ $reply->user->name ?? 'System' }}
                                             @if($reply->user && $reply->user->email)
                                                 ({{ $reply->user->email }})
                                             @endif
                                         </span>
+                                        
                                         @if($reply->is_contact_notify)
                                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200">
                                             </span>
@@ -84,6 +266,7 @@
                                             </span>
                                         @endif
                                     </div>
+                                    
                                     <span class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
                                         <x-heroicon-o-clock class="w-3 h-3 inline mr-1" />
                                         {{ $reply->created_at->format('M d, Y h:i A') }}
@@ -93,7 +276,9 @@
 
                                         <!-- Recipients -->
                                       
-                                        
+                                        <div style="margin-top: 0px; font-size: 12px;"class="text-sm  text-gray-900 dark:text-white">
+                                                {{ $ticket->title }}
+                                        </div>
                                         <!-- Main Message -->
                                         <div class="prose text-sm dark:prose-invert max-w-none p-2 bg-gray-50 dark:bg-gray-700/30 rounded-lg border border-gray-100 dark:border-gray-700 ">
                                             {!! Str::markdown($reply->message) !!}
@@ -199,114 +384,114 @@
                                 </div>
                             </div>
 
-                                <div class="space-y-1">
-    <!-- CC Recipients -->
-    <!-- <div class="flex w-full items-center">
-        <div class="w-full flex items-center">
-            <label style="padding-right:38px;" class="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2 px-2">CC</label>
-            <input 
-                type="email" 
-                wire:model="replyData.cc_recipients"
-                class="flex-1 font-small  border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                placeholder="CC email"
-                style="font-size:13px; padding:3px;">
-        </div>
-    </div> -->
+                            <div class="space-y-1">
+                                <!-- CC Recipients -->
+                                <!-- <div class="flex w-full items-center">
+                                    <div class="w-full flex items-center">
+                                        <label style="padding-right:38px;" class="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2 px-2">CC</label>
+                                        <input 
+                                            type="email" 
+                                            wire:model="replyData.cc_recipients"
+                                            class="flex-1 font-small  border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                                            placeholder="CC email"
+                                            style="font-size:13px; padding:3px;">
+                                    </div>
+                                </div> -->
 
-    <!-- BCC Recipients - Conditionally shown -->
-@if($showBcc)
-    <div class="flex w-full items-center">
-        <div class="w-full flex items-center">
-            <label style="padding-right:29px;" class="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2 px-2">BCC</label>
-            <input 
-                type="email" 
-                wire:model="replyData.bcc"
-                class="flex-1 font-small border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                placeholder="BCC email"
-                style="font-size:13px; padding:3px;">
-        </div>
-    </div>
-@endif
+                                <!-- BCC Recipients - Conditionally shown -->
+                            @if($showBcc)
+                                <div class="flex w-full items-center">
+                                    <div class="w-full flex items-center">
+                                        <label style="padding-right:29px;" class="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2 px-2">BCC</label>
+                                        <input 
+                                            type="email" 
+                                            wire:model="replyData.bcc"
+                                            class="flex-1 font-small border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                                            placeholder="BCC email"
+                                            style="font-size:13px; padding:3px;">
+                                    </div>
+                                </div>
+                            @endif
 
-    <!-- Subject -->
-    <!-- <div class="flex w-full items-center">
-        <div class="w-full flex items-center">
-            <label  class="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2 px-2">Subject</label>
-            <input 
-                type="text" 
-                wire:model="replyData.subject" 
-                required 
-                maxlength="255"
-                class="flex-1 font-small  border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                placeholder="Subject"
-                style="font-size:13px; padding:3px;">
-        </div>
-    </div> -->
+                                <!-- Subject -->
+                                <!-- <div class="flex w-full items-center">
+                                    <div class="w-full flex items-center">
+                                        <label  class="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2 px-2">Subject</label>
+                                        <input 
+                                            type="text" 
+                                            wire:model="replyData.subject" 
+                                            required 
+                                            maxlength="255"
+                                            class="flex-1 font-small  border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                                            placeholder="Subject"
+                                            style="font-size:13px; padding:3px;">
+                                    </div>
+                                </div> -->
 
-<div class="w-full max-w-[200px]" x-data x-init="
-    const quill = new Quill($refs.quillEditor, {
-        theme: 'snow',
-        placeholder: 'Type your reply here...',
-        modules: {
-            toolbar: [
-                ['bold', 'italic', 'underline', 'strike'],
-                [{ 'header': 1 }, { 'header': 2 }],
-                [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-                [{ 'indent': '-1' }, { 'indent': '+1' }],
-                [{ 'color': [] }, { 'background': [] }],
-                [{ 'align': [] }],
-                ['link', 'image', 'code-block'],
-                ['clean']
-            ]
-        }
-    });
+                            <div class="w-full max-w-[200px]" x-data x-init="
+                                const quill = new Quill($refs.quillEditor, {
+                                    theme: 'snow',
+                                    placeholder: 'Type your reply here...',
+                                    modules: {
+                                        toolbar: [
+                                            ['bold', 'italic', 'underline', 'strike'],
+                                            [{ 'header': 1 }, { 'header': 2 }],
+                                            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                                            [{ 'indent': '-1' }, { 'indent': '+1' }],
+                                            [{ 'color': [] }, { 'background': [] }],
+                                            [{ 'align': [] }],
+                                            ['link', 'image', 'code-block'],
+                                            ['clean']
+                                        ]
+                                    }
+                                });
 
-    quill.on('text-change', () => {
-        @this.set('replyData.message', quill.root.innerHTML);
-    });
-"
-wire:ignore>
-    <!-- <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Message</label> -->
+                                quill.on('text-change', () => {
+                                    @this.set('replyData.message', quill.root.innerHTML);
+                                });
+                            "
+                            wire:ignore>
+                                <!-- <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Message</label> -->
 
-    {{-- The editable div --}}
-    <div x-ref="quillEditor"
-         class="min-h-[150px] bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg p-3 border border-gray-300 dark:border-gray-600 shadow-sm">
-    </div>
-</div>
-
-
-    <!-- Internal Notes -->
-    <div class="w-full">
-        <div class="flex items-center mb-1">
-            <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2 px-2">Internal Notes:</label>
-        </div>
-        <textarea 
-            wire:model="replyData.internal_notes" 
-            rows="3"
-            class="w-full font-small rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500"
-            placeholder="Add any internal notes here (not visible to customer)"
-            style="font-size:13px;"></textarea>
-    </div>
-
-    <!-- Notify Customer Checkbox -->
-    <!-- <div class="flex items-center">
-        <input 
-            type="checkbox" 
-            wire:model="replyData.notify_customer" 
-            id="notify_customer"
-            class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-primary-500 dark:bg-gray-700 dark:checked:bg-primary-500">
-        <label 
-            for="notify_customer" 
-            class="ml-2 block text-sm text-gray-900 dark:text-white"
-            style="font-size:13px;">Notify customer</label>
-    </div> -->
-
-                               
+                                {{-- The editable div --}}
+                                <div x-ref="quillEditor"
+                                    class="min-h-[150px] bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg p-3 border border-gray-300 dark:border-gray-600 shadow-sm">
+                                </div>
                             </div>
-                            </div>
-                        </div>
-                <div class="flex justify-end mt-6 space-x-3">
-            <div class="flex justify-end items-center space-x-2">
+
+
+                                <!-- Internal Notes -->
+                                <div class="w-full">
+                                    <div class="flex items-center mb-1">
+                                        <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2 px-2">Internal Notes:</label>
+                                    </div>
+                                    <textarea 
+                                        wire:model="replyData.internal_notes" 
+                                        rows="3"
+                                        class="w-full font-small rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                                        placeholder="Add any internal notes here (not visible to customer)"
+                                        style="font-size:13px;"></textarea>
+                                </div>
+
+                                <!-- Notify Customer Checkbox -->
+                                <!-- <div class="flex items-center">
+                                    <input 
+                                        type="checkbox" 
+                                        wire:model="replyData.notify_customer" 
+                                        id="notify_customer"
+                                        class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-primary-500 dark:bg-gray-700 dark:checked:bg-primary-500">
+                                    <label 
+                                        for="notify_customer" 
+                                        class="ml-2 block text-sm text-gray-900 dark:text-white"
+                                        style="font-size:13px;">Notify customer</label>
+                                </div> -->
+
+                                                        
+                                                        </div>
+                                                        </div>
+                                                    </div>
+                                            <div class="flex justify-end mt-6 space-x-3">
+                                        <div class="flex justify-end items-center space-x-2">
                                 <!-- BCC Toggle Button -->
                                 <!-- <button 
                                     type="button" 
@@ -451,20 +636,20 @@ wire:ignore>
             </div>
          
             <!-- Right Panel - 30% width -->
-            <div class="w-[35%] md:w-[30%] min-w-[30%]  bg-white space-y-1 p-3 rounded" style="width:32% !important">
+            <div class="w-[35%] md:w-[30%] min-w-[30%]  bg-white space-y-1 p-3 rounded" style="width:20% !important">
                 <!-- Ticket Card -->
-                <div class="p-6 bg-white rounded-xl shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                <div class=" bg-white rounded-xl shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
                     <!-- Ticket Header -->
                     <div class="flex items-start justify-between mb-6">
-                        <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-2">{{ $this->record->title }}</h2>
+                        <h2 class="text-xl font-semibold text-gray-800 dark:text-white mb-2">{{ $this->record->title }}</h2>
                     </div>
 
                     <!-- Ticket Details - Horizontal Layout -->
                     <div class="">
                         <div class="grid grid-cols-1 md:grid-cols-5 text-sm">
 
-                        <!-- Purpose -->
-                            <div class="flex text-xs flex-col p-1 bg-gray-50/80 dark:bg-gray-700/60 rounded-lg">
+                            <!-- Purpose -->
+                            <div class="flex text-xs flex-col bg-gray-50/80 dark:bg-gray-700/60 rounded-lg">
                                 <div class="flex items-center ">
                                     <x-heroicon-o-calendar class="w-4 h-4 mr-2 text-primary-500 dark:text-primary-400 flex-shrink-0" />
                                     <span class="text-xs font-medium text-gray-500 dark:text-gray-400 px-2">Purpose: </span>
@@ -474,10 +659,10 @@ wire:ignore>
                             </div>
 
                             <!-- Message -->
-                        <div class="flex flex-col p-1 bg-gray-50/80 dark:bg-gray-700/60 rounded-lg" x-data="{ showTooltip: false }">
+                            <div class="flex flex-col  text-xs font-medium bg-gray-50/80 dark:bg-gray-700/60 rounded-lg" x-data="{ showTooltip: false }">
                                 <div class="flex items-center">
                                     <x-heroicon-o-calendar class="w-4 h-4 mr-2 text-primary-500 dark:text-primary-400 flex-shrink-0" />
-                                    <span class="text-xs font-medium text-gray-500 dark:text-gray-400 px-2">Message: </span>
+                                    <span class="text-xs font-smaller text-gray-500 dark:text-gray-400 px-2">Message: </span>
                                     <div class="relative tooltip_custom">
                                         <!-- Truncated preview text -->
                                         <span class="font-semibold text-gray-800 dark:text-white truncate cursor-pointer"
@@ -512,7 +697,7 @@ wire:ignore>
                     
 
                             <!-- Ticket ID -->
-                            <div class="flex flex-col p-1 bg-gray-50/80 dark:bg-gray-700/60 rounded-lg">
+                            <div class="flex text-xs font-medium flex-col bg-gray-50/80 dark:bg-gray-700/60 rounded-lg">
                                 <div class="flex items-center ">
                                     <x-heroicon-o-ticket class="w-4 h-4 mr-2 text-primary-500 dark:text-primary-400 flex-shrink-0" />
                                     <span class="text-xs font-medium text-gray-500 dark:text-gray-400 px-2">Ticket ID: </span>
@@ -521,16 +706,9 @@ wire:ignore>
                                 
                             </div>
 
-                            <div class="flex flex-col p-1 bg-gray-50/80 dark:bg-gray-700/60 rounded-lg">
-                                <div class="flex items-center ">
-                                    <x-heroicon-o-ticket class="w-4 h-4 mr-2 text-primary-500 dark:text-primary-400 flex-shrink-0" />
-                                    <span class="text-xs font-medium text-gray-500 dark:text-gray-400 px-2">Status: </span>
-                                    <span class="font-semibold text-gray-800 dark:text-white">{{ $this->record->ticketStatus->name ?? 'No Status' }}</span>
-                                </div>
-                                
-                            </div>
-
-                            <div class="flex flex-col p-1 bg-gray-50/80 dark:bg-gray-700/60 rounded-lg">
+                           
+                            <!-- Priority -->
+                            <div class="flex flex-col bg-gray-50/80 dark:bg-gray-700/60 rounded-lg">
                                 <div class="flex items-center ">
                                     <x-heroicon-o-ticket class="w-4 h-4 mr-2 text-primary-500 dark:text-primary-400 flex-shrink-0" />
                                     <span class="text-xs font-medium text-gray-500 dark:text-gray-400 px-2">Priority: </span>
@@ -540,7 +718,7 @@ wire:ignore>
                             </div>
 
                             <!-- SLA -->
-                            <div class="flex flex-col p-1 bg-gray-50/80 dark:bg-gray-700/60 rounded-lg">
+                            <div class="flex flex-col text-xs font-medium bg-gray-50/80 dark:bg-gray-700/60 rounded-lg">
                                 <div class="flex items-center ">
                                     <x-heroicon-o-calendar class="w-4 h-4 mr-2 text-primary-500 dark:text-primary-400 flex-shrink-0" />
                                     <span class="text-xs font-medium text-gray-500 dark:text-gray-400 px-2">SLA: </span>
@@ -551,7 +729,7 @@ wire:ignore>
 
 
                             <!-- Response Time -->
-                            <div class="flex flex-col p-1 bg-gray-50/80 dark:bg-gray-700/60 rounded-lg">
+                            <div class="flex text-xs font-medium flex-col bg-gray-50/80 dark:bg-gray-700/60 rounded-lg">
                                 <div class="flex items-center ">
                                     <x-heroicon-o-calendar class="w-4 h-4 mr-2 text-primary-500 dark:text-primary-400 flex-shrink-0" />
                                     <span class="text-xs font-medium text-gray-500 dark:text-gray-400 px-2">Response Time: </span>
@@ -561,7 +739,7 @@ wire:ignore>
                             </div>
 
                             <!-- Resoltion Time -->
-                            <div class="flex flex-col p-1 bg-gray-50/80 dark:bg-gray-700/60 rounded-lg">
+                            <div class="flex text-xs font-medium flex-col bg-gray-50/80 dark:bg-gray-700/60 rounded-lg">
                                 <div class="flex items-center ">
                                     <x-heroicon-o-calendar class="w-4 h-4 mr-2 text-primary-500 dark:text-primary-400 flex-shrink-0" />
                                     <span class="text-xs font-medium text-gray-500 dark:text-gray-400 px-2">Resolution Time: </span>
@@ -569,20 +747,10 @@ wire:ignore>
 
                                 </div>
                             </div>
-
-
-                            <!-- Assigned To -->
-                            <div class="flex flex-col p-1 bg-gray-50/80 dark:bg-gray-700/60 rounded-lg">
-                                <div class="flex items-center ">
-                                    <x-heroicon-o-user-circle class="w-4 h-4 mr-2 text-primary-500 dark:text-primary-400 flex-shrink-0" />
-                                    <span class="text-xs font-medium text-gray-500 dark:text-gray-400 px-2">Assigned To: </span>
-                                <span class="font-semibold text-gray-800 dark:text-white truncate">{{ $this->record->assignedTo->name ?? 'Unassigned' }}</span>
-
-                                </div>
-                            </div>
+                            
 
                             <!-- Created By -->
-                            <div class="flex flex-col p-1 bg-gray-50/80 dark:bg-gray-700/60 rounded-lg">
+                            <div class="flex text-xs font-medium flex-col  bg-gray-50/80 dark:bg-gray-700/60 rounded-lg">
                                 <div class="flex items-center ">
                                     <x-heroicon-o-user class="w-4 h-4 mr-2 text-primary-500 dark:text-primary-400 flex-shrink-0" />
                                     <span class="text-xs font-medium text-gray-500 dark:text-gray-400 px-2">Created By: </span>
@@ -594,7 +762,7 @@ wire:ignore>
                             
 
                             <!-- Created On -->
-                            <div class="flex flex-col p-1 bg-gray-50/80 dark:bg-gray-700/60 rounded-lg">
+                            <div class="flex text-xs font-medium flex-col  bg-gray-50/80 dark:bg-gray-700/60 rounded-lg">
                                 <div class="flex items-center ">
                                     <x-heroicon-o-calendar class="w-4 h-4 mr-2 text-primary-500 dark:text-primary-400 flex-shrink-0" />
                                     <span class="text-xs font-medium text-gray-500 dark:text-gray-400 px-2">Created On: </span>
@@ -604,7 +772,7 @@ wire:ignore>
                             </div>
 
                             <!-- Last Updated -->
-                            <div class="flex flex-col p-1 bg-gray-50/80 dark:bg-gray-700/60 rounded-lg">
+                            <div class="flex text-xs font-medium flex-col  bg-gray-50/80 dark:bg-gray-700/60 rounded-lg">
                                 <div class="flex items-center ">
                                     <x-heroicon-o-clock class="w-4 h-4 mr-2 text-primary-500 dark:text-primary-400 flex-shrink-0" />
                                     <span class="text-xs font-medium text-gray-500 dark:text-gray-400 px-2">Last Updated:</span>
@@ -612,23 +780,95 @@ wire:ignore>
                                 </div>
                                 
                             </div>
+
+                        <!-- Status -->
+                        <div class=" text-xs font-medium ticket-meta-item dark:bg-gray-700/60">
+                            <x-heroicon-o-ticket class="w-4 h-4 text-primary-500 dark:text-primary-400 flex-shrink-0" />
+                            <span class="ticket-meta-label">Status:</span>
+                            
+                            @if(!$showStatusEdit)
+                                <span class="ticket-meta-value">
+                                    {{ $record->ticketStatus->name ?? 'No Status' }}
+                                </span>
+                                
+                                @if($canAssignToOthers)
+                                    <button wire:click="toggleStatusEdit" class="ticket-meta-edit-btn">
+                                        <x-heroicon-o-pencil class="w-3 h-3" />
+                                    </button>
+                                @endif
+                            @else
+                                <select wire:model="newStatusId" class="ticket-meta-edit-select">
+                                    @foreach($statuses as $status)
+                                        <option value="{{ $status->id }}">{{ $status->name }}</option>
+                                    @endforeach
+                                </select>
+                                
+                                <button wire:click="updateStatus" class="ticket-meta-save-btn">
+                                    <x-heroicon-o-check class="w-3 h-3" />
+                                </button>
+                                <button wire:click="toggleStatusEdit" class="ticket-meta-cancel-btn">
+                                    <x-heroicon-o-x-mark class="w-3 h-3" />
+                                </button>
+                            @endif
+                        </div>
+
+                        <!-- Assigned To -->
+                        <div class=" text-xs font-medium ticket-meta-item dark:bg-gray-700/60">
+                            <x-heroicon-o-user-circle class="w-4 h-4 text-primary-500 dark:text-primary-400 flex-shrink-0" />
+                            <span class="ticket-meta-label">Assigned To:</span>
+                            
+                            @if(!$showAssigneeEdit)
+                                <span class="ticket-meta-value truncate">
+                                    {{ $record->assignedTo->name ?? 'Unassigned' }}
+                                </span>
+                                
+                                @if($canAssignToOthers)
+                                    <button wire:click="toggleAssigneeEdit" class="ticket-meta-edit-btn">
+                                        <x-heroicon-o-pencil class="w-3 h-3" />
+                                    </button>
+                                @endif
+                            @else
+                                <select wire:model="newAssigneeId" class="ticket-meta-edit-select">
+                                    <option value="">Unassigned</option>
+                                    @foreach($assignableUsers as $user)
+                                        <option value="{{ $user->id }}">{{ $user->name }}</option>
+                                    @endforeach
+                                </select>
+                                
+                                <button wire:click="updateAssignee" class="ticket-meta-save-btn">
+                                    <x-heroicon-o-check class="w-3 h-3" />
+                                </button>
+                                <button wire:click="toggleAssigneeEdit" class="ticket-meta-cancel-btn">
+                                    <x-heroicon-o-x-mark class="w-3 h-3" />
+                                </button>
+                            @endif
+                        </div>
                         </div>
                     </div>
                 </div>
                 
             <!-- Customer Info Card - Vertical Layout with Safe Icons -->
             <div class="bg-white rounded-xl shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                <h3 class="font-semibold text-lg text-gray-800 dark:text-white px-4 py-2  flex items-center">
-                    <x-heroicon-o-user-group class="w-6 h-6 mr-2 text-primary-500 dark:text-primary-400" />
+                <h3 class="font-semibold text-lg text-gray-800 dark:text-white py-1  flex items-center">
+                   
                     Customer Information
                 </h3>
-                <div class="grid grid-cols-1 px-6">
+                <div class="grid grid-cols-1">
                     <!-- Email -->
-                    <div class="flex flex-col px-1 bg-gray-50/80 dark:bg-gray-700/60 rounded-lg">
+                    <div class="flex  flex-col px-1 bg-gray-50/80 dark:bg-gray-700/60 rounded-lg">
                         <div class="flex items-center">
                             <x-heroicon-o-user-circle class="w-4 h-4 mr-2 text-primary-500 dark:text-primary-400 flex-shrink-0" />
-                            <span class="text-sm font-medium text-gray-500 dark:text-gray-400 px-2">Email: </span>
-                            <span class="font-semibold text-gray-800 dark:text-white truncate">{{ $this->record->requested_email ?? 'N/A' }}</span>
+                            <span class="text-xs font-medium text-gray-500 dark:text-gray-400 px-2">Email: </span>
+                            <span class="text-xs font-medium text-gray-800 dark:text-white truncate">{{ $this->record->requested_email ?? 'N/A' }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Name -->
+                    <div class="flex  flex-col px-1 bg-gray-50/80 dark:bg-gray-700/60 rounded-lg">
+                        <div class="flex items-center">
+                            <x-heroicon-o-user-circle class="w-4 h-4 mr-2 text-primary-500 dark:text-primary-400 flex-shrink-0" />
+                            <span class="text-xs font-medium text-gray-500 dark:text-gray-400 px-2">Name: </span>
+                            <span class="text-xs font-medium text-gray-800 dark:text-white truncate">{{ $this->createdBy->name ?? 'N/A' }}</span>
                         </div>
                     </div>
                     
@@ -636,8 +876,8 @@ wire:ignore>
                     <div class="flex flex-col px-1 bg-gray-50/80 dark:bg-gray-700/60 rounded-lg">
                         <div class="flex items-center">
                             <x-heroicon-o-ticket class="w-4 h-4 mr-2 text-primary-500 dark:text-primary-400 flex-shrink-0" />
-                            <span class="text-sm font-medium text-gray-500 dark:text-gray-400 px-2">Phone: </span>
-                            <span class="font-semibold text-gray-800 dark:text-white">{{ $this->record->createdBy->phone ?? 'N/A' }}</span>
+                            <span class="text-xs font-medium text-gray-500 dark:text-gray-400 px-2">Phone: </span>
+                            <span class="text-xs font-medium text-gray-800 dark:text-white">{{ $this->record->createdBy->phone ?? 'N/A' }}</span>
                         </div>
                     </div>
                     
@@ -645,11 +885,167 @@ wire:ignore>
                     <div class="flex flex-col px-1 bg-gray-50/80 dark:bg-gray-700/60 rounded-lg">
                         <div class="flex items-center">
                             <x-heroicon-o-calendar class="w-4 h-4 mr-2 text-primary-500 dark:text-primary-400 flex-shrink-0" />
-                            <span class="text-sm font-medium text-gray-500 dark:text-gray-400 px-2">Organization: </span>
-                            <span class="font-semibold text-gray-800 dark:text-white">{{ $this->record->createdBy->company->name ?? 'N/A' }}</span>
+                            <span class="text-xs font-medium text-gray-500 dark:text-gray-400 px-2">Organization: </span>
+                            <span class="text-xs font-medium text-gray-800 dark:text-white">{{ $this->record->createdBy->company->name ?? 'N/A' }}</span>
                         </div>
                     </div>
                 </div>
+
+                <!-- Ticket Journey Section -->
+<div class="bg-white rounded-xl shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700 mt-4">
+    <h3 class="font-semibold text-lg text-gray-800 dark:text-white py-1 px-1 flex items-center">
+        
+        Ticket Journey
+    </h3>
+    
+    <div class="px-1 ">
+        <ol class="relative border-l border-gray-200 dark:border-gray-700">                  
+            @foreach($ticketJourney as $event)
+            <li class="mb-6 ml-4">
+                <!-- <div class="absolute w-3 h-3 bg-gray-200 rounded-full mt-1.5 -left-1.5 border border-white dark:border-gray-900 dark:bg-gray-700"></div> -->
+                <!-- <time class="mb-1 text-sm font-normal leading-none text-gray-400 dark:text-gray-500">
+                    {{ $event->created_at->format('M j, Y g:i A') }}
+                </time> -->
+                <div class="flex items-center">
+                     <x-heroicon-o-ticket class="w-4 h-4 text-primary-500 dark:text-primary-400 flex-shrink-0" />
+                    <h4 style="padding-left: 8px;" class="text-xs text-gray-500 dark:text-white">
+                         {{ $event->fromStatus?->name ?? 'N/A' }}→{{ $event->toStatus?->name }}→
+                    </h4 >
+                    @if($event->actionedBy)
+                    <span class="text-xs text-gray-500 dark:text-gray-400 px-1">
+                        by {{ $event->actionedBy->name }}
+                    </span>
+                    @endif
+                </div>
+                <div class="flex items-center">
+                    <x-heroicon-o-user-circle class="w-4 h-4 text-primary-500 dark:text-primary-400 flex-shrink-0" />
+                @if($event->from_agent || $event->to_agent)
+                <h4 style="padding-left: 8px;"class="text-xs  text-gray-500 dark:text-white">
+                    {{ $event->fromAgent?->name ?? 'Unassigned' }}→{{ $event->toAgent?->name ?? 'Unassigned' }}→
+                </h4>
+                 @if($event->actionedBy)
+                    <span class="text-xs text-gray-500 dark:text-gray-400 px-1">
+                        by {{ $event->actionedBy->name }}
+                    </span>
+                    @endif
+                @endif
+                </div>
+            </li>
+            @endforeach
+            
+            @if($ticketJourney->isEmpty())
+            <li class="ml-4 py-4">
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                    No journey events recorded yet
+                </p>
+            </li>
+            @endif
+        </ol>
+    </div>
+</div>
+
+
+                <!-- Related Tickets Section -->
+<div class="bg-white rounded-xl shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700 mt-4">
+    <h3 class="font-semibold text-lg text-gray-800 dark:text-white py-2 px-1 flex items-center">
+        Previous Tickets
+    </h3>
+    
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Ticket ID</th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Title</th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Status</th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Created</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+                @forelse($relatedTickets as $ticket)
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer" wire:click="selectTicket({{ $ticket->id }})">
+                    <td class="px-1 py-1 whitespace-nowrap text-xs  text-gray-500 dark:text-gray-200">
+                        {{ $ticket->ticket_id }}
+                    </td>
+                    <td class="px-1 py-1 whitespace-nowrap text-xs  text-gray-500 dark:text-gray-200 truncate max-w-xs">
+                        {{ $ticket->title }}
+                    </td>
+                    <td class="px-1 py-1 whitespace-nowrap text-xs  text-gray-500 dark:text-gray-200">
+                        <span class="px-2 inline-flex text-xs leading-5  rounded-full 
+                            {{ $ticket->ticketStatus->color_class ?? '  text-gray-500' }}">
+                            {{ $ticket->ticketStatus->name ?? 'No Status' }}
+                        </span>
+                    </td>
+                    <td class="px-1 py-1 whitespace-nowrap text-xs  text-gray-500 dark:text-gray-200">
+                        {{ $ticket->created_at->format('M d, Y') }}
+                    </td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="4" class="px-4 py-4 text-sm text-gray-500 dark:text-gray-400 text-center">
+                        No other tickets found for this email
+                    </td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+<!-- Activity Log Section -->
+<div class="bg-white rounded-xl shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700 mt-4">
+    <h3 class="font-semibold text-lg text-gray-800 dark:text-white py-3 px-4 flex items-center">
+        <x-heroicon-o-clipboard-document-list class="w-6 h-6 mr-2 text-primary-500 dark:text-primary-400" />
+        Activity Log
+    </h3>
+    
+    <div class="px-4 py-2">
+        <div class="space-y-4">
+            @foreach($activityLogs as $activity)
+            <div class="flex">
+                <div class="flex-shrink-0 mr-3">
+                    <div class="mt-1 rounded-full w-6 h-6 sm:w-6 sm:h-6 bg-gray-200 flex items-center justify-center">
+                        <x-heroicon-o-document-text class="w-4 h-4 text-gray-500" />
+                    </div>
+                </div>
+                <div class="flex-1 border rounded-lg px-4 py-2 sm:px-6 sm:py-4 leading-relaxed">
+                    <div class="flex items-center">
+                        <span class="text-xs text-gray-500 dark:text-gray-400">
+                            {{ $activity->created_at->format('M j, Y g:i A') }} ({{ $activity->created_at->diffForHumans() }})
+                        </span>
+                    </div>
+                    @if(is_array($activity->logs))
+                        @foreach($activity->logs as $key => $value)
+                            <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                                <span class="font-medium">{{ ucfirst(str_replace('_', ' ', $key)) }}:</span> 
+                                {{ is_array($value) ? json_encode($value) : $value }}
+                            </p>
+                        @endforeach
+                    @else
+                        <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                            {{ $activity->logs }}
+                        </p>
+                    @endif
+                    @if($activity->ip_address)
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            IP: {{ $activity->ip_address }}
+                        </p>
+                    @endif
+                </div>
+            </div>
+            @endforeach
+            
+            @if($activityLogs->isEmpty())
+            <div class="text-center py-4">
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                    No activity recorded yet
+                </p>
+            </div>
+            @endif
+        </div>
+    </div>
+</div>
             </div>
             </div>
         </div>

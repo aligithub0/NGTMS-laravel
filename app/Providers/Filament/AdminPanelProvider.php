@@ -18,6 +18,9 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Filament\Navigation\NavigationItem;
+use App\Filament\Resources\TicketsResource\Pages\ReplyTicket;
+use App\Filament\Resources\TicketsResource;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -56,15 +59,24 @@ class AdminPanelProvider extends PanelProvider
             ->databaseNotificationsPolling('2s')
             // Add this to customize the user menu:
             ->userMenuItems([
-    MenuItem::make()
-        ->label(function () {
-            $user = auth()->user();
-            $role = is_string($user->role) ? $user->role : ($user->role['name'] ?? 'N/A');
-            return "Role". ' (' . $role . ')';
-        })
-        ->url('#')
-        ->icon('heroicon-o-user')
+                MenuItem::make()
+                    ->label(function () {
+                        $user = auth()->user();
+                        $role = is_string($user->role) ? $user->role : ($user->role['name'] ?? 'N/A');
+                        return "Role". ' (' . $role . ')';
+                    })
+                    ->url('#')
+                    ->icon('heroicon-o-user')
         
-]);
+           ])
+
+
+        ->navigationItems([
+            NavigationItem::make('Tickets Details')
+                ->url(fn (): string => TicketsResource::getUrl('reply', ['record' => '144']))
+                ->icon('heroicon-o-chat-bubble-bottom-center-text')
+                ->group('Tickets Details') // Optional: Group under "Tickets"
+                ->sort(2),
+        ]);
     }
 }
