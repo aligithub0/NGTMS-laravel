@@ -120,6 +120,12 @@ class TicketRepliesResource extends Resource
                     ->nullable()
                     ->required(),
 
+                    TextInput::make('parent_reply_id')->nullable()->label('Parent Reply'),
+
+                    TextInput::make('parent_message_id')->nullable()->label('Parent Message'),
+
+                    TextInput::make('message_id')->nullable()->label('Message ID'),
+
                     Select::make('reply_type')
                     ->label('Reply Type')
                     ->options(TicketSource::all()->pluck('name', 'id'))
@@ -128,19 +134,17 @@ class TicketRepliesResource extends Resource
                     ->nullable()
                     ->required(),
 
-                        FileUpload::make('attachment_path')
-                        ->label('Attachments')
-                        ->directory('ticket-replies/attachments')
-                        ->multiple()
-                        ->downloadable()
-                        ->image()
-                        ->acceptedFileTypes(['image/png', 'image/jpeg'])
-                        ->enableOpen() 
-                        ->enableDownload() 
-                        ->enableReordering(), 
+                    FileUpload::make('attachment_path')
+                    ->label('Attachments')
+                    ->directory('ticket-replies/attachments')
+                    ->multiple()
+                    ->downloadable()
+                    ->image()
+                    ->acceptedFileTypes(['image/png', 'image/jpeg'])
+                    ->enableOpen() 
+                    ->enableDownload() 
+                    ->enableReordering(), 
                 
-                
-
 
                     Select::make('status_after_reply')
                     ->label('Status After Reply')
@@ -161,7 +165,11 @@ class TicketRepliesResource extends Resource
 
                     TagsInput::make('to_recipients')->label('To Recipents')
                     ->required(),
-
+                    
+                    Toggle::make('is_read')
+                    ->label('Is Read?')
+                    ->default(false)
+                    ->inline(false),
                     
                     Textarea::make('internal_notes'),
                     Textarea::make('external_notes'),

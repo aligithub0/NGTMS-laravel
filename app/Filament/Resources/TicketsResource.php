@@ -275,6 +275,8 @@ public static function canDelete($record): bool
                 TagsInput::make('cc_recipients')->label('CC Recipents')
                 ->required(),
 
+                
+
              Select::make('resolution_time_id')
                 ->label('Resolution Time')
                 ->options(SlaConfiguration::all()->pluck('resolution_time', 'id'))
@@ -298,7 +300,10 @@ public static function canDelete($record): bool
                     ->required(),
 
                
-               
+                    Toggle::make('is_read')
+                    ->label('Is Read?')
+                    ->default(false)
+                    ->inline(false),
 
                 Toggle::make('reminder_flag')
                 ->label('Reminder Flag')
@@ -321,14 +326,12 @@ public static function canDelete($record): bool
             ->columns([
                 TextColumn::make('priority.name')->searchable()->label('Priority'),
                 TextColumn::make('title')->searchable()->label('Title'),
-                TextColumn::make('description')->searchable()->label('Description')->limit(30),
                 TextColumn::make('requested_email')->searchable()->label('Requested Email'),
                 TextColumn::make('TicketStatus.name')->searchable()->label('Ticket Status'),
                 TextColumn::make('createdBy.name')->searchable()->label('Created By'),
                 TextColumn::make('assignedTo.name')->searchable()->label('Assigned To'),
                 TextColumn::make('TicketSource.name')->searchable()->label('Ticket Source'),
-                TextColumn::make('contact_id')->searchable()->label('Contact ID'),
-                TextColumn::make('contact_ref_no')->searchable()->label('Contact Ref No'),
+                TextColumn::make('contacts.name')->searchable()->label('Contact ID'),
                 TextColumn::make('slaConfiguration.name')->searchable()->label('SLA'),
                 TextColumn::make('to_recipients')->searchable()->label('To Recipents'),
                 TextColumn::make('cc_recipients')->searchable()->label('CC Recipents'),

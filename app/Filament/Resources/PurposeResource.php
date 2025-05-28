@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\PurposeResource\Pages;
 use App\Filament\Resources\PurposeResource\RelationManagers;
 use App\Models\Purpose;
+use App\Models\SlaConfiguration;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -82,9 +83,14 @@ class PurposeResource extends Resource
                 ->preload()
                 ->nullable(),
 
+                Select::make('sla_id')
+                ->label('Select SLA')
+                ->options(SlaConfiguration::all()->pluck('name', 'id'))
+                ->searchable()
+                ->preload()
+                ->nullable(),
 
-                Textarea::make('description')->required()->rows(2),
-
+               Textarea::make('description')->required()->rows(2),
 
             Toggle::make('status')
                 ->label('Active')
@@ -107,6 +113,9 @@ class PurposeResource extends Resource
                 TextColumn::make('parent.name')
                     ->label('Parent Purpose')
                     ->sortable(),
+
+                    TextColumn::make('sla.name')->label('SLA'),
+
 
                 TextColumn::make('description')->searchable(),
 

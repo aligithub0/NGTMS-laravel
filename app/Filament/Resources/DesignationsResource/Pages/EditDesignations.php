@@ -13,7 +13,7 @@ class EditDesignations extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make()>safeDelete(),
+            Actions\DeleteAction::make()->safeDelete(),
         ];
     }
 

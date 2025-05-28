@@ -47,12 +47,22 @@ class RecentTicketsTable extends BaseWidget
         
         return $query->where('assigned_to_id', $user->id);
     }
+   
 
     public function table(Table $table): Table
     {
         return $table
             ->query($this->getTableQuery()->limit(10))
             ->columns([
+                TextColumn::make('ticket_id')
+                    ->label('Ticket ID')
+                    ->searchable()
+                    ->sortable()
+                    ->url(function (Tickets $record): string {
+                        return TicketsResource::getUrl('view', ['record' => $record]);
+                    })
+                    ->color('primary'),
+
                 TextColumn::make('ticket_id')
                     ->label('Ticket ID')
                     ->searchable()
@@ -85,7 +95,36 @@ class RecentTicketsTable extends BaseWidget
                     
                 TextColumn::make('priority.name')
                     ->label('Priority')
+                    ->limit(30)
+                    ->tooltip(function (TextColumn $column): ?string {
+                        $state = $column->getState();
+                        if (strlen($state) <= 30) {
+                            return null;
+                        }
+                        return $state;
+                    }),
+                
+                TextColumn::make('createdBy.name')
+                    ->label('Created By')
+                    ->sortable()
+                    ->searchable(),
+                    
+                TextColumn::make('slaConfiguration.name')
+                    ->label('SLA')
+                    ->sortable()
+                    ->searchable(),
+                    
+                TextColumn::make('priority.name')
+                    ->label('Priority')
                     ->badge()
+                    ->color(function ($state) {
+                        return match ($state) {
+                            'High' => 'danger',
+                            'Medium' => 'warning',
+                            'Low' => 'success',
+                            default => 'gray',
+                        };
+                    })
                     ->color(function ($state) {
                         return match ($state) {
                             'High' => 'danger',
@@ -98,6 +137,7 @@ class RecentTicketsTable extends BaseWidget
                     
                 TextColumn::make('ticketStatus.name')
                     ->label('Status')
+                    ->label('Status')
                     ->badge()
                     ->color(function (string $state): string {
                         return match ($state) {
@@ -108,11 +148,16 @@ class RecentTicketsTable extends BaseWidget
                             'Waiting' => 'warning',
                             'Approval' => 'primary',
                             'Closed' => 'danger',
+                            'Closed' => 'danger',
                             default => 'gray',
                         };
                     })
                     ->sortable(),
                     
+                TextColumn::make('assignedUser.name') 
+                    ->label('Assigned To')
+                    ->sortable()
+                    ->searchable(),
                 TextColumn::make('assignedUser.name') 
                     ->label('Assigned To')
                     ->sortable()
@@ -155,6 +200,14 @@ class RecentTicketsTable extends BaseWidget
                 SelectFilter::make('priority')
                     ->relationship('priority', 'name')
                     ->label('Ticket Priority'),
+
+                SelectFilter::make('sla')
+                    ->relationship('slaConfiguration', 'name')
+                    ->label('SLA Configuration'),
+                    
+                SelectFilter::make('priority')
+                    ->relationship('priority', 'name')
+                    ->label('Ticket Priority'),
                 
                 Filter::make('created_at')
                     ->form([
@@ -178,10 +231,13 @@ class RecentTicketsTable extends BaseWidget
                 Filter::make('open_tickets')
                     ->label('Open Tickets Only')
                     ->query(fn (Builder $query): Builder => $query->whereHas('ticketStatus', fn ($q) => $q->whereNotIn('name', ['Closed', 'Resolved'])))
+                    ->query(fn (Builder $query): Builder => $query->whereHas('ticketStatus', fn ($q) => $q->whereNotIn('name', ['Closed', 'Resolved'])))
                     ->toggle(),
                 ])
+                
             ->actions([
                 Tables\Actions\EditAction::make()
+                    ->label('')
                     ->label('')
                     ->icon('heroicon-s-pencil')
                     ->url(fn (Tickets $record): string => TicketsResource::getUrl('edit', ['record' => $record])),

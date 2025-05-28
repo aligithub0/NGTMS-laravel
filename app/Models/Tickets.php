@@ -39,10 +39,11 @@ class Tickets extends Model
         'cc_recipients',
         'ticket_id',
         'is_read',
+        'linked_message_id',
+        'linked_ticket_id',
     ];
  
     protected $casts = [
-        'purpose_type_id' => 'array',
         'notification_type_id' => 'array',
         'to_recipients' => 'array',
         'cc_recipients' => 'array',
@@ -67,10 +68,23 @@ class Tickets extends Model
         
         static::updating(function ($ticket) {
             $original = $ticket->getOriginal();
-            
-            if ($original['ticket_status_id'] != $ticket->ticket_status_id || 
-                $original['assigned_to_id'] != $ticket->assigned_to_id) {
-                
+        
+            if (
+                $original['ticket_status_id'] != $ticket->ticket_status_id ||
+                $original['assigned_to_id'] != $ticket->assigned_to_id
+            ) {
+                // Find the latest journey for this ticket
+                $lastJourney = TicketJourney::where('ticket_id', $ticket->id)
+                    ->latest('logged_time')
+                    ->first();
+        
+                $diffInSeconds = 0;
+                if ($lastJourney) {
+                    $diffInSeconds = $lastJourney->logged_time
+                        ? now()->diffInSeconds($lastJourney->logged_time)
+                        : 0;
+                }
+        
                 TicketJourney::create([
                     'ticket_id' => $ticket->id,
                     'from_agent' => $original['assigned_to_id'],
@@ -79,10 +93,11 @@ class Tickets extends Model
                     'to_status' => $ticket->ticket_status_id,
                     'actioned_by' => auth()->id(),
                     'logged_time' => now(),
-                    'total_time_diff'=> now()
+                    'total_time_diff'=> $diffInSeconds
                 ]);
             }
         });
+        
     }
 
         protected static function boot()
@@ -97,7 +112,7 @@ class Tickets extends Model
     public static function generateTicketId()
     {
         do {
-            $id = 'TCKT-' . strtoupper(uniqid());
+            $id = 'TKT-' . strtoupper(uniqid());
         } while (self::where('ticket_id', $id)->exists());
 
         return $id;

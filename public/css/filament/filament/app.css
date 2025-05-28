@@ -5935,15 +5935,19 @@ input:focus-visible+.dark\:\[input\:focus-visible\+\&\]\:ring-white\/20:is(.dark
   /* Firefox */
   -ms-overflow-style: none !important;
   /* IE and Edge */
+
 }
 
 .fi-sidebar-nav::-webkit-scrollbar {
   display: none !important;
   /* Chrome, Safari, Opera */
+
 }
  
 .fi-sidebar {
   background-color: white !important;
+  /* width: 270px; */
+
 }
 
 .fi-main {

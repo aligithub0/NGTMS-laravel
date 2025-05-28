@@ -30,7 +30,7 @@ class TicketsDashboard extends Page
     protected static ?string $navigationIcon = 'heroicon-s-chart-bar';
     protected static ?string $navigationLabel = 'Tickets Dashboard';
     protected static ?string $title = 'Tickets Dashboard';
-    protected static ?string $navigationGroup = 'Dashboard';
+    protected static ?string $navigationGroup = 'Ticket Management';
 
     public static function getNavigationSort(): ?int
 {
