@@ -69,16 +69,11 @@ class EditTickets extends EditRecord
                                         Select::make('purpose_type_id')
                                             ->label('Purpose')
                                             ->options(Purpose::all()->pluck('name', 'id'))
-                                            ->multiple()
                                             ->searchable()
                                             ->preload()
                                             ->required()
-                                            ->afterStateHydrated(function ($component, $state) {
-                                                if (is_string($state)) {
-                                                    $component->state(json_decode($state, true));
-                                                }
-                                            })
-                                            ->dehydrateStateUsing(fn ($state) => json_encode($state)),
+                                           
+                                            ->dehydrateStateUsing(fn ($state) => $state),
                                             
                                         TextInput::make('title')
                                             ->required()

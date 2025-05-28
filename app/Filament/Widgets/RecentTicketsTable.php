@@ -129,22 +129,8 @@ class RecentTicketsTable extends BaseWidget
                         }
                     }),
                     
-                TextColumn::make('resolution_time')
-                    ->label('Due Date')
-                    ->sortable()
-                    ->formatStateUsing(function ($state) {
-                        try {
-                            return \Carbon\Carbon::parse($state)->format(config('constants.default_datetime_format'));
-                        } catch (\Exception $e) {
-                            return 'Invalid date';
-                        }
-                    })
-                    ->color(function ($state) {
-                        if (\Carbon\Carbon::parse($state)->isPast()) {
-                            return 'danger';
-                        }
-                        return null;
-                    }),
+                    TextColumn::make('resolution_time')->searchable()->label('Resolution Time'),
+
             ])
             ->filters([
                 SelectFilter::make('status')
