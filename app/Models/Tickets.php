@@ -97,6 +97,37 @@ class Tickets extends Model
                 ]);
             }
         });
+
+
+         static::created(function ($ticket) {
+            ActivityLog::createLogEntry(
+                'Ticket created via Filament',
+                $ticket->id,
+                [
+                    'ticket_id' => $ticket->id,
+                    'title' => $ticket->title,
+                    'status' => $ticket->status,
+                    'assigned_to' => $ticket->assigned_to,
+                ]
+            );
+        });
+
+        static::updated(function ($ticket) {
+            $changes = $ticket->getChanges();
+            unset($changes['updated_at']);
+            
+            if (!empty($changes)) {
+                ActivityLog::createLogEntry(
+                    'Ticket updated via Filament',
+                    $ticket->id,
+                    [
+                        'changes' => $changes,
+                        'previous' => $ticket->getOriginal(),
+                    ]
+                );
+            }
+        });
+
         
     }
 

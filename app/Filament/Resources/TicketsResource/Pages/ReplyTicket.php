@@ -21,6 +21,10 @@ use Illuminate\Support\Str;
 use Filament\Forms\Components\Grid;
 use Livewire\Attributes\Url;
 use Livewire\WithPagination;
+use Filament\Forms\Components\DateTimePicker;
+use Carbon\Carbon;
+use App\Models\Notification as NotificationModel;
+
 
 class ReplyTicket extends Page
 {
@@ -64,6 +68,10 @@ class ReplyTicket extends Page
     public $ticketJourney;
 
     public $activityLogs;
+
+    public $showDatePicker = false;
+
+    public $scheduledDate;
 
     public function updatedSearch($value)
     {
@@ -198,6 +206,13 @@ public function toggleAssigneeEdit(): void
     $this->showAssigneeEdit = !$this->showAssigneeEdit;
 }
 
+
+public function closeScheduleModal()
+{
+    $this->showScheduleModal = false;
+}
+
+
 public function updateStatus(): void
 {
     $this->validate([
@@ -252,14 +267,7 @@ protected function getViewData(): array
         $this->selectedTicketId = $ticketId;
         $this->record = $ticket;
         
-        $this->record->load([
-            'replies.user',
-            'ticketStatus',
-            'priority',
-            'createdBy',
-            'assignedTo',
-            'slaConfiguration'
-        ]);
+         $this->loadRelatedData();
         
         $this->form->fill([
             'subject' => "Re: {$this->record->title}",
@@ -356,6 +364,49 @@ public function setReadFilter($value)
         
         $this->replyData['attachment_path'] = null;
     }
+
+
+    protected function processAttachments()
+{
+    if (!isset($this->replyData['attachment_path']) || empty($this->replyData['attachment_path'])) {
+        return null;
+    }
+
+    $attachments = [];
+    $storagePath = 'ticket-attachments/' . now()->format('Y/m');
+
+    // If it's a single file (not array)
+    if (!is_array($this->replyData['attachment_path'])) {
+        $file = $this->replyData['attachment_path'];
+        if ($file instanceof \Illuminate\Http\UploadedFile) {
+            $path = $file->store($storagePath);
+            $attachments[] = $path;
+        } elseif (is_string($file)) {
+            // If it's already a stored path (from edit, etc.)
+            $attachments[] = $file;
+        }
+        return json_encode($attachments);
+    }
+
+    // Process multiple files
+    foreach ($this->replyData['attachment_path'] as $file) {
+        if ($file instanceof \Illuminate\Http\UploadedFile) {
+            try {
+                $path = $file->store($storagePath);
+                $attachments[] = $path;
+            } catch (\Exception $e) {
+                // Log error but continue with other files
+                \Log::error("Failed to store attachment: " . $e->getMessage());
+                continue;
+            }
+        } elseif (is_string($file)) {
+            // If it's already a stored path
+            $attachments[] = $file;
+        }
+    }
+
+    return !empty($attachments) ? json_encode($attachments) : null;
+}
     
 
     public function form(Form $form): Form
@@ -451,7 +502,16 @@ public function setReadFilter($value)
                                 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
                             ])
                             ->maxSize(10240)
-                            ->columnSpanFull(),
+                            ->columnSpanFull()
+                            ->helperText('Uploaded files will be renamed to ensure uniqueness'),
+
+                             DateTimePicker::make('scheduledDate')
+                                ->label('Schedule Reply For')
+                                ->hidden(!$this->showDatePicker)
+                                ->minDate(now())
+                                ->required()
+                                ->columnSpanFull(),
+                                
                     ])
             ])
             ->statePath('replyData');
@@ -482,69 +542,159 @@ public function setReadFilter($value)
         ];
     }
 
-    public function submitReply(): void
-    {
-        try {
-            $data = $this->form->getState();
-            $attachmentPaths = [];
+   public function submitReply(): void
+{
+    try {
 
-            if (isset($data['attachment_path'])) {
-                $attachments = $data['attachment_path'];
-                if (is_array($attachments)) {
-                    foreach ($attachments as $file) {
-                        if ($file instanceof \Illuminate\Http\UploadedFile) {
-                            $path = $file->store('ticket-attachments', 'public');
-                            $attachmentPaths[] = 'ticket-attachments/' . basename($path);
-                        } elseif (is_string($file)) {
-                            $attachmentPaths[] = $file;
-                        }
+        
+        $data = $this->form->getState();
+        $tempAttachmentPaths = [];
+
+        $isScheduled = isset($data['scheduledDate']) && 
+               !empty($data['scheduledDate']) && 
+               Carbon::parse($data['scheduledDate'])->isFuture();
+
+        // First store files with temporary names
+        if (isset($data['attachment_path'])) {
+            $attachments = $data['attachment_path'];
+            
+            if (is_array($attachments)) {
+                foreach ($attachments as $file) {
+                    if ($file instanceof \Illuminate\Http\UploadedFile) {
+                    $originalName = $file->getClientOriginalName(); // Original file name
+                    $path = $file->storeAs('ticket-attachments', $originalName, 'public');
+                    $tempAttachmentPaths[] = 'ticket-attachments/' . $originalName;
+                } elseif (is_string($file)) {
+                                $tempAttachmentPaths[] = $file; // Keep existing files
                     }
-                } elseif ($attachments instanceof \Illuminate\Http\UploadedFile) {
-                    $path = $attachments->store('ticket-attachments', 'public');
-                    $attachmentPaths[] = 'ticket-attachments/' . basename($path);
-                } elseif (is_string($attachments)) {
-                    $attachmentPaths[] = $attachments;
+                }
+            } elseif($attachments instanceof \Illuminate\Http\UploadedFile) {
+    $originalName = $attachments->getClientOriginalName();
+    $path = $attachments->storeAs('ticket-attachments', $originalName, 'public');
+    $tempAttachmentPaths[] = 'ticket-attachments/' . $originalName;
+} elseif (is_string($attachments)) {
+                $tempAttachmentPaths[] = $attachments; // Keep existing file
+            }
+        }
+
+        // Create the reply to get the ID
+        $reply = TicketReplies::create([
+            'ticket_id' => $this->record->id,
+            'replied_by_user_id' => auth()->id(),
+            'subject' => $this->record->ticket_id . ' - ' . $data['subject'],
+            'message' => $data['message'],
+            'internal_notes' => $data['internal_notes'] ?? null,
+            'is_contact_notify' => $data['notify_customer'] ?? false,
+            'attachment_path' => null, // Will update after renaming
+            'to_recipients' => $data['requested_email'] ?? null,
+            'cc_recipients' => $data['cc_recipients'] ?? null,
+            'bcc' => $data['bcc'] ?? null,
+            'is_scheduled' => $isScheduled, // This was missing
+            'scheduled_at' => $isScheduled ? $data['scheduledDate'] : null,
+        ]);
+
+        // Now rename files to include ticket_id, reply ID and datetime
+        $finalAttachmentPaths = [];
+        foreach ($tempAttachmentPaths as $tempPath) {
+            $originalName = pathinfo($tempPath, PATHINFO_FILENAME);
+            $extension = pathinfo($tempPath, PATHINFO_EXTENSION);
+            $cleanTicketId = str_replace([' ', '-'], '_', $this->record->ticket_id);
+            $cleanOriginalName = preg_replace('/[^A-Za-z0-9_\-]/', '', $originalName);
+            
+            $newName = sprintf(
+                '%s_%d_%s_%s.%s',
+                $cleanTicketId,
+                $reply->id,
+                now()->format('Ymd_His'),
+                $cleanOriginalName,
+                $extension
+            );
+            
+            Storage::disk('public')->move($tempPath, 'ticket-attachments/' . $newName);
+            $finalAttachmentPaths[] = 'ticket-attachments/' . $newName;
+        }
+
+        // Update the reply with final paths
+        if (!empty($finalAttachmentPaths)) {
+            $reply->update(['attachment_path' => json_encode($finalAttachmentPaths)]);
+        }
+
+        $this->createNotificationForReply($reply, $data);
+
+        // Update ticket's updated_at timestamp
+        $this->record->touch();
+
+        Notification::make()
+            ->title('Reply sent successfully')
+            ->body('Your reply has been added to the ticket.')
+            ->success()
+            ->send();
+
+        // Reset form
+        $this->form->fill([
+            'subject' => "Re: {$this->record->title}",
+            // 'message' => '',
+            'internal_notes' => '',
+            'notify_customer' => true,
+            'attachment_path' => null,
+            'cc_recipients' => null,
+            'bcc' => null,
+            'scheduledDate' => null,
+        ]);
+         $this->showDatePicker = false;
+
+          $this->dispatch('replyData.message');
+
+    } catch (\Exception $e) {
+        // Clean up any uploaded files if error occurs
+        if (isset($tempAttachmentPaths)) {
+            foreach ($tempAttachmentPaths as $tempPath) {
+                if (Str::startsWith($tempPath, 'ticket-attachments/temp_')) {
+                    Storage::disk('public')->delete($tempPath);
                 }
             }
-
-            $reply = TicketReplies::create([
-                'ticket_id' => $this->record->id,
-                'replied_by_user_id' => auth()->id(),
-                'subject' => $this->record->ticket_id . ' - ' . $data['subject'],
-                'message' => $data['message'],
-                'internal_notes' => $data['internal_notes'] ?? null,
-                'is_contact_notify' => $data['notify_customer'] ?? false,
-                'attachment_path' => !empty($attachmentPaths) ? json_encode($attachmentPaths) : null,
-                'to_recipients' => $data['requested_email'] ?? null,
-                'cc_recipients' => $data['cc_recipients'] ?? null,
-                'bcc' => $data['bcc'] ?? null,
-            ]);
-
-            // Update ticket's updated_at timestamp
-            $this->record->touch();
-
-            Notification::make()
-                ->title('Reply sent successfully')
-                ->body('Your reply has been added to the ticket.')
-                ->success()
-                ->send();
-
-            // Reset form except subject
-            $this->form->fill([
-                'subject' => "{$this->record->subject}",
-                'message' => '',
-                'internal_notes' => '',
-                'notify_customer' => true,
-                'attachment_path' => null,
-                'cc_recipients' => null,
-            ]);
-
-        } catch (\Exception $e) {
-            Notification::make()
-                ->title('Error sending reply')
-                ->body($e->getMessage())
-                ->danger()
-                ->send();
         }
+
+        Notification::make()
+            ->title('Error sending reply')
+            ->body($e->getMessage())
+            ->danger()
+            ->send();
     }
+}
+
+
+protected function createNotificationForReply(TicketReplies $reply, array $data): void
+{
+    // Only create notification if customer should be notified
+    if (!$reply->is_contact_notify) {
+        return;
+    }
+
+    $notificationData = [
+        'type' => 'ticket_reply',
+        'ticket_id' => $reply->ticket_id,
+        'reply_id' => $reply->id,
+        'subject' => $reply->subject,
+        'body_text' => strip_tags($reply->message),
+        'body_html' => $reply->message,
+        'delivery_channel' => 'email', // or other channels as needed
+        'to_emails' => [$reply->requested_email],
+        'cc_emails' => $reply->cc_recipients ? [$reply->cc_recipients] : null,
+        'bcc_emails' => $reply->bcc ? [$reply->bcc] : null,
+        'status' => $reply->is_scheduled ? 'pending' : 'pending',
+        'scheduled_at' => $reply->scheduled_at,
+        'notifiable_type' => 'App\Models\User', // or other notifiable type
+        'notifiable_id' => auth()->id(), // the user who created the reply
+        'data' => [
+            'ticket_id' => $reply->ticket_id,
+            'reply_id' => $reply->id,
+            'attachments' => $reply->attachment_path ? json_decode($reply->attachment_path, true) : null,
+        ]
+    ];
+
+    // Create the notification
+    NotificationModel::create($notificationData);
+}
+   
 }

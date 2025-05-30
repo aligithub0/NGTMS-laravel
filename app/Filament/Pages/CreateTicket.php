@@ -94,20 +94,13 @@ class CreateTicket extends Page
                                 Section::make('Ticket Details')
                                     ->schema([
                                         Select::make('purpose_type_id')
-                                            ->label('Purpose')
-                                            ->placeholder('Select purposes')
-                                            ->options(Purpose::all()->pluck('name', 'id'))
-                                            ->searchable()
-                                            ->preload()
-                                            ->required()
-                                            ->afterStateHydrated(function ($component, $state) {
-                                                if (is_string($state)) {
-                                                    $component->state(json_decode($state, true));
-                                                }
-                                            })
-                                            ->dehydrateStateUsing(fn ($state) => json_encode($state)),
-                                            
-                                       
+                                        ->label('Purpose')
+                                        ->placeholder('Select purpose')
+                                        ->options(Purpose::all()->pluck('name', 'id'))
+                                        ->searchable()
+                                        ->preload()
+                                        ->required(),
+
                                             
                                         TextInput::make('title')
                                             ->label('Title')
@@ -487,7 +480,7 @@ Select::make('to_recipients')
         
         // Ensure arrays are properly encoded
         if (isset($data['purpose_type_id']) && is_array($data['purpose_type_id'])) {
-            $data['purpose_type_id'] = json_encode($data['purpose_type_id']);
+            $data['purpose_type_id'] = (int) $data['purpose_type_id'];
         }
         
         if (isset($data['notification_type_id']) && is_array($data['notification_type_id'])) {

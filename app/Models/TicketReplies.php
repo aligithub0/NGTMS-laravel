@@ -34,13 +34,19 @@ class TicketReplies extends Model
         'parent_reply_id',
         'parent_message_id',
         'message_id',
+        'scheduled_at',
+        'is_scheduled'
     ];
 
     protected $casts = [
         'to_recipients' => 'array',
         'cc_recipients' => 'array',
         'attachment_path' => 'array',
+        'scheduled_at' => 'datetime',
+        'is_scheduled' => 'boolean'
     ];
+
+
 
     public function ticket()
     {

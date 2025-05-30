@@ -43,7 +43,7 @@
         </div>
 
         <!-- Left Panel - 25% width (Tickets List) -->
-    <div class="w-[25%] min-w-[25%] bg-white p-3 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
+    <div style="width:20%;"class="w-[26%] min-w-[25%] bg-white p-3 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
         <!-- Header -->
 <div class="sticky top-0 z-10 bg-white dark:bg-gray-800 pb-3">
     <div class="flex items-center justify-between mb-3">
@@ -90,7 +90,7 @@
     </div>
 </div>
         <!-- Tickets List -->
-        <div class="space-y-2">
+        <div class="space-y-1">
             @forelse($this->tickets as $ticket)
     <div 
         wire:click="selectTicket({{ $ticket->id }})"
@@ -103,9 +103,11 @@
         <!-- Ticket Header -->
         <div class="flex justify-between items-start">
             <h4 class="@if(!$ticket->is_read) font-bold @else font-xs @endif text-gray-900 dark:text-white truncate">
-                #{{ $ticket->ticket_id }} - {{ $ticket->title }}
+                {{ $ticket->ticket_id }} 
+                <div class="text-xs px-1">{{ $ticket->title }}</div>
             </h4>
-            <span style="@if($ticket->priority->id === 3 ) background-color:#ffca3d;  @elseif( $ticket->priority->id === 1) background-color:#3fbd76; @else background-color:#ff3d3d ; @endif"class="text-xs px-2 py-1 rounded-full 
+            
+            <span style="@if($ticket->priority->id === 3 ) background-color:#ffca3d;  @elseif( $ticket->priority->id === 1 || $ticket->priority->id === 2) background-color:#3fbd76; @else background-color:#ff3d3d ; @endif"class="text-xs px-2 rounded-full 
                 @if($ticket->priority->name === 'High')
                     bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-200
                 @elseif($ticket->priority->name === 'Medium')
@@ -117,16 +119,24 @@
             </span>
         </div>
         
+        
         <!-- Ticket Meta -->
         <div class="mt-1 flex items-center justify-between">
             <div class="flex items-center text-xs @if(!$ticket->is_read) font-semibold @endif text-gray-500 dark:text-gray-400">
                 <x-heroicon-o-user class="w-3 h-3 mr-1" />
                 {{ $ticket->createdBy->name ?? 'Unknown' }}
-                <span class="px-2 inline-flex items-center @if(!$ticket->is_read) font-semibold @endif text-gray-500 dark:text-gray-400">
+                <span class="px-1 inline-flex items-center @if(!$ticket->is_read) font-semibold @endif text-gray-500 dark:text-gray-400">
                     <x-heroicon-o-user-circle class="w-3 h-3 mr-1" />
                     {{ $ticket->assignedTo->name ?? 'Unassigned' }}
                 </span>
             </div>
+            
+                <span class="inline-flex text-xs px-1 items-center @if(!$ticket->is_read) @endif text-gray-500 dark:text-gray-400">
+                    <x-heroicon-o-tag class="w-3 h-3 mr-1" />
+                    {{ $ticket->ticketStatus->name ?? 'No Status' }}
+                </span>
+                
+            
             <div class="text-xs @if(!$ticket->is_read) font-semibold @endif text-gray-500 dark:text-gray-400">
                 {{ $ticket->created_at->diffForHumans() }}
             </div>
@@ -140,16 +150,21 @@
               <!-- Requested Email -->
             <div class="text-xs @if(!$ticket->is_read) font-semibold @endif text-gray-500 dark:text-gray-400 truncate">
                 <x-heroicon-o-envelope class="w-3 h-3 mr-1 inline" />
-                {{ $ticket->requested_email ?? 'No email' }}
+                {{ 
+                $ticket->requested_email ?? 
+                (
+                    is_string($ticket->to_recipients) 
+                        ? json_decode($ticket->to_recipients, true)[0] ?? '' 
+                        : (
+                            is_array($ticket->to_recipients) 
+                                ? $ticket->to_recipients[0] ?? '' 
+                                : ''
+                        )
+                )
+            }}
             </div>
 
-            <div class="flex justify-between items-center text-xs">
-                <span class="inline-flex items-center @if(!$ticket->is_read) font-semibold @endif text-gray-500 dark:text-gray-400">
-                    <x-heroicon-o-tag class="w-3 h-3 mr-1" />
-                    {{ $ticket->ticketStatus->name ?? 'No Status' }}
-                </span>
-                
-            </div>
+            
 
             </div>
             
@@ -176,7 +191,7 @@
             <!-- Pagination -->
             @if($this->tickets->hasPages())
                 <div class="mt-4 px-2">
-                    {{ $tickets->links() }}
+                    {{ $this->tickets->links() }}
                 </div>
             @endif
         </div>
@@ -246,33 +261,47 @@
 
                                     
                                     <!-- Reply Content -->
-                                    <div class="flex-1 min-w-0 space-y-1 ">
-                                        <!-- Header (User + Timestamp) -->
-                                        <div class="flex justify-between items-center">
+                                    <div class="flex-1 min-w-0 space-y-1">
+                                <!-- Header with scheduled status -->
+                                <div class="flex justify-between items-center">
                                     <div class="flex items-center space-x-2">
                                         <span class="text-sm br text-gray-900 dark:text-white">
                                             {{ $reply->user->name ?? 'System' }}
-                                            @if($reply->user && $reply->user->email)
-                                                ({{ $reply->user->email }})
-                                            @endif
                                         </span>
                                         
-                                        @if($reply->is_contact_notify)
+                                        @if($reply->user)
+                                            ({{ $reply->user->email }})
+                                        @endif
+                                    </span
+                                                                            
+                                        @if($reply->is_scheduled)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-200">
+                                                <x-heroicon-o-clock class="w-3 h-3 mr-1" />
+                                                Scheduled
+                                            </span>
+                                        @elseif($reply->is_contact_notify)
                                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200">
+                                                <x-heroicon-o-envelope class="w-3 h-3 mr-1" />
+                                                Sent
                                             </span>
                                         @else
                                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
-                                                <x-heroicon-o-lock-closed class="w-3 h-3 mr-1" /> Internal
+                                                <x-heroicon-o-lock-closed class="w-3 h-3 mr-1" />
+                                                Internal
                                             </span>
                                         @endif
                                     </div>
                                     
                                     <span class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
-                                        <x-heroicon-o-clock class="w-3 h-3 inline mr-1" />
-                                        {{ $reply->created_at->format('M d, Y h:i A') }}
+                                        @if($reply->is_scheduled)
+                                            <x-heroicon-o-clock class="w-3 h-3 inline mr-1" />
+                                            Scheduled for {{ $reply->scheduled_at->format('M d, Y h:i A') }}
+                                        @else
+                                            <x-heroicon-o-clock class="w-3 h-3 inline mr-1" />
+                                            {{ $reply->created_at->format('M d, Y h:i A') }}
+                                        @endif
                                     </span>
                                 </div>
-
 
                                         <!-- Recipients -->
                                       
@@ -363,275 +392,246 @@
     </div>
 </div>
                 <form wire:submit="submitReply">
-                    <div class="p-6 bg-white rounded-xl shadow-lg dark:bg-gray-800 border border-primary-200 dark:border-primary-800">
-                        <div class="space-y-3">
-                            <div class="space-y-1">
+    <div class="p-6 bg-white rounded-xl shadow-lg dark:bg-gray-800 border border-primary-200 dark:border-primary-800">
+        <div class="space-y-3">
+            <div class="space-y-1">
+                <!-- To Recipients -->
+                <div class="flex w-full items-center">
+                    <div class="w-full flex items-center">
+                        <label style="padding-right:42px;" class="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2 px-2">To</label>
+                        <input 
+                            type="email" 
+                            wire:model="replyData.to_recipients" 
+                            required
+                            class="flex-1 font-small  border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                            placeholder="Recipient email"
+                            style="font-size:13px; padding:3px;">
+                    </div>
+                </div>
 
-            <!-- Top Right Controls -->
-            
-                            
-                                <!-- To Recipients -->
-                                <div class="flex w-full items-center">
-                                <div class="w-full flex items-center">
-                                    <label style="padding-right:42px;" class="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2 px-2">To</label>
-                                    <input 
-                                        type="email" 
-                                        wire:model="replyData.to_recipients" 
-                                        required
-                                        class="flex-1 font-small  border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                                        placeholder="Recipient email"
-                                    style="font-size:13px; padding:3px;">
-                                </div>
-                            </div>
+                <!-- BCC Recipients - Conditionally shown -->
+                @if($showBcc)
+                <div class="flex w-full items-center">
+                    <div class="w-full flex items-center">
+                        <label style="padding-right:29px;" class="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2 px-2">BCC</label>
+                        <input 
+                            type="email" 
+                            wire:model="replyData.bcc"
+                            class="flex-1 font-small border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                            placeholder="BCC email"
+                            style="font-size:13px; padding:3px;">
+                    </div>
+                </div>
+                @endif
 
-                            <div class="space-y-1">
-                                <!-- CC Recipients -->
-                                <!-- <div class="flex w-full items-center">
-                                    <div class="w-full flex items-center">
-                                        <label style="padding-right:38px;" class="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2 px-2">CC</label>
-                                        <input 
-                                            type="email" 
-                                            wire:model="replyData.cc_recipients"
-                                            class="flex-1 font-small  border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                                            placeholder="CC email"
-                                            style="font-size:13px; padding:3px;">
-                                    </div>
-                                </div> -->
+                <!-- Editor -->
+               <div class="w-full" 
+    x-data="{ 
+        quillInstance: null,
+        initQuill() {
+            this.quillInstance = new Quill(this.$refs.quillEditor, {
+                theme: 'snow',
+                placeholder: 'Type your reply here...',
+                modules: {
+                    toolbar: [
+                        ['bold', 'italic', 'underline', 'strike'],
+                        [{ 'header': 1 }, { 'header': 2 }],
+                        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                        [{ 'indent': '-1' }, { 'indent': '+1' }],
+                        [{ 'color': [] }, { 'background': [] }],
+                        [{ 'align': [] }],
+                        ['link', 'image', 'code-block'],
+                        ['clean']
+                    ]
+                }
+            });
 
-                                <!-- BCC Recipients - Conditionally shown -->
-                            @if($showBcc)
-                                <div class="flex w-full items-center">
-                                    <div class="w-full flex items-center">
-                                        <label style="padding-right:29px;" class="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2 px-2">BCC</label>
-                                        <input 
-                                            type="email" 
-                                            wire:model="replyData.bcc"
-                                            class="flex-1 font-small border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                                            placeholder="BCC email"
-                                            style="font-size:13px; padding:3px;">
-                                    </div>
-                                </div>
-                            @endif
+            // Initialize with empty content
+            this.quillInstance.root.innerHTML = '';
+            @this.set('replyData.message', '');
 
-                                <!-- Subject -->
-                                <!-- <div class="flex w-full items-center">
-                                    <div class="w-full flex items-center">
-                                        <label  class="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2 px-2">Subject</label>
-                                        <input 
-                                            type="text" 
-                                            wire:model="replyData.subject" 
-                                            required 
-                                            maxlength="255"
-                                            class="flex-1 font-small  border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                                            placeholder="Subject"
-                                            style="font-size:13px; padding:3px;">
-                                    </div>
-                                </div> -->
+            // Update Livewire when content changes
+            this.quillInstance.on('text-change', () => {
+                @this.set('replyData.message', this.quillInstance.root.innerHTML);
+            });
 
-                            <div class="w-full max-w-[200px]" x-data x-init="
-                                const quill = new Quill($refs.quillEditor, {
-                                    theme: 'snow',
-                                    placeholder: 'Type your reply here...',
-                                    modules: {
-                                        toolbar: [
-                                            ['bold', 'italic', 'underline', 'strike'],
-                                            [{ 'header': 1 }, { 'header': 2 }],
-                                            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-                                            [{ 'indent': '-1' }, { 'indent': '+1' }],
-                                            [{ 'color': [] }, { 'background': [] }],
-                                            [{ 'align': [] }],
-                                            ['link', 'image', 'code-block'],
-                                            ['clean']
-                                        ]
-                                    }
-                                });
+            // Clear editor when Livewire emits reset event
+            this.$wire.on('resetEditor', () => {
+                this.quillInstance.root.innerHTML = '';
+                @this.set('replyData.message', '');
+            });
+        }
+    }" 
+    x-init="initQuill()"
+    wire:ignore>
+    <div x-ref="quillEditor"
+        class="min-h-[150px] bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg p-3 border border-gray-300 dark:border-gray-600 shadow-sm">
+    </div>
+</div>
+                <!-- Internal Notes -->
+                <div class="w-full">
+                    <div class="flex items-center mb-1">
+                        <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2 px-2">Internal Notes:</label>
+                    </div>
+                    <textarea 
+                        wire:model="replyData.internal_notes" 
+                        rows="3"
+                        class="w-full font-small rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                        placeholder="Add any internal notes here (not visible to customer)"
+                        style="font-size:13px;"></textarea>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Bottom section with controls -->
+        <div class="flex justify-between items-end mt-6">
+            <!-- Schedule Reply Section - Left Bottom -->
+            <div class="mb-4">
+                <!-- Date Picker Toggle -->
+                <div class="flex items-center mb-2">
+                    <input 
+                        type="checkbox" 
+                        id="scheduleReply" 
+                        wire:model="showDatePicker"
+                        class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
+                    <label for="scheduleReply" class="px-2 block text-sm text-gray-700 dark:text-gray-300">
+                        Schedule this reply
+                    </label>
+                </div>
 
-                                quill.on('text-change', () => {
-                                    @this.set('replyData.message', quill.root.innerHTML);
-                                });
-                            "
-                            wire:ignore>
-                                <!-- <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Message</label> -->
+                <!-- Date Picker (shown when checkbox is checked) -->
+                <div x-show="$wire.showDatePicker" x-transition class="mb-4">
+                    <input
+                        type="datetime-local"
+                        wire:model="replyData.scheduledDate"
+                        min="{{ now()->format('Y-m-d\TH:i') }}"
+                        class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2"
+                    >
+                </div>
+            </div>
 
-                                {{-- The editable div --}}
-                                <div x-ref="quillEditor"
-                                    class="min-h-[150px] bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg p-3 border border-gray-300 dark:border-gray-600 shadow-sm">
-                                </div>
-                            </div>
-
-
-                                <!-- Internal Notes -->
-                                <div class="w-full">
-                                    <div class="flex items-center mb-1">
-                                        <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2 px-2">Internal Notes:</label>
-                                    </div>
-                                    <textarea 
-                                        wire:model="replyData.internal_notes" 
-                                        rows="3"
-                                        class="w-full font-small rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                                        placeholder="Add any internal notes here (not visible to customer)"
-                                        style="font-size:13px;"></textarea>
-                                </div>
-
-                                <!-- Notify Customer Checkbox -->
-                                <!-- <div class="flex items-center">
-                                    <input 
-                                        type="checkbox" 
-                                        wire:model="replyData.notify_customer" 
-                                        id="notify_customer"
-                                        class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-primary-500 dark:bg-gray-700 dark:checked:bg-primary-500">
-                                    <label 
-                                        for="notify_customer" 
-                                        class="ml-2 block text-sm text-gray-900 dark:text-white"
-                                        style="font-size:13px;">Notify customer</label>
-                                </div> -->
-
-                                                        
-                                                        </div>
-                                                        </div>
-                                                    </div>
-                                            <div class="flex justify-end mt-6 space-x-3">
-                                        <div class="flex justify-end items-center space-x-2">
-                                <!-- BCC Toggle Button -->
-                                <!-- <button 
-                                    type="button" 
-                                    wire:click="$toggle('showBcc')"
-                                    class="flex items-center text-xs px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded hover:bg-sky-100 dark:hover:bg-sky-900/50 transition-colors duration-200">
-                                    {{ $showBcc ? 'Hide BCC' : 'Show BCC' }}
-                                </button> -->
-                                
-                                
-                            
-                                <!-- Attachment Button -->
-                                <div x-data="{ isUploading: false }"
-                                    x-on:livewire-upload-start="isUploading = true"
-                                    x-on:livewire-upload-finish="isUploading = false"
-                                    x-on:livewire-upload-error="isUploading = false">
-                                    <label class="flex items-center cursor-pointer text-xs px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded hover:bg-sky-100 dark:hover:bg-sky-900/50 transition-colors duration-200">
-                                        <x-heroicon-o-paper-clip class="w-4 h-4 mr-1" />
-                                        Attach File
-                                        <input 
-                                            type="file" 
-                                            wire:model="replyData.attachment_path" 
-                                            class="hidden"
-                                            multiple 
-                                            accept="image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
-                                    </label>
-                                    
-                                    <!-- Upload Progress Bar -->
-                                    <div x-show="isUploading" class="mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
-                                        <div class="bg-sky-500 h-1.5 rounded-full" style="width: 0%"
-                                            x-on:livewire-upload-progress="document.querySelector('.bg-sky-500').style.width = `${event.detail.progress}%`">
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- File Preview Section -->
-                                <div class="mt-2 text-right">
-                                    <!-- Loading State -->
-                                    <div wire:loading wire:target="replyData.attachment_path" class="text-xs text-gray-500 dark:text-gray-400">
-                                        Uploading...
-                                    </div>
-                                    
-                                    <!-- Uploaded File Preview -->
-                                    <div wire:loading.remove wire:target="replyData.attachment_path">
-                                        @if (is_array($replyData['attachment_path'] ?? null))
-                                            @foreach ($replyData['attachment_path'] as $index => $file)
-                                                @if (is_object($file) && method_exists($file, 'getClientOriginalName'))
-                                                    <div class="flex items-center justify-end space-x-2 mt-1" wire:key="attachment-{{ $index }}">
-                                                        @if (str_starts_with($file->getClientMimeType(), 'image/'))
-                                                            <button type="button"
-                                                                    x-on:click="$dispatch('img-preview', { src: '{{ $file->temporaryUrl() }}' })"
-                                                                    class="text-sky-600 dark:text-sky-400 hover:underline text-xs flex items-center">
-                                                                <x-heroicon-o-photo class="w-4 h-4 mr-1" />
-                                                                {{ $file->getClientOriginalName() }}
-                                                            </button>
-                                                        @else
-                                                            <a href="#"
-                                                            wire:click.prevent="downloadTemporaryFile({{ $index }})"
-                                                            class="text-sky-600 dark:text-sky-400 hover:underline text-xs flex items-center">
-                                                                <x-heroicon-o-document-text class="w-4 h-4 mr-1" />
-                                                                {{ $file->getClientOriginalName() }}
-                                                            </a>
-                                                        @endif
-                                                        
-                                                        <button type="button"
-                                                                wire:click="removeAttachment({{ $index }})"
-                                                                class="text-red-500 hover:text-red-700 dark:hover:text-red-400">
-                                                            <x-heroicon-o-x-mark class="w-4 h-4" />
-                                                        </button>
-                                                    </div>
-                                                @endif
-                                            @endforeach
-                                        @elseif (is_string($replyData['attachment_path'] ?? null))
-                                            <div class="flex items-center justify-end space-x-2">
-                                                @php
-                                                    $isImage = in_array(pathinfo($replyData['attachment_path'], PATHINFO_EXTENSION), ['jpg', 'jpeg', 'png', 'gif']);
-                                                    $fullPath = Storage::url('ticket-attachments/' . $replyData['attachment_path']);
-                                                @endphp
-                                                
-                                                @if ($isImage)
-                                                    <button type="button"
-                                                            x-on:click="$dispatch('img-preview', { src: '{{ $fullPath }}' })"
-                                                            class="text-sky-600 dark:text-sky-400 hover:underline text-xs flex items-center">
-                                                        <x-heroicon-o-photo class="w-4 h-4 mr-1" />
-                                                        {{ $replyData['attachment_path'] }}
-                                                    </button>
-                                                @else
-                                                    <a href="{{ $fullPath }}" 
-                                                    target="_blank"
-                                                    download="{{ $replyData['attachment_path'] }}"
-                                                    class="text-sky-600 dark:text-sky-400 hover:underline text-xs flex items-center">
-                                                        <x-heroicon-o-document-text class="w-4 h-4 mr-1" />
-                                                        {{ $replyData['attachment_path'] }}
-                                                    </a>
-                                                @endif
-                                                
-                                                <button type="button"
-                                                        wire:click="removeAttachment('{{ $replyData['attachment_path'] }}')"
-                                                        class="text-red-500 hover:text-red-700 dark:hover:text-red-400">
-                                                    <x-heroicon-o-x-mark class="w-4 h-4" />
-                                                </button>
-                                            </div>
-                                        @endif
-                                    </div>
-                                </div>
-
-                                <!-- Image Preview Modal -->
-                                <div x-data="{ show: false, imgSrc: '' }" 
-                                    x-on:img-preview.window="show = true; imgSrc = $event.detail.src"
-                                    x-show="show"
-                                    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4">
-                                    <div class="relative max-w-5xl max-h-screen">
-                                        <img :src="imgSrc" alt="Preview" class="max-w-full max-h-screen">
-                                        <button x-on:click="show = false" 
-                                                class="absolute top-4 right-4 text-white bg-red-500 hover:bg-red-600 rounded-full p-2">
-                                            <x-heroicon-o-x-mark class="w-6 h-6" />
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Image Preview Modal -->
-                            <div x-data="{ show: false, imgSrc: '' }" 
-                                x-on:img-preview.window="show = true; imgSrc = $event.detail.src"
-                                x-show="show"
-                                class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4">
-                                <div class="relative max-w-5xl max-h-screen">
-                                    <img :src="imgSrc" alt="Preview" class="max-w-full max-h-screen">
-                                    <button x-on:click="show = false" 
-                                            class="absolute top-4 right-4 text-white bg-red-500 hover:bg-red-600 rounded-full p-2">
-                                        <x-heroicon-o-x-mark class="w-6 h-6" />
-                                    </button>
-                                </div>
-                            </div> 
-                            <x-filament::button type="submit" size="lg" class="bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700">
-                                Send Reply
-                            </x-filament::button>
+            <!-- Right side buttons -->
+            <div class="flex items-center space-x-3">
+                <!-- Attachment Button -->
+                <div x-data="{ isUploading: false }"
+                    x-on:livewire-upload-start="isUploading = true"
+                    x-on:livewire-upload-finish="isUploading = false"
+                    x-on:livewire-upload-error="isUploading = false">
+                    <label class="flex items-center cursor-pointer text-xs px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded hover:bg-sky-100 dark:hover:bg-sky-900/50 transition-colors duration-200">
+                        <x-heroicon-o-paper-clip class="w-4 h-4 mr-1" />
+                        Attach File
+                        <input 
+                            type="file" 
+                            wire:model="replyData.attachment_path" 
+                            class="hidden"
+                            multiple 
+                            accept="image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+                    </label>
+                    
+                    <!-- Upload Progress Bar -->
+                    <div x-show="isUploading" class="mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                        <div class="bg-sky-500 h-1.5 rounded-full" style="width: 0%"
+                            x-on:livewire-upload-progress="document.querySelector('.bg-sky-500').style.width = `${event.detail.progress}%`">
                         </div>
                     </div>
-                </form>
-                
+                </div>
+
+                <!-- Send Button -->
+                <x-filament::button 
+                    type="submit" 
+                    size="lg" 
+                    class="bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700">
+                    <span x-text="$wire.showDatePicker ? 'Schedule Reply' : 'Send Reply'"></span>
+                </x-filament::button>
+            </div>
+        </div>
+
+        <!-- File Preview Section -->
+        <div class="mt-2 text-right">
+            <!-- Loading State -->
+            <div wire:loading wire:target="replyData.attachment_path" class="text-xs text-gray-500 dark:text-gray-400">
+                Uploading...
+            </div>
+            
+            <!-- Uploaded File Preview -->
+            <div wire:loading.remove wire:target="replyData.attachment_path">
+                @if (is_array($replyData['attachment_path'] ?? null))
+                    @foreach ($replyData['attachment_path'] as $index => $file)
+                        @if (is_object($file) && method_exists($file, 'getClientOriginalName'))
+                            <div class="flex items-center justify-end space-x-2 mt-1" wire:key="attachment-{{ $index }}">
+                                @if (str_starts_with($file->getClientMimeType(), 'image/'))
+                                    <button type="button"
+                                            x-on:click="$dispatch('img-preview', { src: '{{ $file->temporaryUrl() }}' })"
+                                            class="text-sky-600 dark:text-sky-400 hover:underline text-xs flex items-center">
+                                        <x-heroicon-o-photo class="w-4 h-4 mr-1" />
+                                        {{ $file->getClientOriginalName() }}
+                                    </button>
+                                @else
+                                    <a href="#"
+                                    wire:click.prevent="downloadTemporaryFile({{ $index }})"
+                                    class="text-sky-600 dark:text-sky-400 hover:underline text-xs flex items-center">
+                                        <x-heroicon-o-document-text class="w-4 h-4 mr-1" />
+                                        {{ $file->getClientOriginalName() }}
+                                    </a>
+                                @endif
+                                
+                                <button type="button"
+                                        wire:click="removeAttachment({{ $index }})"
+                                        class="text-red-500 hover:text-red-700 dark:hover:text-red-400">
+                                    <x-heroicon-o-x-mark class="w-4 h-4" />
+                                </button>
+                            </div>
+                        @endif
+                    @endforeach
+                @elseif (is_string($replyData['attachment_path'] ?? null))
+                    <div class="flex items-center justify-end space-x-2">
+                        @php
+                            $isImage = in_array(pathinfo($replyData['attachment_path'], PATHINFO_EXTENSION), ['jpg', 'jpeg', 'png', 'gif']);
+                            $fullPath = Storage::url('ticket-attachments/' . $replyData['attachment_path']);
+                        @endphp
+                        
+                        @if ($isImage)
+                            <button type="button"
+                                    x-on:click="$dispatch('img-preview', { src: '{{ $fullPath }}' })"
+                                    class="text-sky-600 dark:text-sky-400 hover:underline text-xs flex items-center">
+                                <x-heroicon-o-photo class="w-4 h-4 mr-1" />
+                                {{ $replyData['attachment_path'] }}
+                            </button>
+                        @else
+                            <a href="{{ $fullPath }}" 
+                            target="_blank"
+                            download="{{ $replyData['attachment_path'] }}"
+                            class="text-sky-600 dark:text-sky-400 hover:underline text-xs flex items-center">
+                                <x-heroicon-o-document-text class="w-4 h-4 mr-1" />
+                                {{ $replyData['attachment_path'] }}
+                            </a>
+                        @endif
+                        
+                        <button type="button"
+                                wire:click="removeAttachment('{{ $replyData['attachment_path'] }}')"
+                                class="text-red-500 hover:text-red-700 dark:hover:text-red-400">
+                            <x-heroicon-o-x-mark class="w-4 h-4" />
+                        </button>
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Preview Modal -->
+    <div x-data="{ show: false, imgSrc: '' }" 
+        x-on:img-preview.window="show = true; imgSrc = $event.detail.src"
+        x-show="show"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4">
+        <div class="relative max-w-5xl max-h-screen">
+            <img :src="imgSrc" alt="Preview" class="max-w-full max-h-screen">
+            <button x-on:click="show = false" 
+                    class="absolute top-4 right-4 text-white bg-red-500 hover:bg-red-600 rounded-full p-2">
+                <x-heroicon-o-x-mark class="w-6 h-6" />
+            </button>
+        </div>
+    </div>
+</form>
                 
             </div>
          
@@ -995,40 +995,39 @@
 
 <!-- Activity Log Section -->
 <div class="bg-white rounded-xl shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700 mt-4">
-    <h3 class="font-semibold text-lg text-gray-800 dark:text-white py-3 px-4 flex items-center">
-        <x-heroicon-o-clipboard-document-list class="w-6 h-6 mr-2 text-primary-500 dark:text-primary-400" />
+    <h3 class="font-semibold text-lg text-gray-800 dark:text-white py-2  flex items-center">
         Activity Log
     </h3>
     
-    <div class="px-4 py-2">
-        <div class="space-y-4">
+    <div class="px-1">
+        <div class="space-y-1">
             @foreach($activityLogs as $activity)
             <div class="flex">
                 <div class="flex-shrink-0 mr-3">
-                    <div class="mt-1 rounded-full w-6 h-6 sm:w-6 sm:h-6 bg-gray-200 flex items-center justify-center">
-                        <x-heroicon-o-document-text class="w-4 h-4 text-gray-500" />
+                    <div class=" rounded-full  h-6 sm:w-6 sm:h-6 flex items-center justify-center">
+                        <x-heroicon-o-document-text class=" mt-1 w-4 h-4 mr-2 text-primary-500 dark:text-primary-400 flex-shrink-0" />
                     </div>
                 </div>
-                <div class="flex-1 border rounded-lg px-4 py-2 sm:px-6 sm:py-4 leading-relaxed">
+                <div class="flex-1 border rounded-lg py-2  leading-relaxed">
                     <div class="flex items-center">
-                        <span class="text-xs text-gray-500 dark:text-gray-400">
+                        <span class="text-xs px-2 text-gray-500 dark:text-gray-400">
                             {{ $activity->created_at->format('M j, Y g:i A') }} ({{ $activity->created_at->diffForHumans() }})
                         </span>
                     </div>
                     @if(is_array($activity->logs))
                         @foreach($activity->logs as $key => $value)
-                            <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                                <span class="font-medium">{{ ucfirst(str_replace('_', ' ', $key)) }}:</span> 
+                            <p class="text-xs px-2 text-gray-600 dark:text-gray-300 mt-1">
+                                <span class="">{{ ucfirst(str_replace('_', ' ', $key)) }}:</span> 
                                 {{ is_array($value) ? json_encode($value) : $value }}
                             </p>
                         @endforeach
                     @else
-                        <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                        <p class="text-sm px-2 text-gray-600 dark:text-gray-300 mt-1">
                             {{ $activity->logs }}
                         </p>
                     @endif
                     @if($activity->ip_address)
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        <p class="text-xs px-2 text-gray-500 dark:text-gray-400 mt-1">
                             IP: {{ $activity->ip_address }}
                         </p>
                     @endif

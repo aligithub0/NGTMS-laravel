@@ -137,6 +137,7 @@ protected static function booted()
             }
         }
     });
+    
 }
 
 // In User model
