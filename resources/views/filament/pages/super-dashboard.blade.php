@@ -214,7 +214,7 @@
             margin-top: 8px;
     }
             .progress-title {
-            font-size: 1.1rem;
+            font-size: 1.0rem;
             font-weight: 600;
             margin-bottom: 2px;
             color: #22223b;
@@ -236,27 +236,9 @@
             font-weight: 400;
             min-height: 36px;
             }
-            .progress-btn {
-            background: #f97316;
-            border: none;
-            color: #fff;
-            font-size: 1.06rem;
-            font-family: inherit;
-            font-weight: 500;
-            border-radius: 18px;
-            padding: 8px 0 9px 0;
-            width: 75%;
-            letter-spacing: 0.03em;
-            cursor: pointer;
-            margin: 0 auto;
-            box-shadow: 0 2px 8px #c7d2fe40;
-            transition: background 0.25s;
-            margin-top: 58px;
-            margin-bottom: 25px;
-            }
-            .progress-btn:hover {
-            background:rgb(218, 101, 18);
-            }
+
+            
+       
 
 
 </style>
@@ -270,14 +252,18 @@
                             <!-- Row 1 Graphs  -->
 
                     <div style="display: flex; gap: 5px; width: 100%;">
+
+                    <div class="card" style="flex: 1; height: 260px;">
+                        <div class="card-header" style="font-size:16px; margin-bottom:-10px;">Tickets Status By Managers</div>
+                            <div style="width: 100%; height: 60px;" id="lineChart1"></div>
+                        </div>
+
                         <div class="card" style="flex: 1; height: 260px;">
                         <div class="card-header" style="font-size:16px; margin-bottom:-10px;">Tickets Status By Department</div>
                             <div style="width: 100%; height: 60px;" id="totalRevenueChart"></div>
                         </div>
-                        <div class="card" style="flex: 1; height: 260px;">
-                        <div class="card-header" style="font-size:16px; margin-bottom:-10px;">Tickets Status By Purposes</div>
-                            <div style="width: 100%; height: 60px;" id="incomeChart"></div>
-                        </div>
+                      
+                       
                         <div class="card" style="flex: 1; height: 260px;">
                         <div class="card-header" style="font-size:16px; margin-bottom:-10px;">SLA Compliance Rate</div>
                             <div style="width: 100%; height: 60px;" id="growthGauge"></div>
@@ -297,12 +283,12 @@
                                 <!-- Row 2 Graphs  -->
                     <div style="display: flex; gap: 5px; width: 100%;">
                         <div class="card" style="flex: 1; height: 260px;">
-                        <div class="card-header" style="font-size:16px; margin-bottom:-10px;">Tickets Status By Parent Group</div>
+                        <div class="card-header" style="font-size:16px; margin-bottom:-10px;">Tickets Status By Parent Purposes</div>
                             <div style="width: 100%; height: 60px;" id="barChart1"></div>
                         </div>
                         <div class="card" style="flex: 1; height: 260px;">
-                        <div class="card-header" style="font-size:16px; margin-bottom:-10px;">Tickets Status By Managers</div>
-                            <div style="width: 100%; height: 60px;" id="lineChart1"></div>
+                        <div class="card-header" style="font-size:16px; margin-bottom:-10px;">Tickets Status By Purposes</div>
+                            <div style="width: 100%; height: 60px;" id="incomeChart"></div>
                         </div>
                         <div class="card" style="flex: 1; height: 260px;">
                         <div class="card-header" style="font-size:16px; margin-bottom:-10px;">Tickets Status By SLA</div>
@@ -400,13 +386,10 @@
             </div>
 
             <div class="progress-card">
-    <div class="progress-title">Agents Performance Efficiency<br> Completion Rate</div>
-    <!-- <div class="progress-subtitle">Duis autem vel eum iriure</div> -->
+    <div class="progress-title">Agents Performance Efficiency</div>
     <div id="circularProgress"></div>
-    <!-- <div class="progress-desc">
-      Lorem ipsum dolor sit amet,<br>consectetuer adipiscing
-    </div> -->
-    <button class="progress-btn">View Details</button>
+    <div class="progress-title">Departments Performance Efficiency</div>
+    <div id="circularProgress2"></div>
   </div>
     </div>
 
@@ -947,94 +930,97 @@ chart.render();
         }
 
 
-           // Chart 9: Tickets Status by Priority
+            // Chart 9: Tickets Status by Priority
 
-           var options = {
-    chart: {
-        type: 'bar',
-        height: 220,
-        stacked: false,
-        toolbar: { show: false },
-    },
-    series: @json($ticketStatusSeries),
-    plotOptions: {
-        bar: {
-            horizontal: true,
-            barHeight: '60%',
-            borderRadius: 3,
-            borderRadiusApplication: 'end',
-            borderRadiusWhenStacked: 'all'
-        }
-    },
-    dataLabels: {
-        enabled: false,
-    },
-    stroke: {
-        show: true,
-        width: 8,
-        colors: ['transparent']
-    },
-    xaxis: {
-        categories: @json($priorityLabels),
-        labels: {
-            style: {
-                colors: '#6b7280',
-                fontWeight: 500,
-                fontSize: '10px',
+            var options = {
+        chart: {
+            type: 'bar',
+            height: 220,
+            stacked: false,
+            toolbar: { show: false },
+        },
+        series: @json($ticketStatusSeries),
+        plotOptions: {
+            bar: {
+                horizontal: true,
+                barHeight: '60%',
+                minBarLength: 10,
+                borderRadius: 3,
+                borderRadiusApplication: 'end',
+                borderRadiusWhenStacked: 'all'
             }
         },
-        axisTicks: { show: false },
-        axisBorder: { show: false }
-    },
-    yaxis: {
-        labels: {
-            style: {
-                colors: '#6b7280',
-                fontWeight: 500,
-                fontSize: '10px',
-            }
+        dataLabels: {
+            enabled: false,
         },
-        axisTicks: { show: false },
-        axisBorder: { show: false }
-    },
-    grid: {
-        borderColor: '#e5e7eb',
-        strokeDashArray: 5,
-        xaxis: { lines: { show: true } },
-        yaxis: { lines: { show: false } }
-    },
-    tooltip: {
-        shared: true,
-        intersect: false,
-        theme: 'dark',
-        style: { fontSize: '14px' },
-    },
-    legend: {
-        show: true,
-        position: 'bottom',
-        fontSize: '12px',
-        markers: {
-            width: 14,
-            height: 14,
-            radius: 3,
+        stroke: {
+            show: true,
+            width: 9,
+            colors: ['transparent']
         },
-        labels: {
-            colors: '#333'
+        xaxis: {
+            categories: @json($priorityLabels),
+            labels: {
+                style: {
+                    colors: '#6b7280',
+                    fontWeight: 500,
+                    fontSize: '10px',
+                }
+            },
+            axisTicks: { show: false },
+            axisBorder: { show: false }
         },
-        horizontalAlign: 'center',
-        offsetY: 0,
-    },
-    fill: {
-        opacity: 1,
-    },
-};
+        yaxis: {
+            min: 0.5,
+            max: 3, // maximum tick value
+            labels: {
+                style: {
+                    colors: '#6b7280',
+                    fontWeight: 500,
+                    fontSize: '10px',
+                }
+            },
+            axisTicks: { show: false },
+            axisBorder: { show: false }
+        },
+        grid: {
+            borderColor: '#e5e7eb',
+            strokeDashArray: 5,
+            xaxis: { lines: { show: true } },
+            yaxis: { lines: { show: false } }
+        },
+        tooltip: {
+            shared: true,
+            intersect: false,
+            theme: 'dark',
+            style: { fontSize: '14px' },
+        },
+        legend: {
+            show: true,
+            position: 'bottom',
+            fontSize: '12px',
+            markers: {
+                width: 14,
+                height: 14,
+                radius: 3,
+            },
+            labels: {
+                colors: '#333'
+            },
+            horizontalAlign: 'center',
+            offsetY: 0,
+        },
+        fill: {
+            opacity: 1,
+        },
+    };
 
-var chart = new ApexCharts(document.querySelector("#horizontalBarChart"), options);
-chart.render();
+    var chart = new ApexCharts(document.querySelector("#horizontalBarChart"), options);
+    chart.render();
 
 
 
-            // Chart 10: Circular Progress Chart
+            // Chart 10: Circular Progress Chart 10.1
         var options = {
             chart: {
                 type: 'radialBar',
@@ -1042,7 +1028,7 @@ chart.render();
                 width: 130,
                 sparkline: { enabled: true }
             },
-            series: [75],
+            series: [95],
             plotOptions: {
                 radialBar: {
                 hollow: {
@@ -1079,6 +1065,53 @@ chart.render();
             };
 
            var chart = new ApexCharts(document.querySelector("#circularProgress"), options);
+            chart.render();
+
+               // Chart 10: Circular Progress Chart 10.2
+        var options10 = {
+            chart: {
+                type: 'radialBar',
+                height: 150,
+                width: 130,
+                sparkline: { enabled: true }
+            },
+            series: [90],
+            plotOptions: {
+                radialBar: {
+                hollow: {
+                    margin: 0,
+                    size: '70%',
+                    background: '#f7f7fd',
+                    dropShadow: { enabled: false }
+                },
+                track: {
+                    background: '#e6e8fa',
+                    strokeWidth: '87%',
+                    margin: 0,
+                    dropShadow: { enabled: false }
+                },
+                dataLabels: {
+                    show: true,
+                    value: {
+                    fontSize: '2.5rem',
+                    color: '#393e69',
+                    fontWeight: 600,
+                    show: true,
+                    offsetY: 6,
+                    formatter: val => `${val}%`
+                    },
+                    name: { show: false }
+                }
+                }
+            },
+            colors: ['#f97316'],
+            stroke: {
+                lineCap: 'round'
+            },
+            grid: { padding: { top: 0, right: 0, bottom: 0, left: 0 } }
+            };
+
+           var chart = new ApexCharts(document.querySelector("#circularProgress2"), options10);
             chart.render();
 
                   
