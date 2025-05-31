@@ -352,7 +352,7 @@
 </div>
 
                     <div class="card" style="flex: 1; height: 260px;">
-                    <div class="card-header" style="font-size:16px; margin-bottom:-10px;">Tickets Status By Designation</div>
+                    <div class="card-header" style="font-size:16px; margin-bottom:-10px;">Tickets Status By Priority</div>
                         <div style="width: 100%; height: 60px;" id="horizontalBarChart"></div>
                     </div>
         </div>
@@ -427,10 +427,13 @@
 
     <script>
     window.statuses = @json($statuses ?? []);
+    window.statusesLabels1 = @json($statusesLabels1 ?? []);
     window.departments = @json($departments ?? []);
     window.ticketsData = @json($ticketsData ?? []);
     window.slaCompliance = @json($slaCompliance ?? 0);
-    window.purposeNames = @json($purposeNames ?? []);
+    window.parentPurposeNames = @json($parentPurposeNames ?? []);
+    window.statusesNames = @json($statusesNames ?? []);
+window.parentPurposeLabels = @json($parentPurposeLabels ?? []);
     window.ticketsByPurposeStatus = @json($ticketsByPurposeStatus ?? []);
     // window.agentNames = @json($agentNames ?? []);
     // window.ticketsByAgentStatus = @json($ticketsByAgentStatus ?? []);
@@ -455,81 +458,120 @@ window.ticketsByManagerStatus = @json($ticketsByManagerStatus ?? []);
         setTimeout(() => {
 
               //  Chart 1: Tickets Status By Department Bar Chart (Dynamic)
-         new ApexCharts(document.querySelector("#totalRevenueChart"), {
-            chart: { height: 220, width: '100%', type: 'bar', stacked: true },
-            series: window.ticketsData,
-            colors: ['#f97316', '#5c8cb6', '#22c55e', '#dc2626', '#43e97b', '#a7a7a7', '#13547a'],
-            plotOptions: { bar: {borderRadius: 4, horizontal: false, columnWidth: '20%' } },
-            xaxis: {
-                categories: window.statuses,
-            },
-            yaxis: {
-                categories: window.departments,
-                labels: { show: false },
-            },
-            tooltip: { shared: true, intersect: false },
-            legend: {
-                show: true,
-                position: 'left',
-                fontSize: '10px',
-                itemMargin: { vertical: 4, horizontal: 0 },
-                markers: { width: 14, height: 14, radius: 3 },
-                labels: { colors: '#333' },
-                width: 'auto',
-            },
-        }).render();
+       new ApexCharts(document.querySelector("#totalRevenueChart"), {
+    chart: {
+        height: 220,
+        type: 'bar',
+        stacked: true
+    },
+    series: window.ticketsData.map(dept => ({
+        name: dept.name,      // Department label for legend
+        data: dept.data       // counts
+    })),
+    colors: ['#f97316', '#5c8cb6', '#22c55e', '#dc2626', '#43e97b', '#a7a7a7', '#13547a'],
+    plotOptions: {
+        bar: {
+            borderRadius: 4,
+            horizontal: false,
+            columnWidth: '20%'
+        }
+    },
+    xaxis: {
+        categories: window.statusesLabels1, // show labels on x-axis
+    },
+    yaxis: {
+        labels: { show: false },
+    },
+    tooltip: {
+        shared: true,
+        intersect: false,
+        custom: function({ series, seriesIndex, dataPointIndex, w }) {
+            // Get department label for legend
+            let departmentLabel = w.globals.seriesNames[seriesIndex];
+            // Get status full name from statusesNames using dataPointIndex
+            let statusName = window.statusesNames[dataPointIndex];
+            let value = series[seriesIndex][dataPointIndex];
+
+            return `<div class="apexcharts-tooltip-title">${departmentLabel}</div>` +
+                   `<div>Status: ${statusName}</div>` +
+                   `<div>Count: ${value}</div>`;
+        }
+    },
+    legend: {
+        show: true,
+        position: 'left',
+        fontSize: '10px',
+        itemMargin: { vertical: 4, horizontal: 0 },
+        markers: { width: 14, height: 14, radius: 3 },
+        labels: { colors: '#333' },
+        width: 'auto',
+    },
+}).render();
 
 
-            //  // Chart 2: Ticket Status By Purpose
-        new ApexCharts(document.querySelector("#incomeChart"), {
-            chart: { 
-                type: 'bar', 
-                height: 220,   // Increase if you have many purposes
-                stacked: true  // Make it stacked like your previous department chart
-                    },
-                grid: {
-            padding: {
-                left: 5, // You can increase this number as needed
-                right: 15
+              //  // Chart 2: Ticket Status By Purpose
+              new ApexCharts(document.querySelector("#incomeChart"), {
+    chart: { 
+        type: 'bar', 
+        height: 220,
+        stacked: true
+    },
+    grid: {
+        padding: { left: 5, right: 15 }
+    },
+    series: window.ticketsByPurposeStatus,
+    plotOptions: {
+        bar: {
+            horizontal: false,
+            columnWidth: '35%'
+        }
+    },
+    colors: [
+        '#2563eb', '#fbbf24', '#22c55e', '#ff5858', '#43e97b', 
+        '#a7a7a7', '#13547a', '#4f8a8b', '#e17055', '#0984e3', '#00b894'
+    ],
+    xaxis: {
+    categories: window.parentPurposeLabels,  // show LABEL on X-axis
+    labels: {
+        rotate: -45,
+        style: { fontSize: '10px' }
+    }
+},
+tooltip: {
+    shared: true,
+    intersect: false,
+    custom: function({ series, seriesIndex, dataPointIndex, w }) {
+        // Use parent purpose NAME for tooltip
+        const parentPurposeName = window.parentPurposeNames?.[dataPointIndex] || 'Unknown Purpose';
+
+        let tooltipContent = `<div class="apexcharts-tooltip-title" style="font-weight: 600; margin-bottom: 8px;">${parentPurposeName}</div>`;
+
+        w.globals.seriesNames.forEach((statusesNames, statusIndex) => {
+            const count = series[statusIndex][dataPointIndex];
+            if (count > 0) {
+                const color = w.globals.colors[statusIndex] || '#000';
+                tooltipContent += `
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px; margin-left:10px; width:110px;">
+                        <span style="width: 12px; height: 12px; background-color: ${color}; display: inline-block; border-radius: 8px;"></span>
+                        <span>${statusesNames}: ${count}</span>
+                    </div>`;
             }
-            },
-                series: window.ticketsByPurposeStatus,  // Each status (New, In Progress...) is a series
-                plotOptions: {
-                    bar: {
-                        horizontal: false,
-                        columnWidth: '35%'
-                    }
-                },
-                colors: [
-                    '#2563eb', '#fbbf24', '#22c55e', '#ff5858', '#43e97b', 
-                    '#a7a7a7', '#13547a', '#4f8a8b', '#e17055', '#0984e3', '#00b894'
-                ],
-                xaxis: {
-                    categories: window.purposeNames,
-                    labels: {
-                        rotate: -45,
-                        style: { fontSize: '10px' }
-                    }
-                    
-                },
-                yaxis: {
-                    min: 0,
-                    max: 5,
-                    forceNiceScale: true,
-            labels: { show: false },
+        });
+        return tooltipContent;
+    }
+}
+,
+    legend: {
+        show: true,
+        position: 'left',
+        fontSize: '10px',
+        itemMargin: { vertical: 2, horizontal: 0 },
+        markers: { width: 14, height: 14, radius: 3 },
+        labels: { colors: '#333' },
+        width: 'auto',
+    },
+}).render();
 
-                },
-                tooltip: { shared: true, intersect: false },
-                legend: {
-            show: true,
-            position: 'left',
-            fontSize: '10px',
-            itemMargin: { vertical: 2, horizontal: 0 },
-            markers: { width: 14, height: 14, radius: 3 },
-            labels: { colors: '#333' },
-            width: 'auto',
-            },
-        }).render();
 
            // Chart 3: SLA Compliance Gauge
            new ApexCharts(document.querySelector("#growthGauge"), {
@@ -591,27 +633,29 @@ var options1 = {
         xaxis: { lines: { show: false } },
     },
     tooltip: {
-        shared: true,
-        intersect: false,
-        custom: function({ series, seriesIndex, dataPointIndex, w }) {
-            const purposeName = (window.childPurposeNames && window.childPurposeNames[dataPointIndex]) || 'Unknown Purpose';
+    shared: true,
+    intersect: false,
+    custom: function({ series, seriesIndex, dataPointIndex, w }) {
+        const purposeName = (window.childPurposeNames && window.childPurposeNames[dataPointIndex]) || 'Unknown Purpose';
 
-            let tooltipContent = `<div class="apexcharts-tooltip-title" style="font-weight: 600; margin-bottom: 8px;">${purposeName}</div>`;
+        let tooltipContent = `<div class="apexcharts-tooltip-title" style="font-weight: 600; margin-bottom: 8px;">${purposeName}</div>`;
 
-            w.globals.seriesNames.forEach((statusNames3, idx) => {
-                const count = series[idx][dataPointIndex];
-                if (count > 0) {
-                    const color = w.globals.colors[idx] || '#000';
-                    tooltipContent += `
-                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; margin-left: 10px;">
-                            <span style="width: 12px; height: 12px; background-color: ${color}; border-radius: 8px; display: inline-block;"></span>
-                            <span>${statusNames3}: ${count}</span>
-                        </div>`;
-                }
-            });
-            return tooltipContent;
-        }
-    },
+        w.globals.seriesNames.forEach((_, idx) => {
+            const count = series[idx][dataPointIndex];
+            if (count > 0) {
+                const color = w.globals.colors[idx] || '#000';
+                const statusName = window.statusNames3[idx] || 'Unknown Status'; // Use status names here
+                tooltipContent += `
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; margin-left: 10px;">
+                        <span style="width: 12px; height: 12px; background-color: ${color}; border-radius: 8px; display: inline-block;"></span>
+                        <span>${statusName}: ${count}</span>
+                    </div>`;
+            }
+        });
+        return tooltipContent;
+    }
+},
+
     legend: {
         show: true,
         position: 'left',
@@ -624,6 +668,8 @@ var options1 = {
             }
          },
         width: 'auto',
+        offsetY: 35,
+
     },
 };
 
@@ -901,90 +947,94 @@ chart.render();
         }
 
 
-           // Chart 9: Horizontal Bar Chart
+           // Chart 9: Tickets Status by Priority
 
-        var options = {
-                chart: {
-                    type: 'bar',
-                    height: 220,
-                    stacked: false,
-                    toolbar: { show: false }
-                },
-                series: [
-                    {
-                        name: 'Dataset 1',
-                        data: [30, 200, 300, 450],
-                        color: '#dc2626' // Red
-                    },
-                    {
-                        name: 'Dataset 2',
-                        data: [60, 150, 400, 600],
-                        color: '#f97316' // Orange
-                    }
-                ],
-                plotOptions: {
-                    bar: {
-                        horizontal: true,
-                        barHeight: '60%',
-                        borderRadius: 3,
-                        borderRadiusApplication: 'end',
-                        borderRadiusWhenStacked: 'all'
-                    }
-                },
-                dataLabels: {
-                    enabled: false
-                },
-                stroke: {
-                    show: true,
-                    width: 8,
-                    colors: ['transparent']
-                },
-                xaxis: {
-                    categories: ['JAN', 'FEB', 'MAR', 'APR'],
-                    labels: {
-                        style: {
-                            colors: '#6b7280',
-                            fontWeight: 500,
-                            fontSize: '10px'
-                        }
-                    },
-                    axisTicks: { show: false },
-                    axisBorder: { show: false }
-                },
-                yaxis: {
-                    labels: {
-                        style: {
-                            colors: '#6b7280',
-                            fontWeight: 500,
-                            fontSize: '10px'
-                        }
-                    },
-                    axisTicks: { show: false },
-                    axisBorder: { show: false }
-                },
-                grid: {
-                    borderColor: '#e5e7eb',
-                    strokeDashArray: 5,
-                    xaxis: { lines: { show: true } },
-                    yaxis: { lines: { show: false } }
-                },
-                tooltip: {
-                    shared: true,
-                    intersect: false,
-                    theme: 'dark',
-                    style: { fontSize: '14px' }
-                },
-                legend: { show: false },
-                fill: {
-                    opacity: 1
-                }
-            };
+           var options = {
+    chart: {
+        type: 'bar',
+        height: 220,
+        stacked: false,
+        toolbar: { show: false },
+    },
+    series: @json($ticketStatusSeries),
+    plotOptions: {
+        bar: {
+            horizontal: true,
+            barHeight: '60%',
+            borderRadius: 3,
+            borderRadiusApplication: 'end',
+            borderRadiusWhenStacked: 'all'
+        }
+    },
+    dataLabels: {
+        enabled: false,
+    },
+    stroke: {
+        show: true,
+        width: 8,
+        colors: ['transparent']
+    },
+    xaxis: {
+        categories: @json($priorityLabels),
+        labels: {
+            style: {
+                colors: '#6b7280',
+                fontWeight: 500,
+                fontSize: '10px',
+            }
+        },
+        axisTicks: { show: false },
+        axisBorder: { show: false }
+    },
+    yaxis: {
+        labels: {
+            style: {
+                colors: '#6b7280',
+                fontWeight: 500,
+                fontSize: '10px',
+            }
+        },
+        axisTicks: { show: false },
+        axisBorder: { show: false }
+    },
+    grid: {
+        borderColor: '#e5e7eb',
+        strokeDashArray: 5,
+        xaxis: { lines: { show: true } },
+        yaxis: { lines: { show: false } }
+    },
+    tooltip: {
+        shared: true,
+        intersect: false,
+        theme: 'dark',
+        style: { fontSize: '14px' },
+    },
+    legend: {
+        show: true,
+        position: 'bottom',
+        fontSize: '12px',
+        markers: {
+            width: 14,
+            height: 14,
+            radius: 3,
+        },
+        labels: {
+            colors: '#333'
+        },
+        horizontalAlign: 'center',
+        offsetY: 0,
+    },
+    fill: {
+        opacity: 1,
+    },
+};
 
-            var chart = new ApexCharts(document.querySelector("#horizontalBarChart"), options);
-            chart.render();
+var chart = new ApexCharts(document.querySelector("#horizontalBarChart"), options);
+chart.render();
 
 
-            // Chart 9: Circular Progress Chart
+
+            // Chart 10: Circular Progress Chart
         var options = {
             chart: {
                 type: 'radialBar',

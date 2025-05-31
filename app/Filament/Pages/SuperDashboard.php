@@ -142,78 +142,79 @@ class SuperDashboard extends Page
 
         //  Calculate Tickets Status By Department 
 
-        $departments = \App\Models\Department::all();
-        $statuses = \App\Models\TicketStatus::all();
-        
-        // 1. Build abbreviation function
-        $abbreviate = function ($name) {
-            $name = trim(preg_replace('/\s+/', ' ', $name));
-            $words = explode(' ', $name);
-            if (count($words) === 1) return strtoupper(substr($words[0], 0, 1));
-            if (is_numeric($words[1])) return strtoupper(substr($words[0], 0, 1)) . $words[1];
-            return strtoupper(implode('', array_map(fn($w) => $w[0], $words)));
-        };
-        
-        // Build counts matrix
-        $countsMatrix = [];
-        foreach ($departments as $department) {
-            foreach ($statuses as $status) {
-                $userIds = \App\Models\User::where('department_id', $department->id)->pluck('id');
-                $count = \App\Models\Tickets::where('ticket_status_id', $status->id)
-                    ->whereIn('assigned_to_id', $userIds)
-                    ->count();
-                $countsMatrix[$status->id][$department->id] = $count;
-            }
+      // Fetch all departments and statuses with labels and names
+$departments = \App\Models\Department::all();
+$statuses = \App\Models\TicketStatus::all();
+
+// Build counts matrix as before
+$countsMatrix = [];
+foreach ($departments as $department) {
+    foreach ($statuses as $status) {
+        $userIds = \App\Models\User::where('department_id', $department->id)->pluck('id');
+        $count = \App\Models\Tickets::where('ticket_status_id', $status->id)
+            ->whereIn('assigned_to_id', $userIds)
+            ->count();
+        $countsMatrix[$status->id][$department->id] = $count;
+    }
+}
+
+// Filter statuses with data
+$nonZeroStatusIds = [];
+foreach ($statuses as $status) {
+    foreach ($departments as $department) {
+        if (($countsMatrix[$status->id][$department->id] ?? 0) > 0) {
+            $nonZeroStatusIds[] = $status->id;
+            break;
         }
-        
-        // Filter statuses with data
-        $nonZeroStatusIds = [];
-        foreach ($statuses as $status) {
-            foreach ($departments as $department) {
-                if (($countsMatrix[$status->id][$department->id] ?? 0) > 0) {
-                    $nonZeroStatusIds[] = $status->id;
-                    break;
-                }
-            }
+    }
+}
+$filteredStatuses = $statuses->whereIn('id', $nonZeroStatusIds)->values();
+
+// Filter departments with data (based on filtered statuses)
+$nonZeroDepartmentIds = [];
+foreach ($departments as $department) {
+    foreach ($filteredStatuses as $status) {
+        if (($countsMatrix[$status->id][$department->id] ?? 0) > 0) {
+            $nonZeroDepartmentIds[] = $department->id;
+            break;
         }
-        $filteredStatuses = $statuses->whereIn('id', $nonZeroStatusIds)->values();
-        $statusNames = $filteredStatuses->pluck('name')->map(function ($name) {
-            if (strtolower($name) === 'on hold') return 'OH';
-            if (str_contains($name, ' ')) {
-                return collect(explode(' ', $name))->map(function ($w) { return strtoupper($w[0]); })->implode('');
-            }
-            return strtoupper(substr($name, 0, 1));
-        })->toArray();
-        
-        // Filter departments with data (now based on filtered statuses)
-        $nonZeroDepartmentIds = [];
-        foreach ($departments as $department) {
-            foreach ($filteredStatuses as $status) {
-                if (($countsMatrix[$status->id][$department->id] ?? 0) > 0) {
-                    $nonZeroDepartmentIds[] = $department->id;
-                    break;
-                }
-            }
-        }
-        $filteredDepartments = $departments->whereIn('id', $nonZeroDepartmentIds)->values();
-        $departmentNames = $filteredDepartments->pluck('name')->map($abbreviate)->toArray();
-        
-        // Build data series for only those departments
-        $data = [];
-        foreach ($filteredDepartments as $department) {
-            $series = [];
-            foreach ($filteredStatuses as $status) {
-                $series[] = $countsMatrix[$status->id][$department->id] ?? 0;
-            }
-            $data[] = [
-                'name' => $abbreviate($department->name),
-                'data' => $series,
-            ];
-        }
-        
-        $this->statuses = $statusNames;
-        $this->departments = $departmentNames;
-        $this->ticketsData = $data;
+    }
+}
+$filteredDepartments = $departments->whereIn('id', $nonZeroDepartmentIds)->values();
+
+// Prepare arrays for labels and names separately for x-axis, y-axis, and tooltips
+$statusesLabels1 = $filteredStatuses->pluck('label')->toArray();
+$statusNames = $filteredStatuses->pluck('name')->toArray();
+
+$departmentLabels = $filteredDepartments->pluck('label')->toArray();
+$departmentNames = $filteredDepartments->pluck('name')->toArray();
+
+// Build data series with full names for tooltips
+$data = [];
+foreach ($filteredDepartments as $department) {
+    $series = [];
+    foreach ($filteredStatuses as $status) {
+        $series[] = [
+            'x' => $status->label,     // x-axis uses label
+            'y' => $countsMatrix[$status->id][$department->id] ?? 0,
+            'name' => $status->name,   // store full name for tooltip
+            'department' => $department->name // you can add if needed
+        ];
+    }
+    $data[] = [
+        'name' => $department->label,  // legend shows label
+        'data' => array_map(fn($point) => $point['y'], $series),
+        'customData' => $series,       // Pass custom data for tooltips
+    ];
+}
+
+// Pass all data to JS
+$this->statusesLabels1 = $statusesLabels1;
+$this->statusesNames = $statusNames;
+$this->departmentsLabels = $departmentLabels;
+$this->departmentsNames = $departmentNames;
+$this->ticketsData = $data;
+
         
 
         //  Calculate SLA compliance 
@@ -233,144 +234,140 @@ class SuperDashboard extends Page
         $this->totalSLAs = $totalSLAs;
         $this->totalPriorities = $totalPriorities;
 
+            // Graph 2: Ticket Status By Purposes
+       // Get only parent purposes (parent_id == NULL)
+$parentPurposes = Purpose::whereNull('parent_id')->get();
+$statuses = TicketStatus::all();
 
-        // Get all purposes and statuses
-            $purposes = Purpose::all();
-            $statuses = TicketStatus::all();
+$parentPurposeLabels = $parentPurposes->pluck('label')->toArray();
+$statusesLabels = $statuses->pluck('label')->toArray();
 
-            $purposeNames = $purposes->pluck('name')->toArray();
-            $statusNames = $statuses->pluck('name')->toArray();
+// Step 1: Build counts matrix [status_id][parent_purpose_id]
+$countsMatrix = [];
+foreach ($statuses as $status) {
+    foreach ($parentPurposes as $parentPurpose) {
+        // Count tickets associated with this parent purpose id
+        $count = Tickets::where('ticket_status_id', $status->id)
+            ->whereJsonContains('purpose_type_id', $parentPurpose->id)  // assuming purpose_type_id stores purpose IDs as json
+            ->count();
+        $countsMatrix[$status->id][$parentPurpose->id] = $count;
+    }
+}
 
-            // Step 1: Build counts matrix [status_id][purpose_id]
-            $countsMatrix = [];
-            foreach ($statuses as $status) {
-                foreach ($purposes as $purpose) {
-                    $count = Tickets::where('ticket_status_id', $status->id)
-                        ->whereJsonContains('purpose_type_id', $purpose->id) // if purpose_type_id is array/json
-                        ->count();
-                    $countsMatrix[$status->id][$purpose->id] = $count;
+// Step 2: Find parent purpose IDs with non-zero ticket count
+$nonZeroParentPurposeIds = [];
+foreach ($parentPurposes as $parentPurpose) {
+    $hasData = false;
+    foreach ($statuses as $status) {
+        if (($countsMatrix[$status->id][$parentPurpose->id] ?? 0) > 0) {
+            $hasData = true;
+            break;
+        }
+    }
+    if ($hasData) {
+        $nonZeroParentPurposeIds[] = $parentPurpose->id;
+    }
+}
+
+// Step 3: Filter parent purposes to only those with tickets
+$filteredParentPurposes = $parentPurposes->whereIn('id', $nonZeroParentPurposeIds)->values();
+$filteredParentPurposeLabels = $filteredParentPurposes->pluck('label')->toArray();
+
+// Step 4: Filter statuses to only those that have tickets for filtered parent purposes
+$filteredStatuses = $statuses->filter(function ($status) use ($filteredParentPurposes, $countsMatrix) {
+    foreach ($filteredParentPurposes as $parentPurpose) {
+        if (($countsMatrix[$status->id][$parentPurpose->id] ?? 0) > 0) {
+            return true;
+        }
+    }
+    return false;
+})->values();
+
+// Step 5: Prepare chart data series
+$chartData = [];
+foreach ($filteredStatuses as $status) {
+    $data = [];
+    foreach ($filteredParentPurposes as $parentPurpose) {
+        $data[] = $countsMatrix[$status->id][$parentPurpose->id] ?? 0;
+    }
+    $chartData[] = [
+        'name' => $status->label, // Use label for better display
+        'data' => $data,
+    ];
+}
+
+$this->parentPurposeNames = $filteredParentPurposes->pluck('name')->toArray();   // full name for tooltips
+$this->parentPurposeLabels = $filteredParentPurposes->pluck('label')->toArray(); // short label for x-axis
+$this->statusesLabels = $filteredStatuses->pluck('label')->toArray();
+$this->statusesNames = $filteredStatuses->pluck('name')->toArray();
+$this->ticketsByPurposeStatus = $chartData;
+
+
+
+                    // Chart 4: Ticket Status by Purpose Group
+
+                // Get purposes with parent_id not null (child purposes only)
+                $childPurposes = Purpose::whereNotNull('parent_id')->get();
+                $allStatuses = TicketStatus::all();
+                
+                // Build counts matrix [status_id][purpose_id]
+                $countsMatrix = [];
+                foreach ($allStatuses as $status) {
+                    foreach ($childPurposes as $purpose) {
+                        $count = Tickets::where('ticket_status_id', $status->id)
+                            ->whereJsonContains('purpose_type_id', $purpose->id)
+                            ->count();
+                        $countsMatrix[$status->id][$purpose->id] = $count;
+                    }
                 }
-            }
-
-          // Filter purposes with data
+                
+                // Filter purposes with any ticket data
                 $nonZeroPurposeIds = [];
-                foreach ($purposes as $purpose) {
-                    foreach ($statuses as $status) {
+                foreach ($childPurposes as $purpose) {
+                    foreach ($allStatuses as $status) {
                         if (($countsMatrix[$status->id][$purpose->id] ?? 0) > 0) {
                             $nonZeroPurposeIds[] = $purpose->id;
                             break;
                         }
                     }
                 }
-                $filteredPurposes = $purposes->whereIn('id', $nonZeroPurposeIds)->values();
-
-                // Filter statuses with data
-                $nonZeroStatusIds = [];
-                foreach ($statuses as $status) {
-                    foreach ($filteredPurposes as $purpose) {
+                $filteredChildPurposes = $childPurposes->whereIn('id', $nonZeroPurposeIds)->values();
+                
+                // Filter statuses with ticket data in filtered purposes
+                $filteredStatuses = $allStatuses->filter(function ($status) use ($filteredChildPurposes, $countsMatrix) {
+                    foreach ($filteredChildPurposes as $purpose) {
                         if (($countsMatrix[$status->id][$purpose->id] ?? 0) > 0) {
-                            $nonZeroStatusIds[] = $status->id;
-                            break;
+                            return true;
                         }
                     }
-                }
-                $filteredStatuses = $statuses->whereIn('id', $nonZeroStatusIds)->values();
-
-                // Abbreviate filtered purpose names
-                $filteredPurposeNames = $filteredPurposes->pluck('name')->map($abbreviate)->toArray();
-
-                // Abbreviate filtered status names, with special handling (like 'On Hold' => 'OH')
-                $abbreviateStatus = function($name) {
-                    if (strtolower($name) === 'on hold') return 'OH';
-                    if (str_contains($name, ' ')) {
-                        return collect(explode(' ', $name))->map(fn($w) => strtoupper($w[0]))->implode('');
-                    }
-                    return strtoupper(substr($name, 0, 1));
-                };
-                $statusAbbreviations = $filteredStatuses->pluck('name')->map($abbreviateStatus)->toArray();
-
-                // Build chart data only for filtered statuses and purposes
-                $chartData = [];
+                    return false;
+                })->values();
+                
+                // Prepare labels and names
+                $childPurposeLabels = $filteredChildPurposes->pluck('label')->toArray();
+                $childPurposeNames = $filteredChildPurposes->pluck('name')->toArray();
+                $statusLabels3 = $filteredStatuses->pluck('label')->toArray();
+                $statusNames3 = $filteredStatuses->pluck('name')->toArray();
+                
+                // Prepare series data for ApexCharts
+                $ticketsByChildPurposeStatus = [];
                 foreach ($filteredStatuses as $status) {
                     $data = [];
-                    foreach ($filteredPurposes as $purpose) {
+                    foreach ($filteredChildPurposes as $purpose) {
                         $data[] = $countsMatrix[$status->id][$purpose->id] ?? 0;
                     }
-                    $chartData[] = [
-                        'name' => $abbreviateStatus($status->name),
+                    $ticketsByChildPurposeStatus[] = [
+                        'name' => $status->label,
                         'data' => $data,
                     ];
                 }
-
-                $this->purposeNames = $filteredPurposeNames;
-                $this->statuses = $statusAbbreviations;
-                $this->ticketsByPurposeStatus = $chartData;
-
-
-  // Chart 4: Ticket Status by Purpose Group
-
- // Get purposes with parent_id not null (child purposes only)
- $childPurposes = Purpose::whereNotNull('parent_id')->get();
- $allStatuses = TicketStatus::all();
- 
- // Build counts matrix [status_id][purpose_id]
- $countsMatrix = [];
- foreach ($allStatuses as $status) {
-     foreach ($childPurposes as $purpose) {
-         $count = Tickets::where('ticket_status_id', $status->id)
-             ->whereJsonContains('purpose_type_id', $purpose->id)
-             ->count();
-         $countsMatrix[$status->id][$purpose->id] = $count;
-     }
- }
- 
- // Filter purposes with any ticket data
- $nonZeroPurposeIds = [];
- foreach ($childPurposes as $purpose) {
-     foreach ($allStatuses as $status) {
-         if (($countsMatrix[$status->id][$purpose->id] ?? 0) > 0) {
-             $nonZeroPurposeIds[] = $purpose->id;
-             break;
-         }
-     }
- }
- $filteredChildPurposes = $childPurposes->whereIn('id', $nonZeroPurposeIds)->values();
- 
- // Filter statuses with ticket data in filtered purposes
- $filteredStatuses = $allStatuses->filter(function ($status) use ($filteredChildPurposes, $countsMatrix) {
-     foreach ($filteredChildPurposes as $purpose) {
-         if (($countsMatrix[$status->id][$purpose->id] ?? 0) > 0) {
-             return true;
-         }
-     }
-     return false;
- })->values();
- 
- // Prepare labels and names
- $childPurposeLabels = $filteredChildPurposes->pluck('label')->toArray();
- $childPurposeNames = $filteredChildPurposes->pluck('name')->toArray();
- $statusLabels3 = $filteredStatuses->pluck('label')->toArray();
- $statusNames3 = $filteredStatuses->pluck('name')->toArray();
- 
- // Prepare series data for ApexCharts
- $ticketsByChildPurposeStatus = [];
- foreach ($filteredStatuses as $status) {
-     $data = [];
-     foreach ($filteredChildPurposes as $purpose) {
-         $data[] = $countsMatrix[$status->id][$purpose->id] ?? 0;
-     }
-     $ticketsByChildPurposeStatus[] = [
-         'name' => $status->name,
-         'data' => $data,
-     ];
- }
- 
- // Pass these variables to frontend view
- $this->childPurposeLabels = $childPurposeLabels;
- $this->childPurposeNames = $childPurposeNames;
- $this->statusLabels3 = $statusLabels3;
- $this->statusNames3 = $statusNames3;
- $this->ticketsByChildPurposeStatus = $ticketsByChildPurposeStatus;
+                
+                // Pass these variables to frontend view
+                $this->childPurposeLabels = $childPurposeLabels;
+                $this->childPurposeNames = $childPurposeNames;
+                $this->statusLabels3 = $statusLabels3;
+                $this->statusNames3 = $statusNames3;
+                $this->ticketsByChildPurposeStatus = $ticketsByChildPurposeStatus;
  
 
  
@@ -539,6 +536,53 @@ class SuperDashboard extends Page
             $this->newTicketsCount = $newTicketsCount;
             $this->resolvedTicketsCount = $resolvedTicketsCount;
 
+
+
+           // Chart 9: Tickets Status by Priority
+                
+// 1. Get priorities with tickets
+$priorityIds = Tickets::distinct()->pluck('priority_id')->toArray();
+$priorities = Priority::whereIn('id', $priorityIds)->get();
+
+// 2. Get ticket statuses linked with these tickets
+$statusIds = Tickets::whereIn('priority_id', $priorityIds)->distinct()->pluck('ticket_status_id')->toArray();
+$statuses = TicketStatus::whereIn('id', $statusIds)->get();
+
+// 3. Prepare ticket counts by priority & status
+$countsMatrix = [];
+foreach ($statuses as $status) {
+    foreach ($priorities as $priority) {
+        $count = Tickets::where('priority_id', $priority->id)
+                        ->where('ticket_status_id', $status->id)
+                        ->count();
+        $countsMatrix[$status->id][$priority->id] = $count;
+    }
+}
+
+// 4. Prepare ApexCharts series
+$chartSeries = [];
+$colors = [
+    '#dc2626', '#f97316', '#ef4444', '#fb923c', '#b91c1c', '#fbbf24', '#b45309', '#991b1b'
+];
+
+foreach ($statuses as $index => $status) {
+    $data = [];
+    foreach ($priorities as $priority) {
+        $data[] = $countsMatrix[$status->id][$priority->id] ?? 0;
+    }
+    $chartSeries[] = [
+        'name' => $status->label,   // status label for legend
+        'data' => $data,
+        'color' => $colors[$index % count($colors)],  // cycle colors
+    ];
+}
+
+// Pass data to view
+$this->statusNames9 = $statuses->pluck('name')->toArray(); // status names for tooltip
+$this->priorityLabels = $priorities->pluck('label')->toArray();  // X-axis labels
+$this->ticketStatusSeries = $chartSeries;                      // Chart series data
+
+
                 }        
     
      protected function getViewData(): array
@@ -558,11 +602,18 @@ class SuperDashboard extends Page
              'slaCompliance' => $this->slaCompliance,
              'totalSLAs' => $this->totalSLAs,
              'totalPriorities' => $this->totalPriorities,
-             'purposeNames' => $this->purposeNames,
+            //  'purposeNames' => $this->purposeNames,
              'ticketsByPurposeStatus' => $this->ticketsByPurposeStatus,
-            //  'agentNames' => $this->agentNames,
-            //  'statusNames' => $this->statusNames,
-            //  'ticketsByAgentStatus' => $this->ticketsByAgentStatus,
+
+             
+             'parentPurposeNames' => $this->parentPurposeNames,
+             'parentPurposeLabels' => $this->parentPurposeLabels,
+             'statusesNames' => $this->statusesNames,
+
+
+             'statusesLabels1' => $this->statusesLabels1,
+
+        
 
 
             'childPurposeLabels' => $this->childPurposeLabels,
@@ -596,6 +647,11 @@ class SuperDashboard extends Page
              'resolvedDotsCount' => $this->resolvedDotsCount,
              'newTicketsCount' => $this->newTicketsCount,
              'resolvedTicketsCount' => $this->resolvedTicketsCount,
+
+
+             'statusNames9' => $this->statusNames9,
+             'priorityLabels' => $this->priorityLabels,
+             'ticketStatusSeries' => $this->ticketStatusSeries,
 
 
          ];
