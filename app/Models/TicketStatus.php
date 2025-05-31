@@ -13,6 +13,7 @@ class TicketStatus extends Model
 
     protected $fillable = [
         'name',
+        'label',
         'description',
         'status',
         'is_default'

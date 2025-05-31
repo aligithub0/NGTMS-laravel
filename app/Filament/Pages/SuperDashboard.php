@@ -14,6 +14,7 @@ use App\Models\TicketJourney;
 use App\Models\TicketStatus;
 use App\Models\SlaConfiguration;
 use App\Models\Priority;
+use App\Models\TicketSource;
 
 
 class SuperDashboard extends Page
@@ -306,44 +307,238 @@ class SuperDashboard extends Page
                 $this->ticketsByPurposeStatus = $chartData;
 
 
+  // Chart 4: Ticket Status by Purpose Group
 
-            // Get all agents (users who have tickets assigned)
-           // 1. Get all unique agent IDs who have tickets assigned
-            $agentIds = Tickets::whereNotNull('assigned_to_id')->pluck('assigned_to_id')->unique();
-            // 2. Fetch User models for those agent IDs
-            $agents = User::whereIn('id', $agentIds)->get();
-            // 3. Fetch all ticket statuses
+ // Get purposes with parent_id not null (child purposes only)
+ $childPurposes = Purpose::whereNotNull('parent_id')->get();
+ $allStatuses = TicketStatus::all();
+ 
+ // Build counts matrix [status_id][purpose_id]
+ $countsMatrix = [];
+ foreach ($allStatuses as $status) {
+     foreach ($childPurposes as $purpose) {
+         $count = Tickets::where('ticket_status_id', $status->id)
+             ->whereJsonContains('purpose_type_id', $purpose->id)
+             ->count();
+         $countsMatrix[$status->id][$purpose->id] = $count;
+     }
+ }
+ 
+ // Filter purposes with any ticket data
+ $nonZeroPurposeIds = [];
+ foreach ($childPurposes as $purpose) {
+     foreach ($allStatuses as $status) {
+         if (($countsMatrix[$status->id][$purpose->id] ?? 0) > 0) {
+             $nonZeroPurposeIds[] = $purpose->id;
+             break;
+         }
+     }
+ }
+ $filteredChildPurposes = $childPurposes->whereIn('id', $nonZeroPurposeIds)->values();
+ 
+ // Filter statuses with ticket data in filtered purposes
+ $filteredStatuses = $allStatuses->filter(function ($status) use ($filteredChildPurposes, $countsMatrix) {
+     foreach ($filteredChildPurposes as $purpose) {
+         if (($countsMatrix[$status->id][$purpose->id] ?? 0) > 0) {
+             return true;
+         }
+     }
+     return false;
+ })->values();
+ 
+ // Prepare labels and names
+ $childPurposeLabels = $filteredChildPurposes->pluck('label')->toArray();
+ $childPurposeNames = $filteredChildPurposes->pluck('name')->toArray();
+ $statusLabels3 = $filteredStatuses->pluck('label')->toArray();
+ $statusNames3 = $filteredStatuses->pluck('name')->toArray();
+ 
+ // Prepare series data for ApexCharts
+ $ticketsByChildPurposeStatus = [];
+ foreach ($filteredStatuses as $status) {
+     $data = [];
+     foreach ($filteredChildPurposes as $purpose) {
+         $data[] = $countsMatrix[$status->id][$purpose->id] ?? 0;
+     }
+     $ticketsByChildPurposeStatus[] = [
+         'name' => $status->name,
+         'data' => $data,
+     ];
+ }
+ 
+ // Pass these variables to frontend view
+ $this->childPurposeLabels = $childPurposeLabels;
+ $this->childPurposeNames = $childPurposeNames;
+ $this->statusLabels3 = $statusLabels3;
+ $this->statusNames3 = $statusNames3;
+ $this->ticketsByChildPurposeStatus = $ticketsByChildPurposeStatus;
+ 
+
+ 
+
+
+        // Chart 5: Tickets status by Manager
+       // 1. Get all users with role 'Manager' and assigned_to_others = 1
+            $managers = User::whereHas('role', function ($q) {
+                $q->where('name', 'Manager');
+            })
+            ->where('assigned_to_others', true)
+            ->get();
+
+            // 2. Get all statuses
             $statuses = TicketStatus::all();
 
-            $agentNames = $agents->pluck('name')->toArray();
-            $statusNames = $statuses->pluck('name')->toArray();
+            // 3. Collect manager names
+            $managerNames = $managers->pluck('name')->toArray();
 
-            // 4. Fetch all tickets for these agents (single query)
-            $tickets = Tickets::whereIn('assigned_to_id', $agentIds)->get();
+            // 4. Fetch tickets assigned to managers
+            $managerIds = $managers->pluck('id')->toArray();
+            $tickets = Tickets::whereIn('assigned_to_id', $managerIds)->get();
 
-            $data = [];
+            // 5. Prepare data for each status across managers
+            $ticketsByManagerStatus = [];
             foreach ($statuses as $status) {
-                $counts = [];
-                foreach ($agents as $agent) {
-                    $count = $tickets
-                        ->where('assigned_to_id', $agent->id)
-                        ->where('ticket_status_id', $status->id)
-                        ->count();
-                    $counts[] = $count;
-                }
-                $data[] = [
-                    'name' => $status->name,
-                    'type' => 'bar',
-                    'stack' => 'total',
-                    'data' => $counts,
-                ];
+            $data = [];
+            foreach ($managers as $manager) {
+                $count = $tickets
+                    ->where('assigned_to_id', $manager->id)
+                    ->where('ticket_status_id', $status->id)
+                    ->count();
+                $data[] = $count;
+            }
+            $ticketsByManagerStatus[] = [
+                'name' => $status->label,  // Use label for legend
+                'data' => $data,
+            ];
             }
 
-            $this->agentNames = $agentNames;
-            $this->statusNames = $statusNames;
-            $this->ticketsByAgentStatus = $data;
+            // Pass to frontend (e.g. Livewire or Controller view)
+            $this->managerNames = $managerNames;
+            $this->statusLabels5 = $statuses->pluck('label')->toArray();
+            $this->statusNames5 = $statuses->pluck('name')->toArray();
+            $this->ticketsByManagerStatus = $ticketsByManagerStatus;
+
+
+
+             // Chart 6: Ticket Status by SLA
+                // 1. Get all SLAs with tickets (filter out SLAs with no tickets)
+                $slasWithTickets = SlaConfiguration::whereIn('id', function ($query) {
+                    $query->select('SLA')->from('tickets')->whereNotNull('SLA');
+                })->get();
+
+                // 2. Get all ticket statuses with tickets having an SLA in above list
+                $statusIdsWithTickets = Tickets::whereIn('SLA', $slasWithTickets->pluck('id')->toArray())
+                    ->pluck('ticket_status_id')
+                    ->unique()
+                    ->toArray();
+
+                $filteredStatuses = TicketStatus::whereIn('id', $statusIdsWithTickets)->get();
+
+                // 3. Prepare counts matrix [status_id][sla_id]
+                $countsMatrix = [];
+                foreach ($filteredStatuses as $status) {
+                    foreach ($slasWithTickets as $sla) {
+                        $count = Tickets::where('ticket_status_id', $status->id)
+                            ->where('SLA', $sla->id)
+                            ->count();
+                        $countsMatrix[$status->id][$sla->id] = $count;
+                    }
+                }
+
+                // 4. Prepare chart data series for ApexCharts (series = statuses)
+                $chartSeries = [];
+                foreach ($filteredStatuses as $status) {
+                    $data = [];
+                    foreach ($slasWithTickets as $sla) {
+                        $data[] = $countsMatrix[$status->id][$sla->id] ?? 0;
+                    }
+                    $chartSeries[] = [
+                        'name' => $status->label,   // Legend label on chart
+                        'data' => $data,
+                    ];
+                }
+
+                // 5. Pass filtered SLA names (for x-axis), status labels and names, and chart data to view
+                $this->slaNames = $slasWithTickets->pluck('name')->toArray();        // For tooltip title and x-axis
+                $this->statusLabels6 = $filteredStatuses->pluck('label')->toArray();  // For y-axis legend labels
+                $this->statusNames6 = $filteredStatuses->pluck('name')->toArray();    // For tooltip list labels
+                $this->ticketsBySlaStatus = $chartSeries;
+
+
+            // Graph: 7 Tickets status by Sources
+            // 1. Fetch all sources that have tickets
+                $sourcesWithTickets = TicketSource::whereIn('id', function ($query) {
+                    $query->select('ticket_source_id')->from('tickets')->whereNotNull('ticket_source_id');
+                })->get();
+
+                // 2. Calculate ticket counts per source
+                $ticketCounts = [];
+                $totalTickets = Tickets::count();
+
+                foreach ($sourcesWithTickets as $source) {
+                    $count = Tickets::where('ticket_source_id', $source->id)->count();
+                    $ticketCounts[] = $count;
+                }
+
+                // 3. Calculate percentages for tooltip and label display (optional, you can do in JS as well)
+                $percentages = [];
+                foreach ($ticketCounts as $count) {
+                    $percentages[] = $totalTickets > 0 ? round(($count / $totalTickets) * 100, 1) : 0;
+                }
+
+                // 4. Prepare labels array for the chart (source names or labels)
+                $sourceLabels = $sourcesWithTickets->pluck('name')->toArray();
+
+                // 5. Prepare colors (choose palette or generate dynamically)
+                $colors = [
+                    '#f97316',
+                    '#dc2626',
+                    '#fb923c',
+                    '#ef4444',
+                    // add more if you have more sources
+                ];
+
+                // 6. Pass data to view
+                $this->sourceLabels = $sourceLabels;
+                $this->ticketCounts = $ticketCounts;
+                $this->totalTickets = $totalTickets;
+                $this->percentages = $percentages;
+                $this->colors = array_slice($colors, 0, count($sourcesWithTickets));
 
             
+
+
+                   // Graph: 8 Tickets status by Category
+            $newStatus = TicketStatus::where('name', 'New')->first();
+            $resolvedStatus = TicketStatus::all()->first(function($status) {
+                return trim(strtolower($status->name)) === 'resolved';
+            });
+
+            $newTicketsCount = $newStatus ? Tickets::where('ticket_status_id', $newStatus->id)->count() : 0;
+            $resolvedTicketsCount = $resolvedStatus ? Tickets::where('ticket_status_id', $resolvedStatus->id)->count() : 0;
+
+            $totalCount = $newTicketsCount + $resolvedTicketsCount;
+            $totalDots = min($totalCount, 98);  // limit max to 98 dots to keep UI manageable
+            
+            $newDotsCount = $totalCount > 0 ? round(($newTicketsCount / $totalCount) * $totalDots) : 0;
+            $resolvedDotsCount = $totalCount > 0 ? round(($resolvedTicketsCount / $totalCount) * $totalDots) : 0;
+            
+
+            // Ensure total dots sum up exactly to totalDots
+            $sumDots = $newDotsCount + $resolvedDotsCount;
+            if ($sumDots !== $totalDots) {
+                $difference = $totalDots - $sumDots;
+                if ($newDotsCount > $resolvedDotsCount) {
+                    $newDotsCount += $difference;
+                } else {
+                    $resolvedDotsCount += $difference;
+                }
+            }
+
+            $this->newDotsCount = $newDotsCount;
+            $this->resolvedDotsCount = $resolvedDotsCount;
+            $this->newTicketsCount = $newTicketsCount;
+            $this->resolvedTicketsCount = $resolvedTicketsCount;
+
                 }        
     
      protected function getViewData(): array
@@ -365,9 +560,43 @@ class SuperDashboard extends Page
              'totalPriorities' => $this->totalPriorities,
              'purposeNames' => $this->purposeNames,
              'ticketsByPurposeStatus' => $this->ticketsByPurposeStatus,
-             'agentNames' => $this->agentNames,
-             'statusNames' => $this->statusNames,
-             'ticketsByAgentStatus' => $this->ticketsByAgentStatus,
+            //  'agentNames' => $this->agentNames,
+            //  'statusNames' => $this->statusNames,
+            //  'ticketsByAgentStatus' => $this->ticketsByAgentStatus,
+
+
+            'childPurposeLabels' => $this->childPurposeLabels,
+            'childPurposeNames' => $this->childPurposeNames,
+            'statusLabels3' => $this->statusLabels3,
+            'statusNames3' => $this->statusNames3,
+            'ticketsByChildPurposeStatus' => $this->ticketsByChildPurposeStatus,
+
+
+
+             'managerNames' => $this->managerNames,
+             'statusLabels5' => $this->statusLabels5,
+             'statusNames5' => $this->statusNames5,
+             'ticketsByManagerStatus' => $this->ticketsByManagerStatus,
+
+
+             'statusNames6' => $this->statusNames6,
+             'statusLabels6' => $this->statusLabels6,
+             'slaNames' => $this->slaNames,
+             'ticketsBySlaStatus' => $this->ticketsBySlaStatus,
+
+             'sourceLabels' => $this->sourceLabels,
+             'ticketCounts' => $this->ticketCounts,
+             'totalTickets' => $this->totalTickets,
+             'percentages' => $this->percentages,
+             'colors' => $this->colors,
+
+
+
+             'newDotsCount' => $this->newDotsCount,
+             'resolvedDotsCount' => $this->resolvedDotsCount,
+             'newTicketsCount' => $this->newTicketsCount,
+             'resolvedTicketsCount' => $this->resolvedTicketsCount,
+
 
          ];
      }

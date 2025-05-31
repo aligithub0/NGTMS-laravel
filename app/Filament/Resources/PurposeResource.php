@@ -75,6 +75,9 @@ class PurposeResource extends Resource
                 ])
                 ->helperText('Only letters and spaces are allowed.'),
 
+                TextInput::make('label')->required(),
+
+
     
             Select::make('parent_id')
                 ->label('Parent Purpose')

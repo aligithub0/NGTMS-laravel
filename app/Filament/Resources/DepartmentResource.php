@@ -68,6 +68,8 @@ public static function canDelete($record): bool
                     'max:255',
                 ]),
 
+                TextInput::make('label')->required(),
+
                 Toggle::make('status')
                 ->label('Active')
                 ->default(true)

@@ -137,7 +137,7 @@
 
         .dot-grid {
             display: grid;
-            grid-template-columns: repeat(11, 13px);
+            grid-template-columns: repeat(9, 13px);
             grid-gap: 10px 8px;
             margin-left: 11px;
             margin-top: 37px;
@@ -162,7 +162,7 @@
             align-content: stretch;
             justify-content: space-evenly;
             align-items: flex-end;
-            margin-top: -166px !important;
+            margin-top: -206px !important;
             margin-right: 5px;
         }
         .info-item {
@@ -275,7 +275,7 @@
                             <div style="width: 100%; height: 60px;" id="totalRevenueChart"></div>
                         </div>
                         <div class="card" style="flex: 1; height: 260px;">
-                        <div class="card-header" style="font-size:16px; margin-bottom:-10px;">Tickets Status By Parent Purposes</div>
+                        <div class="card-header" style="font-size:16px; margin-bottom:-10px;">Tickets Status By Purposes</div>
                             <div style="width: 100%; height: 60px;" id="incomeChart"></div>
                         </div>
                         <div class="card" style="flex: 1; height: 260px;">
@@ -297,11 +297,11 @@
                                 <!-- Row 2 Graphs  -->
                     <div style="display: flex; gap: 5px; width: 100%;">
                         <div class="card" style="flex: 1; height: 260px;">
-                        <div class="card-header" style="font-size:16px; margin-bottom:-10px;">Tickets Status By Purpose Group</div>
+                        <div class="card-header" style="font-size:16px; margin-bottom:-10px;">Tickets Status By Parent Group</div>
                             <div style="width: 100%; height: 60px;" id="barChart1"></div>
                         </div>
                         <div class="card" style="flex: 1; height: 260px;">
-                        <div class="card-header" style="font-size:16px; margin-bottom:-10px;">Tickets Status By Agents</div>
+                        <div class="card-header" style="font-size:16px; margin-bottom:-10px;">Tickets Status By Managers</div>
                             <div style="width: 100%; height: 60px;" id="lineChart1"></div>
                         </div>
                         <div class="card" style="flex: 1; height: 260px;">
@@ -313,44 +313,43 @@
 
                     <!-- Row 3 Graphs  -->
                     <div style="display: flex; gap: 5px; width: 100%;">
-                    <div class="card" style="flex: 1; height: 260px; display: flex; align-items: center; ">
+                    <div class="card" style="flex: 1; height: 260px; display: flex; align-items: center;">
                     <div style="flex: 1; height: 180px; position: relative; margin-right: -48px; margin-left: -38px;">
-                    <div class="card-header" style="font-size:16px; margin-top:-22px; margin-left:40px; ">Tickets Status By Sources</div>
-                        <div id="doughnutChart" style="width: 100%; height: 100%;"></div>
+                        <div class="card-header" style="font-size:16px; margin-top:-22px; margin-left:40px;">Tickets Status By Sources</div>
+                        <div id="doughnutChart" style="width: 100%; height: 100%; position: relative;"></div>
+                        <div id="centerTotal" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                            font-weight: 700; font-size: 32px; color: #4b5563; pointer-events:none;">
+                            {{ $totalTickets }}
+                        </div>
                     </div>
                     <div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 20px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+                        @foreach ($sourceLabels as $index => $label)
                         <div style="display: flex; align-items: center; gap: 12px;">
-                        <div style="width: 16px; height: 16px; background: #f97316; border-radius: 4px;"></div>
-                        <div>
-                            <div style="font-weight: 700; font-size: 20px; color: #f97316;">256</div>
-                            <div style="color: #6b7280; font-size: 14px;">Lorem</div>
-                        </div>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                        <div style="width: 16px; height: 16px; background: #dc2626; border-radius: 4px;"></div>
-                        <div>
-                            <div style="font-weight: 700; font-size: 20px; color: #dc2626;">128</div>
-                            <div style="color: #6b7280; font-size: 14px;">ipsum</div>
-                        </div>
-                        </div>
-                    </div>
-                    </div>
-
-                    <div class="card" style="flex: 1; height: 260px; ">
-                    <div class="card-header" style="font-size:16px; margin-left:12px; margin-bottom: -10px;">Tickets Status By Category</div>
-
-                        <div class="dot-grid"  id="dotGrid"></div>
-                        <div class="info-text">
-                            <div class="info-item">
-                            <span class="number number-orange">56%</span>
-                            <span class="label">Lorem</span>
-                            </div>
-                            <div class="info-item ">
-                            <span class="number number-red">34%</span>
-                            <span class="label">ipsum</span>
+                            <div style="width: 16px; height: 16px; background: {{ $colors[$index] ?? '#000' }}; border-radius: 4px;"></div>
+                            <div>
+                                <div style="color: #6b7280; font-size: 14px;">{{ $label }}</div>
                             </div>
                         </div>
-                        </div>
+                        @endforeach
+                    </div>
+                </div>
+
+                    <div class="card" style="flex: 1; height: 260px;">
+    <div class="card-header" style="font-size:16px; margin-left:12px; margin-bottom: -10px;">Tickets Status By Category</div>
+
+    <div class="dot-grid" id="dotGrid"></div>
+
+    <div class="info-text">
+        <div class="info-item">
+            <span class="number number-orange">{{ $newTicketsCount }}</span>
+            <span class="label">Incoming Tickets</span>
+        </div>
+        <div class="info-item">
+            <span class="number number-red">{{ $resolvedTicketsCount }}</span>
+            <span class="label">Resolved Tickets</span>
+        </div>
+    </div>
+</div>
 
                     <div class="card" style="flex: 1; height: 260px;">
                     <div class="card-header" style="font-size:16px; margin-bottom:-10px;">Tickets Status By Designation</div>
@@ -433,8 +432,20 @@
     window.slaCompliance = @json($slaCompliance ?? 0);
     window.purposeNames = @json($purposeNames ?? []);
     window.ticketsByPurposeStatus = @json($ticketsByPurposeStatus ?? []);
-    window.agentNames = @json($agentNames ?? []);
-    window.ticketsByAgentStatus = @json($ticketsByAgentStatus ?? []);
+    // window.agentNames = @json($agentNames ?? []);
+    // window.ticketsByAgentStatus = @json($ticketsByAgentStatus ?? []);
+    window.childPurposeLabels = @json($childPurposeLabels ?? []);
+    window.childPurposeNames = @json($childPurposeNames ?? []);
+    window.statusLabels3 = @json($statusLabels3 ?? []);
+    window.statusNames3 = @json($statusNames3 ?? []);
+    window.ticketsByChildPurposeStatus = @json($ticketsByChildPurposeStatus ?? []);
+
+
+    
+    window.managerNames = @json($managerNames ?? []);
+window.statusLabels5 = @json($statusLabels5 ?? []);
+window.statusNames5 = @json($statusNames5 ?? []);
+window.ticketsByManagerStatus = @json($ticketsByManagerStatus ?? []);
 
     </script>
 
@@ -535,268 +546,315 @@
             }).render();
 
 
-            // Chart 4: Vertical Bar Chart
-        var options1 = {
-            chart: {
-                height: 220,
-                type: 'bar',
-                stacked: false,
-                toolbar: { show: false },
-            },
-            series: [{
-                name: 'Dataset',
-                data: [5, 10, 20, 30, 35, 40, 50, 45]
-            }],
-            colors: ['#f97316'],
-            plotOptions: {
-                bar: {
-                    horizontal: false,
-                    columnWidth: '20%',
-                    borderRadius: 4,  // Rounded corners on bars
-                    startingShape: 'rounded',  // rounded shape at bottom start
-                    endingShape: 'rounded',    // rounded shape at top end
+// Chart 4: Ticket Status by Purpose Group
+var options1 = {
+    chart: {
+        type: 'bar',
+        height: 220,
+        stacked: true,
+        toolbar: { show: false },
+    },
+    series: window.ticketsByChildPurposeStatus ?? [],
+    colors: [
+        '#f97316', '#f59e0b', '#fbbf24', '#fde68a', '#ea580c',
+        '#d97706', '#b45309', '#92400e', '#78350f', '#7c2d12'
+    ],
+    plotOptions: {
+        bar: {
+            horizontal: false,
+            columnWidth: '35%',
+            borderRadius: 4,
+            startingShape: 'rounded',
+            endingShape: 'rounded',
+        }
+    },
+    xaxis: {
+        categories: window.childPurposeLabels ?? [],
+        labels: {
+            rotate: -45,
+            style: { fontSize: '10px', colors: '#64748b' }
+        },
+        axisBorder: { show: false },
+        axisTicks: { show: false },
+    },
+    yaxis: {
+        min: 0,
+        forceNiceScale: true,
+        labels: { show: false },
+        axisBorder: { show: false },
+        axisTicks: { show: false },
+    },
+    grid: {
+        borderColor: '#e2e8f0',
+        strokeDashArray: 4,
+        yaxis: { lines: { show: true } },
+        xaxis: { lines: { show: false } },
+    },
+    tooltip: {
+        shared: true,
+        intersect: false,
+        custom: function({ series, seriesIndex, dataPointIndex, w }) {
+            const purposeName = (window.childPurposeNames && window.childPurposeNames[dataPointIndex]) || 'Unknown Purpose';
+
+            let tooltipContent = `<div class="apexcharts-tooltip-title" style="font-weight: 600; margin-bottom: 8px;">${purposeName}</div>`;
+
+            w.globals.seriesNames.forEach((statusNames3, idx) => {
+                const count = series[idx][dataPointIndex];
+                if (count > 0) {
+                    const color = w.globals.colors[idx] || '#000';
+                    tooltipContent += `
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; margin-left: 10px;">
+                            <span style="width: 12px; height: 12px; background-color: ${color}; border-radius: 8px; display: inline-block;"></span>
+                            <span>${statusNames3}: ${count}</span>
+                        </div>`;
                 }
-            },
-            xaxis: {
-                categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-                axisBorder: { show: false },
-                axisTicks: { show: false },
-                labels: {
-                    style: {
-                        colors: '#64748b',
-                        fontWeight: 500,
-                        fontSize: '10px',
-                    }
-                }
-            },
-            yaxis: {
-                max: 60,
-                labels: {
-                    style: {
-                        colors: '#64748b',
-                        fontWeight: 500,
-                        fontSize: '10px',
-                    }
-                },
-                axisBorder: { show: false },
-                axisTicks: { show: false },
-                tickAmount: 6,  // Number of ticks on y axis
-            },
-            grid: {
-                borderColor: '#e2e8f0',
-                strokeDashArray: 4,
-                yaxis: {
-                    lines: { show: true }
-                },
-                xaxis: {
-                    lines: { show: false }
-                },
-            },
-            tooltip: {
-                shared: true,
-                intersect: false,
-                style: { fontSize: '14px' }
-            },
-            legend: { show: false }
-        };
+            });
+            return tooltipContent;
+        }
+    },
+    legend: {
+        show: true,
+        position: 'left',
+        fontSize: '10px',
+        itemMargin: { vertical: 2, horizontal: 0 },
+        markers: { width: 14, height: 14, radius: 3 },
+        labels: { colors: '#333',
+            formatter: function(seriesName, opts) {
+                return window.statusLabels3[opts.seriesIndex] || seriesName;
+            }
+         },
+        width: 'auto',
+    },
+};
+
 
         var chart1 = new ApexCharts(document.querySelector("#barChart1"), options1);
         chart1.render();
 
 
-            // Chart 5: Line Chart
+        // Chart 5: Tickets status by Manager
         var options2 = {
-                chart: {
-                    height: 220,
-                    type: 'line',
-                    zoom: { enabled: false },
-                    toolbar: { show: false }
-                },
-                series: [{
-                    name: 'Data',
-                    data: [20, 25, 40, 35, 45, 35, 50, 60]
-                }],
-                stroke: {
-                    curve: 'smooth',
-                    width: 3
-                },
-                markers: {
-                    size: 5,
-                    colors: ['#f97316'],  // Use a similar orange/yellow color (#f59e0b)
-                    strokeColors: '#fff',
-                    strokeWidth: 2,
-                    hover: {
-                        size: 7,
-                    }
-                },
-                colors: ['#f97316'],  // Same orange/yellow line color
-                xaxis: {
-                    categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-                    labels: {
-                        style: {
-                            colors: '#6b7280',  // muted grayish color for labels
-                            fontWeight: 500,
-                            fontSize: '10px'
-                        }
-                    },
-                    axisTicks: { show: false },
-                    axisBorder: { show: false }
-                },
-                yaxis: {
-                    max: 80,
-                    labels: {
-                        show: false  // Hide y axis labels for minimalist look
-                    },
-                    axisTicks: { show: false },
-                    axisBorder: { show: false },
-                    crosshairs: { show: false }
-                },
-                grid: {
-                    borderColor: '#e5e7eb',
-                    strokeDashArray: 5,
-                    yaxis: {
-                        lines: {
-                            show: true
-                        }
-                    },
-                    xaxis: {
-                        lines: {
-                            show: false
-                        }
-                    }
-                },
-                tooltip: {
-                    enabled: true,
-                    shared: true,
-                    theme: 'dark',
-                    marker: { show: false },
-                    style: { fontSize: '14px' }
-                },
-                legend: {
-                    show: false
+            chart: {
+        height: 220,
+        type: 'bar', // Use 'bar' for stacked bars by status per manager
+        stacked: true,
+        toolbar: { show: false },
+    },
+    series: window.ticketsByManagerStatus,
+    colors: [
+        '#f97316', '#f59e0b', '#fbbf24', '#fde68a', '#ea580c',
+        '#d97706', '#b45309', '#92400e', '#78350f', '#7c2d12'
+    ],
+    plotOptions: {
+        bar: {
+            horizontal: false,
+            columnWidth: '20%',
+            borderRadius: 4,
+            startingShape: 'rounded',
+            endingShape: 'rounded',
+        }
+    },
+    xaxis: {
+        categories: window.managerNames,
+        labels: {
+            style: {
+                colors: '#6b7280',
+                fontWeight: 500,
+                fontSize: '10px',
+            }
+        },
+        axisTicks: { show: false },
+        axisBorder: { show: false }
+    },
+    yaxis: {
+        labels: { show: false },
+        axisTicks: { show: false },
+        axisBorder: { show: false }
+    },
+    grid: {
+        borderColor: '#e5e7eb',
+        strokeDashArray: 5,
+        yaxis: { lines: { show: true } },
+        xaxis: { lines: { show: false } },
+    },
+    tooltip: {
+        shared: true,
+        intersect: false,
+        custom: function({ series, seriesIndex, dataPointIndex, w }) {
+            const managerName = window.managerNames[dataPointIndex] || 'Unknown Manager';
+
+            let tooltipContent = `<div class="apexcharts-tooltip-title" style="font-weight: 600; margin-bottom: 8px;">${managerName}</div>`;
+
+            w.globals.seriesNames.forEach((statusLabel5, idx) => {
+                const count = series[idx][dataPointIndex];
+                if (count > 0) {
+                    const color = w.globals.colors[idx] || '#000';
+                    const statusName = window.statusNames5[idx] || statusLabel5;
+                    tooltipContent += `
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; margin-left: 10px;">
+                            <span style="width: 12px; height: 12px; background-color: ${color}; border-radius: 8px; display: inline-block;"></span>
+                            <span>${statusName}: ${count}</span>
+                        </div>`;
                 }
+            });
+            return tooltipContent;
+        }
+    },
+    legend: {
+        show: true,
+        position: 'left',
+        fontSize: '10px',
+        itemMargin: { vertical: 4, horizontal: 0 },
+        markers: { width: 14, height: 14, radius: 3 },
+        labels: {
+            colors: '#333',
+            formatter: function(seriesName, opts) {
+                return window.statusLabels5[opts.seriesIndex] || seriesName;
+            }
+        },
+        width: 'auto',
+        offsetY: 25,
+    },
             };
 
             var chart2 = new ApexCharts(document.querySelector("#lineChart1"), options2);
             chart2.render();
 
-         // Chart 6: Bar Range Chart
+
+
+             // Chart 6: Ticket Status by SLA
             
-                var options = {
-            chart: {
-                height: 220,
-                type: 'bar',
-                stacked: true,
-                toolbar: { show: false }
+             var options = {
+    chart: {
+        height: 220,
+        type: 'bar',
+        stacked: true,
+        toolbar: { show: false },
+    },
+    series: @json($ticketsBySlaStatus),
+    colors: [
+  '#f97316',  // original orange
+  '#dc2626',  // original red
+  '#fb923c',  // lighter orange
+  '#ef4444',  // brighter red
+  '#fbbf24',  // yellow-orange
+  '#b91c1c',  // dark red
+  '#f59e0b',  // golden orange
+  '#b45309',  // dark golden brown
+  '#991b1b'   // deep dark red
+],    plotOptions: {
+        bar: {
+            horizontal: false,
+            columnWidth: '20%',
+            borderRadius: 4,
+            borderRadiusApplication: 'around',
+            borderRadiusWhenStacked: 'all',
+        }
+    },
+    dataLabels: { enabled: false },
+    stroke: {
+        show: true,
+        width: 8,
+        colors: ['transparent'],
+    },
+    xaxis: {
+        categories: @json($slaNames),
+        labels: {
+            style: {
+                colors: '#6b7280',
+                fontWeight: 500,
+                fontSize: '10px',
             },
-            series: [
-                {
-                    name: 'High',
-                    data: [20, 25, 30, 35, 25, 20, 30, 15],
-                    color: '#f97316'
-                },
-                {
-                    name: 'Low',
-                    data: [15, 25, 30, 18, 25, 22, 30, 28],
-                    color: '#dc2626'
+        },
+        axisTicks: { show: false },
+        axisBorder: { show: false },
+    },
+    yaxis: {
+        labels: { show: false },
+        axisTicks: { show: false },
+        axisBorder: { show: false },
+    },
+    grid: {
+        borderColor: '#e5e7eb',
+        strokeDashArray: 5,
+        yaxis: { lines: { show: true } },
+        xaxis: { lines: { show: false } },
+    },
+    tooltip: {
+        shared: true,
+        intersect: false,
+        theme: 'dark',
+        style: { fontSize: '14px' },
+        custom: function({ series, seriesIndex, dataPointIndex, w }) {
+            const slaName = w.config.xaxis.categories[dataPointIndex] || 'Unknown SLA';
+            let tooltipContent = `<div class="apexcharts-tooltip-title" style="font-weight: 600; margin-bottom: 8px;">${slaName}</div>`;
+            
+            w.globals.seriesNames.forEach((statusLabel, idx) => {
+                const count = series[idx][dataPointIndex];
+                if (count > 0) {
+                    const color = w.globals.colors[idx] || '#000';
+                    tooltipContent += `
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; margin-left:8px; margin-right:8px;">
+                            <span style="width: 12px; height: 12px; background-color: ${color}; border-radius: 8px; display: inline-block;"></span>
+                            <span>${statusLabel}: ${count}</span>
+                        </div>`;
                 }
-            ],
-            plotOptions: {
-                bar: {
-                    horizontal: false,
-                    columnWidth: '40%',
-                    borderRadius: 4,
-                    borderRadiusApplication: 'around',
-                    borderRadiusWhenStacked: 'all'
-                }
-            },
-            dataLabels: {
-                enabled: false
-            },
-            stroke: {
+            });
+            return tooltipContent;
+        }
+    },
+    legend: {
                 show: true,
-                width: 8,
-                colors: ['transparent']
-            },
-            xaxis: {
-                categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-                labels: {
-                    style: {
-                        colors: '#6b7280',
-                        fontWeight: 500,
-                        fontSize: '10px'
-                    }
-                },
-                axisTicks: { show: false },
-                axisBorder: { show: false }
-            },
-            yaxis: {
-                max: 70,
-                labels: { show: false },
-                axisTicks: { show: false },
-                axisBorder: { show: false }
-            },
-            grid: {
-                borderColor: '#e5e7eb',
-                strokeDashArray: 5,
-                yaxis: { lines: { show: true } },
-                xaxis: { lines: { show: false } }
-            },
-            tooltip: {
-                shared: true,
-                intersect: false,
-                theme: 'dark',
-                style: { fontSize: '14px' }
-            },
-            legend: { show: false },
-            fill: {
-                opacity: 1
-            }
-        };
+                position: 'left',
+                fontSize: '10px',
+                itemMargin: { vertical: 4, horizontal: 0 },
+                markers: { width: 14, height: 14, radius: 3 },
+                labels: { colors: '#333' },
+                width: 'auto',
+            },    fill: { opacity: 1 },
+};
 
-        var chart = new ApexCharts(document.querySelector("#barRangeChart"), options);
-        chart.render();
+var chart = new ApexCharts(document.querySelector("#barRangeChart"), options);
+chart.render();
 
 
-         // Chart 7: Pie Chart
+
+     // Graph: 7 Tickets status by Sources
         var options4 = {
-            chart: {
-                height: 170,
-                type: 'donut',
-                animations: { enabled: true }
-            },
-            series: [
-                384,       // Total (big arc in light gray)
-                256,       // Orange arc
-                2,         // Spacer (small transparent gap)
-                128,       // Red arc
-                2          // Spacer (small transparent gap)
-            ],
-            labels: ['Total', 'Lorem ipsum', '', 'Dolor sit amet', ''],
-            colors: [
-                '#d1d5db',  // Gray for total arc
-                '#f97316',  // Orange
-                'transparent',  // Spacer gap
-                '#dc2626',  // Red
-                'transparent'   // Spacer gap
-            ],
-            plotOptions: {
-                pie: {
-                    donut: {
-                        size: '70%',
-                        labels: {
-                            show: false
-                        }
+        chart: {
+            height: 170,
+            type: 'donut',
+            animations: { enabled: true }
+        },
+        series: @json($ticketCounts),
+        labels: @json($sourceLabels),
+        colors: @json($colors),
+        plotOptions: {
+            pie: {
+                donut: {
+                    size: '60%',
+                    labels: {
+                        show: false
                     }
                 }
-            },
-            stroke: {
-                colors: ['transparent'],
-                lineCap: 'round'  // Rounded ends for arcs
-            },
-            legend: { show: false },
-            tooltip: { enabled: false },
-        };
+            }
+        },
+        stroke: {
+            colors: ['transparent'],
+            lineCap: 'round'
+        },
+        legend: { show: false },
+        tooltip: {
+            enabled: true,
+            y: {
+                formatter: function(val, opts) {
+                    var total = opts.globals.seriesTotals.reduce((a,b) => a + b, 0);
+                    var percent = ((val / total) * 100).toFixed(1);
+                    return val + " tickets (" + percent + "%)";
+                }
+            }
+        }
+    };
 
      var chart4 = new ApexCharts(document.querySelector("#doughnutChart"), options4);
         chart4.render();
@@ -810,38 +868,38 @@
         centerText.style.fontSize = '30px';
         centerText.style.fontWeight = '700';
         centerText.style.color = '#4b5563';
-        centerText.innerHTML = '384';
+        // centerText.innerHTML = '384';
         donutChart.style.position = 'relative';
         donutChart.appendChild(centerText);
 
     
-        // Chart 8: Dotted infographic chart
+               // Graph: 8 Tickets status by Category
 
         const dotGrid = document.getElementById('dotGrid');
-            const rows = 7;
-            const cols = 14;
+        const rows = 7;
+        const cols = 14;
+        const totalDots = rows * cols;
 
-            // Total dots: rows * cols = 98 dots (like screenshot)
+        const orangeDotsCount = {{ $newDotsCount }};
+        const redDotsCount = {{ $resolvedDotsCount }};
 
-            // Dot count per color, roughly matching screenshot
-            const orangeDotsCount = 46; // top 4 rows, partial 5th
-            const redDotsCount = 34;    // below orange dots
+        dotGrid.innerHTML = '';
 
-            for(let i = 0; i < rows * cols; i++) {
-                const dot = document.createElement('div');
-                dot.classList.add('dot');
+        for(let i = 0; i < totalDots; i++) {
+            const dot = document.createElement('div');
+            dot.classList.add('dot');
 
-                if(i < orangeDotsCount) {
+            if(i < orangeDotsCount) {
                 dot.classList.add('orange');
-                } else if(i < orangeDotsCount + redDotsCount) {
+            } else if(i < orangeDotsCount + redDotsCount) {
                 dot.classList.add('red');
-                } else {
-                // empty space, make transparent or light color if needed
+            } else {
                 dot.style.backgroundColor = 'transparent';
-                }
-
-                dotGrid.appendChild(dot);
             }
+
+            dotGrid.appendChild(dot);
+        }
+
 
            // Chart 9: Horizontal Bar Chart
 

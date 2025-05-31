@@ -78,6 +78,9 @@ class TicketStatusResource extends Resource
                 ->helperText('Only letters and spaces are allowed.'),
 
 
+                TextInput::make('label')->required(),
+
+
 
                 Toggle::make('status')
                 ->label('Active')

@@ -9,7 +9,7 @@ class Priority extends Model
 {
     use HasFactory;
 
-   protected $fillable = ['name', 'description', 'status', 'is_default'];
+   protected $fillable = ['name','label', 'description', 'status', 'is_default'];
 
 
     // In each model

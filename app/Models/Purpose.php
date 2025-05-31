@@ -9,7 +9,7 @@ class Purpose extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'parent_id', 'sla_id', 'description', 'status', 'is_default'];
+    protected $fillable = ['name', 'label','parent_id', 'sla_id', 'description', 'status', 'is_default'];
 
     public function parent()
     {

@@ -74,6 +74,9 @@ public static function canDelete($record): bool
                 ])
                 ->helperText('Only letters and spaces are allowed.'),
 
+                TextInput::make('label')->required(),
+
+
                 Toggle::make('status')
                 ->label('Active')
                 ->default(true)
